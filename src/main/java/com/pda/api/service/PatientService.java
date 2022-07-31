@@ -10,10 +10,11 @@ import com.pda.api.dto.PatientReqDto;
  * @Created by AlanZhang
  */
 public interface PatientService {
-    String fintPatientInfo(PatientReqDto patientReqDto);
+    String fintPatientInhInfo(PatientReqDto patientReqDto);
 
     String fintAllergyInfo(Integer pageNum, String patientNo);
 
     String fintTzInfo(Integer pageNum, String patientNo,Integer upTime);
 
+    String findPatientInfo(PatientReqDto patientReqDto);
 }

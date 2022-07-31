@@ -22,7 +22,7 @@ import java.util.Date;
 public class PatientServiceImpl extends PdaBaseService implements PatientService {
 
     @Override
-    public String fintPatientInfo(PatientReqDto patientReqDto) {
+    public String fintPatientInhInfo(PatientReqDto patientReqDto) {
         String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<root>\n" +
                 "    <AuthHeader>\n" +
@@ -35,10 +35,9 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
                 "    </AuthHeader>\n" +
                 "    <ControlActProcess>\n" +
                 "        <PageNum>"+patientReqDto.getPageNum()+"</PageNum>\n" +
-                "        <PatientNo>"+patientReqDto.getPatientNo()+"</PatientNo>\n" +
-                "        <WardCode>"+patientReqDto.getWardCode()+"</WardCode>\n" +
+                "        <start_time>"+patientReqDto.getStartTime()+"</start_time>\n" +
+                "        <end_time>"+patientReqDto.getEndTime()+"</end_time>\n" +
                 "        <Status>"+patientReqDto.getStatus()+"</Status>\n" +
-                "        <UpTime>"+PdaTimeUtil.getLongTime(new Date())+"</UpTime>\n" +
                 "    </ControlActProcess>\n" +
                 "</root>";
         String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
@@ -85,6 +84,28 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
                 "\t\t<UpTime>"+upTime+"</UpTime>\n" +
                 "<PatientNo>"+patientNo+"</PatientNo>\n" +
                 "\t</ControlActProcess>\n" +
+                "</root>";
+        String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
+        return result;
+    }
+
+    @Override
+    public String findPatientInfo(PatientReqDto patientReqDto) {
+        String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<root>\n" +
+                "    <AuthHeader>\n" +
+                "        <msgType>TJ601</msgType>\n" +
+                "        <msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId>\n" +
+                "        <createTime>"+ PdaTimeUtil.getCreateTime(new Date())+"</createTime>\n" +
+                "        <sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                "        <targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                "        <sysPassword/>\n" +
+                "    </AuthHeader>\n" +
+                "    <ControlActProcess>\n" +
+                "        <PageNum>"+patientReqDto.getPageNum()+"</PageNum>\n" +
+                "        <start_time>"+patientReqDto.getStartTime()+"</start_time>\n" +
+                "        <end_time>"+patientReqDto.getEndTime()+"</end_time>\n" +
+                "    </ControlActProcess>\n" +
                 "</root>";
         String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
         return result;

@@ -9,5 +9,5 @@ import java.util.List;
  * @Created by AlanZhang
  */
 public interface AsyncService {
-    void saveUser(List userList);
+    void saveList(String key,List userList);
 }

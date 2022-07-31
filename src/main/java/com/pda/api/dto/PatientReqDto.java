@@ -11,11 +11,9 @@ import lombok.Data;
 @Data
 public class PatientReqDto extends PageReqDto{
 
-    private String patientNo;
+    private String startTime;
 
-    private String wardCode;
+    private String endTime;
 
     private String status;
-
-    private String upTime;
 }

@@ -19,6 +19,10 @@ public class UserResDto {
     private String empNo;
     @JSONField(name = "DEPT_CODE")
     private String deptCode;
+    /**
+     * 科室名称
+     */
+    private String deptName;
     @JSONField(name = "NAME")
     private String name;
     @JSONField(name = "INPUT_CODE")
@@ -39,6 +43,8 @@ public class UserResDto {
     private String createDate;
     @JSONField(name = "STATUS")
     private String status;
+
+
 
 
 }

@@ -7,5 +7,6 @@ package com.pda.api.service;
  * @Created by AlanZhang
  */
 public interface WardBedService {
-    String findBedByWard(Integer pageNum, String wardCode);
+
+    String findWardBed(Integer pageNum);
 }

@@ -24,7 +24,7 @@ public class AysncServiceImpl implements AsyncService {
 
     @Async
     @Override
-    public void saveUser(List userList) {
-        redisService.setCacheListExpire("user_list",userList,1l, TimeUnit.DAYS);
+    public void saveList(String key,List userList) {
+        redisService.setCacheListExpire(key,userList,1l, TimeUnit.DAYS);
     }
 }

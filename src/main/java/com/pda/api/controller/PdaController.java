@@ -50,15 +50,21 @@ public class PdaController {
         return Result.success(stringObjectMap);
     }
 
-    @GetMapping("/ward/bed/{pageNum}/{wardCode}")
-    public Result wardBed(@PathVariable("pageNum") Integer pageNum ,@PathVariable("wardCode") String wardCode){
-        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(wardBedService.findBedByWard(pageNum,wardCode));
+    @PostMapping("/patient/info")
+    public Result wardBed(@RequestBody PatientReqDto patientReqDto){
+        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(patientService.findPatientInfo(patientReqDto));
         return Result.success(stringObjectMap);
     }
 
-    @PostMapping("/patient/info")
+    @PostMapping("/patient/hospitalization/info")
     public Result patientInfo(@RequestBody PatientReqDto patientReqDto){
-        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(patientService.fintPatientInfo(patientReqDto));
+        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(patientService.fintPatientInhInfo(patientReqDto));
+        return Result.success(stringObjectMap);
+    }
+
+    @GetMapping("/ward/bed/{pageNum}")
+    public Result wardBed(@PathVariable("pageNum") Integer pageNum){
+        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(wardBedService.findWardBed(pageNum));
         return Result.success(stringObjectMap);
     }
 

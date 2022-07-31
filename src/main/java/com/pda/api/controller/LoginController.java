@@ -1,12 +1,11 @@
 package com.pda.api.controller;
 
+import com.pda.api.dto.LoginDto;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.service.LoginService;
 import com.pda.common.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @Classname LoginController
@@ -22,14 +21,12 @@ public class LoginController {
 
     /**
      * 先传emp_no
-     * @param account
-     * @param password
+     * @param loginDto
      * @return
      */
-    @GetMapping("/login/{account}/{password}")
-    public Result login(@PathVariable(name = "account",required = true) String account,
-                        @PathVariable(name = "password",required = true) String password){
-        UserResDto user = loginService.login(account,password);
+    @PostMapping("/login")
+    public Result login(@RequestBody LoginDto loginDto){
+        UserResDto user = loginService.login(loginDto.getAccount(),loginDto.getPassword());
         return Result.success(user);
     }
 }
