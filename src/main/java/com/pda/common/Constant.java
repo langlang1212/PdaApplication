@@ -15,4 +15,8 @@ public class Constant {
     public static final String FAILED = "-100";
 
     public static final String FAILED_MSG = "请求失败!";
+
+    public static final String DOCTOR = "医生";
+
+    public static final String NURSE = "护士";
 }

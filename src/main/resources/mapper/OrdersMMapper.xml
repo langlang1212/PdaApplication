@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pda.domain.mapper.OrdersMMapper">
+
+    <select id="selectWardByOrder" parameterType="string" resultType="com.pda.common.dto.DictDto">
+        select pi.ward_code "key" ,pi.ward_name "value"
+        from (select distinct ward_code from orders_m where NURSE = #{userName}) om
+        inner join (select distinct ward_code from patient_info) pi on om.ward_code = pi.ward_code
+    </select>
+</mapper>

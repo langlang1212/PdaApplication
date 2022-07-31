@@ -6,12 +6,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.ViewPassword;
+import com.pda.api.domain.mapper.OrdersMMapper;
+import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.domain.service.IViewPasswordService;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.service.AsyncService;
 import com.pda.api.service.DeptService;
 import com.pda.api.service.LoginService;
 import com.pda.api.service.UserService;
+import com.pda.common.Constant;
+import com.pda.common.dto.DictDto;
 import com.pda.common.redis.service.RedisService;
 import com.pda.exception.BusinessException;
 import com.pda.utils.PdaToJavaObjectUtil;
@@ -20,6 +24,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +47,10 @@ public class LoginServiceImpl implements LoginService {
     private IViewPasswordService iViewPasswordService;
     @Autowired
     private DeptService deptService;
+    @Autowired
+    private OrdersMMapper ordersMMapper;
+    @Autowired
+    private PatientInfoMapper patientInfoMapper;
     @Override
     public UserResDto login(String account, String password) {
         if(ObjectUtils.isEmpty(checkUser(account,password))){
@@ -59,11 +68,22 @@ public class LoginServiceImpl implements LoginService {
                         userResDto.setDeptName(deptJsonObj.getString("DEPT_NAME"));
                     }
                 }
-                //
+                // 设置病区列表
+                setWards(userResDto);
                 return userResDto;
             }
         }
         return null;
+    }
+
+    private void setWards(UserResDto userResDto) {
+        List<DictDto> wards = new ArrayList<>();
+        if(Constant.DOCTOR.equals(userResDto.getJob())){ //医生
+            wards = patientInfoMapper.selectWardByPatient(userResDto.getUserName());
+        }else if(Constant.NURSE.equals(userResDto.getJob())){ //护士
+            wards = ordersMMapper.selectWardByOrder(userResDto.getUserName());
+        }
+        userResDto.setWards(wards);
     }
 
     private List getUsers(){

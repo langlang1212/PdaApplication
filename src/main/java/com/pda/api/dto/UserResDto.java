@@ -1,7 +1,10 @@
 package com.pda.api.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.pda.common.dto.DictDto;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @Classname UserResDto
@@ -44,7 +47,7 @@ public class UserResDto {
     @JSONField(name = "STATUS")
     private String status;
 
-
+    private List<DictDto> wards;
 
 
 }
