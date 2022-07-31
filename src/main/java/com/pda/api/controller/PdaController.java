@@ -38,6 +38,12 @@ public class PdaController {
     @Autowired
     private CheckService checkService;
 
+    @GetMapping("/test")
+    public Result test(){
+        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(userService.test());
+        return Result.success(stringObjectMap);
+    }
+
     @GetMapping("/user/list/{pageNum}")
     public Result userList(@PathVariable("pageNum") Integer pageNum){
         Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(userService.list(pageNum));

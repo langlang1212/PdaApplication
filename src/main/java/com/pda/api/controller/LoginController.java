@@ -7,6 +7,9 @@ import com.pda.common.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
+import java.util.Map;
+
 /**
  * @Classname LoginController
  * @Description TODO
@@ -26,7 +29,7 @@ public class LoginController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody LoginDto loginDto){
-        UserResDto user = loginService.login(loginDto.getAccount(),loginDto.getPassword());
-        return Result.success(user);
+        UserResDto result = loginService.login(loginDto.getAccount(),loginDto.getPassword());
+        return Result.success(result);
     }
 }

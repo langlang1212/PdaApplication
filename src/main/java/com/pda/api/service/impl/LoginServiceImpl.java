@@ -2,6 +2,7 @@ package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.XmlUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -10,11 +11,9 @@ import com.pda.api.domain.mapper.OrdersMMapper;
 import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.domain.service.IViewPasswordService;
 import com.pda.api.dto.UserResDto;
-import com.pda.api.service.AsyncService;
-import com.pda.api.service.DeptService;
-import com.pda.api.service.LoginService;
-import com.pda.api.service.UserService;
+import com.pda.api.service.*;
 import com.pda.common.Constant;
+import com.pda.common.PdaBaseService;
 import com.pda.common.dto.DictDto;
 import com.pda.common.redis.service.RedisService;
 import com.pda.exception.BusinessException;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Classname LoginServiceImpl
@@ -36,7 +36,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class LoginServiceImpl implements LoginService {
+public class LoginServiceImpl extends PdaBaseService implements LoginService {
     @Autowired
     private UserService userService;
     @Autowired
@@ -51,17 +51,19 @@ public class LoginServiceImpl implements LoginService {
     private OrdersMMapper ordersMMapper;
     @Autowired
     private PatientInfoMapper patientInfoMapper;
+    @Autowired
+    private PdaService pdaService;
     @Override
     public UserResDto login(String account, String password) {
         if(ObjectUtils.isEmpty(checkUser(account,password))){
             throw new BusinessException("用户名或密码错误，请检查用户名或密码!");
         }
-        List userList = getUsers();
+        List userList = pdaService.getUsers();
         for(Object obj : userList){
             UserResDto userResDto = JSONObject.parseObject(JSON.toJSONString(obj)).toJavaObject(UserResDto.class);
             if(account.equals(userResDto.getUserName())){
                 // 设置病区
-                List deptList = getDepts();
+                List deptList = pdaService.getDepts();
                 for(Object deptObj : deptList){
                     JSONObject deptJsonObj = JSONObject.parseObject(JSON.toJSONString(deptObj));
                     if(userResDto.getDeptCode().equals(deptJsonObj.getString("DEPT_CODE"))){
@@ -70,6 +72,9 @@ public class LoginServiceImpl implements LoginService {
                 }
                 // 设置病区列表
                 setWards(userResDto);
+                // 存储当前用户
+                // TODO: 2022-07-31 后续改造成使用token redis存储，暂时用session存储 
+                getSession().setAttribute("user",JSON.toJSONString(userResDto));
                 return userResDto;
             }
         }
@@ -84,28 +89,6 @@ public class LoginServiceImpl implements LoginService {
             wards = ordersMMapper.selectWardByOrder(userResDto.getUserName());
         }
         userResDto.setWards(wards);
-    }
-
-    private List getUsers(){
-        List userList = redisService.getCacheList("user_list");
-        if(CollectionUtil.isEmpty(userList)){
-            String userStr = userService.list(1);
-            userList = PdaToJavaObjectUtil.convertList(userStr);
-            // 存入redis
-            asyncService.saveList("user_list",userList);
-        }
-        return userList;
-    }
-
-    private List getDepts(){
-        List deptList = redisService.getCacheList("dept_list");
-        if(CollectionUtil.isEmpty(deptList)){
-            String deptStr = deptService.list(1);
-            deptList = PdaToJavaObjectUtil.convertList(deptStr);
-            // 存入redis
-            asyncService.saveList("dept_list",deptList);
-        }
-        return deptList;
     }
 
     public ViewPassword checkUser(String account,String password){

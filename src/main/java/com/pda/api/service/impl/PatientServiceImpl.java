@@ -1,15 +1,22 @@
 package com.pda.api.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.dto.PatientAllergyReqDto;
+import com.pda.api.dto.PatientInfoDto;
 import com.pda.api.dto.PatientReqDto;
+import com.pda.api.dto.UserResDto;
 import com.pda.api.service.PatientService;
 import com.pda.common.PdaBaseService;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
+import com.pda.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Classname PatientServiceImpl
@@ -20,6 +27,11 @@ import java.util.Date;
 @Service
 @Slf4j
 public class PatientServiceImpl extends PdaBaseService implements PatientService {
+
+    @Autowired
+    private PatientInfoMapper patientInfoMapper;
+    @Autowired
+    private SecurityUtil securityUtil;
 
     @Override
     public String fintPatientInhInfo(PatientReqDto patientReqDto) {
@@ -108,6 +120,14 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
                 "    </ControlActProcess>\n" +
                 "</root>";
         String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
+        return result;
+    }
+
+    @Override
+    public List<PatientInfoDto> findMyPatient(String keyword,String wardCode) {
+        // 1、拿到当前用户
+        UserResDto currentUser = securityUtil.getCurrentUser();
+        List<PatientInfoDto> result = patientInfoMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
         return result;
     }
 }

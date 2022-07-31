@@ -9,4 +9,7 @@ package com.pda.api.service;
 public interface UserService {
 
     String list(Integer pageNum);
+
+    String test();
+
 }

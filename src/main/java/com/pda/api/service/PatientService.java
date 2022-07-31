@@ -1,7 +1,10 @@
 package com.pda.api.service;
 
 import com.pda.api.dto.PatientAllergyReqDto;
+import com.pda.api.dto.PatientInfoDto;
 import com.pda.api.dto.PatientReqDto;
+
+import java.util.List;
 
 /**
  * @Classname PatientService
@@ -17,4 +20,6 @@ public interface PatientService {
     String fintTzInfo(Integer pageNum, String patientNo,Integer upTime);
 
     String findPatientInfo(PatientReqDto patientReqDto);
+
+    List<PatientInfoDto> findMyPatient(String keyword,String wardCode);
 }

@@ -1,10 +1,12 @@
 package com.pda.api.service.impl;
 
+import com.pda.api.dto.UserResDto;
 import com.pda.api.service.UserService;
 import com.pda.common.PdaBaseService;
 import com.pda.common.config.WsProperties;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
+import com.pda.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ import java.util.Date;
 @Service
 @Slf4j
 public class UserServiceImpl extends PdaBaseService implements UserService {
+
+    @Autowired
+    private SecurityUtil securityUtil;
 
     @Override
     public String list(Integer pageNum) {
@@ -37,18 +42,29 @@ public class UserServiceImpl extends PdaBaseService implements UserService {
                 "\t\t<PageNum>"+pageNum+"</PageNum>\n" +
                 "\t</ControlActProcess>\n" +
                 "</root>";
-        /*AuthHeader authHeader = new AuthHeader();
-        authHeader.setMsgType("MS032");
-        authHeader.setCreateTime(PdaTimeUtil.getCreateTime(new Date()));
 
-        ControlActProcess<String> controlActProcess = new ControlActProcess<>();
-        controlActProcess.setT("<PageNum>1</PageNum>");
+        String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
+        return result;
+    }
 
-        PdaRequest pdaRequest = new PdaRequest();
-        pdaRequest.setAuthHeader(authHeader);
-        pdaRequest.setControlActProcess(controlActProcess);
-
-        String param = PdaParamUtil.getParam(pdaRequest);*/
+    @Override
+    public String test() {
+        UserResDto currentUser = securityUtil.getCurrentUser();
+        String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<root>\n" +
+                "    <AuthHeader>\n" +
+                "        <msgType>TJ622</msgType>\n" +
+                "        <msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId>\n" +
+                "        <createTime>20181229144008</createTime>\n" +
+                "        <sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                "        <targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                "        <sysPassword/>\n" +
+                "    </AuthHeader>\n" +
+                "    <ControlActProcess>\n" +
+                "        <PageNum>1</PageNum>\n" +
+                "        <inp_id>TJ00003791_1</inp_id>\n" +
+                "    </ControlActProcess>\n" +
+                "</root>";
 
         String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
         return result;
