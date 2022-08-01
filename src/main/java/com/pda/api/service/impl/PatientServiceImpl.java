@@ -1,12 +1,17 @@
 package com.pda.api.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.pda.api.domain.entity.PatientInfo;
+import com.pda.api.domain.mapper.OrdersMMapper;
 import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.dto.PatientAllergyReqDto;
 import com.pda.api.dto.PatientInfoDto;
 import com.pda.api.dto.PatientReqDto;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.service.PatientService;
+import com.pda.api.service.PdaService;
+import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
@@ -15,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +37,11 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     @Autowired
     private PatientInfoMapper patientInfoMapper;
     @Autowired
+    private OrdersMMapper ordersMMapper;
+    @Autowired
     private SecurityUtil securityUtil;
+    @Autowired
+    private PdaService pdaService;
 
     @Override
     public String fintPatientInhInfo(PatientReqDto patientReqDto) {
@@ -125,9 +135,32 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
 
     @Override
     public List<PatientInfoDto> findMyPatient(String keyword,String wardCode) {
+        List<PatientInfoDto> result = new ArrayList<>();
         // 1、拿到当前用户
         UserResDto currentUser = securityUtil.getCurrentUser();
-        List<PatientInfoDto> result = patientInfoMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
+        if(Constant.DOCTOR.equals(currentUser.getJob())){  // 医生
+            result = patientInfoMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
+            if(CollectionUtil.isNotEmpty(result)){
+                result.forEach(patientInfo -> {
+                    patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
+                    patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
+                    patientInfo.setDoctorName(currentUser.getName());
+                    patientInfo.setBedDesc(patientInfo.getBedNo()+"床");
+                });
+            }
+        }else if(Constant.NURSE.equals(currentUser.getJob())){
+            result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
+            if(CollectionUtil.isNotEmpty(result)){
+                result.forEach(patientInfo -> {
+                    patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
+                    patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
+                    patientInfo.setDoctorName(pdaService.getUserByCode(patientInfo.getDoctorCode()).getName());
+                    patientInfo.setNurseCode(currentUser.getUserName());
+                    patientInfo.setNurseName(currentUser.getName());
+                    patientInfo.setBedDesc(patientInfo.getBedNo()+"床");
+                });
+            }
+        }
         return result;
     }
 }

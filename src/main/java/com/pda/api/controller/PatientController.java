@@ -23,8 +23,8 @@ public class PatientController {
     private PatientService patientService;
 
     @GetMapping("/mypatient")
-    public Result myPatient(@RequestParam("keyword") String keyword,@RequestParam("wardCode") String wardCode){
+    public Result myPatient(@RequestParam(value = "keyword",required = false) String keyword,@RequestParam("wardCode") String wardCode){
         List<PatientInfoDto> result = patientService.findMyPatient(keyword,wardCode);
-        return Result.success();
+        return Result.success(result);
     }
 }

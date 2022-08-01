@@ -1,6 +1,8 @@
 package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.service.AsyncService;
 import com.pda.api.service.DeptService;
@@ -57,6 +59,18 @@ public class PdaServiceImpl implements PdaService {
     @Override
     public UserResDto getCurrentUser() {
 
+        return null;
+    }
+
+    @Override
+    public UserResDto getUserByCode(String userName) {
+        List users = getUsers();
+        for(Object obj : users) {
+            UserResDto userResDto = JSONObject.parseObject(JSON.toJSONString(obj)).toJavaObject(UserResDto.class);
+            if(userName.equals(userResDto.getUserName())){
+                return userResDto;
+            }
+        }
         return null;
     }
 }

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.pda.domain.mapper.PatientInfoMapper">
+<mapper namespace="com.pda.api.domain.mapper.PatientInfoMapper">
 
+    <select id="findMyPatient" resultType="com.pda.api.dto.PatientInfoDto">
+        select name,sex,inp_no "inpNo",bed_no "bedNo",ward_code "wardCode",
+               ward_name "wardName",doctor_in_charge "doctorCode",date_of_birth "birthDay",admission_date_time "admissionDate",diagnosis
+        from patient_info
+        where ward_code = #{wardCode,jdbcType=VARCHAR} and doctor_in_charge = #{userName}
+        <if test='keyword != null and keyword != ""'>
+            and (name like concat('%',#{keyword},'%') or bed_no = #{keyword} or inp_no like concat('%',#{keyword},'%'))
+        </if>
+    </select>
 </mapper>

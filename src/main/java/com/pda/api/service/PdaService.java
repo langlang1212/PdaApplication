@@ -17,4 +17,6 @@ public interface PdaService {
     public List getDepts();
 
     public UserResDto getCurrentUser();
+
+    public UserResDto getUserByCode(String userName);
 }
