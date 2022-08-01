@@ -2,6 +2,7 @@ package com.pda.api.domain.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pda.api.domain.entity.UserInfo;
+import org.apache.ibatis.annotations.Delete;
 
 /**
  * <p>
@@ -13,4 +14,6 @@ import com.pda.api.domain.entity.UserInfo;
  */
 public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
+    @Delete("delete from user_info")
+    int deleteAll();
 }

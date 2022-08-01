@@ -13,4 +13,5 @@ import com.pda.api.domain.entity.UserInfo;
  */
 public interface IUserInfoService extends IService<UserInfo> {
 
+    void deleteAllUsers();
 }
