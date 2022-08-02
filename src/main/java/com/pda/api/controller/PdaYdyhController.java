@@ -1,7 +1,10 @@
 package com.pda.api.controller;
 
+import com.pda.api.service.PdaService;
 import com.pda.common.Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,11 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
  * @Created by AlanZhang
  */
 @RestController
-@RequestMapping("/mine")
 public class PdaYdyhController {
 
-    @GetMapping("/patients")
-    public Result myPatients(){
-        return Result.success();
+    @Autowired
+    private PdaService pdaService;
+
+    @GetMapping("/bed/{wardCode}/{pageNum}")
+    public Result myPatients(@PathVariable("wardCode") String wardCode,@PathVariable("pageNum") Integer pageNum){
+        return Result.success(pdaService.beds(wardCode,pageNum));
     }
 }

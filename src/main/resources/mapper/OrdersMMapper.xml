@@ -12,7 +12,7 @@
         select pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
         pi.ward_name "wardName",pi.doctor_in_charge "doctorCode",pi.date_of_birth "birthDay",pi.admission_date_time "admissionDate",
         pi.diagnosis
-        from (select distinct patient_id,doctor from orders_m where ward_code = #{wardCode} and nurse = #{userName}) om
+        from (select distinct patient_id from orders_m where ward_code = #{wardCode} and nurse = #{userName}) om
         inner join patient_info pi on om.patient_id = pi.patient_id
         <if test='keyword != null and keyword != ""'>
             where pi.name like concat('%',#{keyword},'%') or pi.bed_no = #{keyword} or pi.inp_no like concat('%',#{keyword},'%')

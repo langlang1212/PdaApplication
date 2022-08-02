@@ -1,6 +1,7 @@
 package com.pda.api.service;
 
 import com.pda.api.dto.UserResDto;
+import com.pda.api.dto.WardBedResDto;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface PdaService {
     public UserResDto getCurrentUser();
 
     public UserResDto getUserByCode(String userName);
+
+    List<WardBedResDto> beds(String wardCode,Integer pageNum);
 }

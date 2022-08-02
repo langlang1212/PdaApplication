@@ -3,8 +3,10 @@ package com.pda.api.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.pda.api.domain.entity.PatientInfo;
+import com.pda.api.domain.entity.UserInfo;
 import com.pda.api.domain.mapper.OrdersMMapper;
 import com.pda.api.domain.mapper.PatientInfoMapper;
+import com.pda.api.domain.service.IUserInfoService;
 import com.pda.api.dto.PatientAllergyReqDto;
 import com.pda.api.dto.PatientInfoDto;
 import com.pda.api.dto.PatientReqDto;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Classname PatientServiceImpl
@@ -42,6 +46,8 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     private SecurityUtil securityUtil;
     @Autowired
     private PdaService pdaService;
+    @Autowired
+    private IUserInfoService iUserInfoService;
 
     @Override
     public String fintPatientInhInfo(PatientReqDto patientReqDto) {
@@ -149,12 +155,14 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
                 });
             }
         }else if(Constant.NURSE.equals(currentUser.getJob())){
+            List<UserInfo> list = iUserInfoService.list();
+            Map<String, String> userMap = list.stream().collect(Collectors.toMap(UserInfo::getUserName, UserInfo::getName));
             result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
             if(CollectionUtil.isNotEmpty(result)){
                 result.forEach(patientInfo -> {
                     patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
                     patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
-                    patientInfo.setDoctorName(pdaService.getUserByCode(patientInfo.getDoctorCode()).getName());
+                    patientInfo.setDoctorName(userMap.get(patientInfo.getDoctorCode()));
                     patientInfo.setNurseCode(currentUser.getUserName());
                     patientInfo.setNurseName(currentUser.getName());
                     patientInfo.setBedDesc(patientInfo.getBedNo()+"床");
