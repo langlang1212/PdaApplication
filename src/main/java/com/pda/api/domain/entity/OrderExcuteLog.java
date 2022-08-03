@@ -63,6 +63,16 @@ public class OrderExcuteLog implements Serializable {
      */
     private LocalDateTime liquidTime;
 
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getPatientId() {
         return patientId;
     }

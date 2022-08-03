@@ -18,4 +18,14 @@
             where pi.name like concat('%',#{keyword},'%') or pi.bed_no = #{keyword} or pi.inp_no like concat('%',#{keyword},'%')
         </if>
     </select>
+
+    <select id="selectDrugDispensionCount" resultType="com.pda.api.dto.DrugDispensingCountResDto">
+        select *
+        from orders_m
+        where patient_id = #{patientId,jdbcType=VARCHAR}
+        <if test='repeatIndicator != null'>
+            repeat_indicator = #{repeatIndicator}
+        </if>
+        and (ADMINISTRATION like concat('续静滴','%') or ADMINISTRATION like concat('静脉输液','%'))
+    </select>
 </mapper>

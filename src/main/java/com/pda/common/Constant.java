@@ -19,4 +19,10 @@ public class Constant {
     public static final String DOCTOR = "医生";
 
     public static final String NURSE = "护士";
+
+    public static final String TODAY = "0";
+
+    public static final String TOMORROW = "1";
+
+    public static final String EXCUTE_TYPE_DRUG = "1";
 }
