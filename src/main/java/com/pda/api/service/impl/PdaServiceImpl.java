@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.pda.api.domain.mapper.OrdersMMapper;
+import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.dto.WardBedResDto;
 import com.pda.api.service.AsyncService;
@@ -15,13 +17,12 @@ import com.pda.common.redis.service.RedisService;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
 import com.pda.utils.PdaToJavaObjectUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * @Created by AlanZhang
  */
 @Service
+@Slf4j
 public class PdaServiceImpl extends PdaBaseService implements PdaService {
     @Autowired
     private RedisService redisService;
@@ -40,6 +42,8 @@ public class PdaServiceImpl extends PdaBaseService implements PdaService {
     private DeptService deptService;
     @Autowired
     private AsyncService asyncService;
+    @Autowired
+    private PatientInfoMapper patientInfoMapper;
     @Override
     public List getUsers() {
         List userList = redisService.getCacheList("user_list");
@@ -89,17 +93,45 @@ public class PdaServiceImpl extends PdaBaseService implements PdaService {
      */
     @Override
     public List<WardBedResDto> beds(String wardCode,Integer pageNum) {
+        // 返回值
+        List<WardBedResDto> result = new ArrayList<>();
+        //
         List bedList = redisService.getCacheList("bed_list");
         if(CollectionUtil.isEmpty(bedList)){
-            String bedStr = getBeds(pageNum);
-            Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(bedStr);
-            Map<String,Object> controlActMap = (Map<String, Object>) stringObjectMap.get("ControlActProcess");
-            Map<String,Object> listInfoMap = (Map<String, Object>) controlActMap.get("ListInfo");
-            bedList = (List) listInfoMap.get("List");
+            while(true){
+                log.info("第："+pageNum+"次查询床位!");
+                String bedStr = getBeds(pageNum);
+                Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(bedStr);
+                Map<String,Object> controlActMap = (Map<String, Object>) stringObjectMap.get("ControlActProcess");
+                String responseText = (String) ((Map<String, Object>)controlActMap.get("Response")).get("Text");
+                if("查询成功！".equals(responseText)){
+                    Map<String,Object> listInfoMap = (Map<String, Object>) controlActMap.get("ListInfo");
+                    bedList.addAll((Collection) listInfoMap.get("List"));
+                    pageNum ++ ;
+                }else{
+                    break;
+                }
+            }
             // 存入redis
             asyncService.saveList("bed_list",bedList);
         }
-        return bedList;
+        // 查找病区的已被占用的床位
+        List<Integer> alreadyBeds = patientInfoMapper.findAlreadyBed(wardCode);
+        bedList.stream().forEach(obj -> {
+            JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(obj));
+            String wardCode1 = jsonObject.getString("ward_code");
+            Integer bedNo = jsonObject.getInteger("bed_no");
+            if(wardCode.equals(wardCode1)){
+                WardBedResDto wardBedResDto = new WardBedResDto();
+                wardBedResDto.setWardCode(wardCode);
+                wardBedResDto.setBedNo(bedNo);
+                if(alreadyBeds.contains(bedNo)){
+                    wardBedResDto.setStatus("1");
+                }
+                result.add(wardBedResDto);
+            }
+        });
+        return result;
     }
 
     private String getBeds(Integer pageNum){
@@ -115,6 +147,7 @@ public class PdaServiceImpl extends PdaBaseService implements PdaService {
                 "    </AuthHeader>\n" +
                 "    <ControlActProcess>\n" +
                 "        <PageNum>"+pageNum+"</PageNum>\n" +
+                "        <PageSize>20000</PageSize>\n" +
                 "    </ControlActProcess>\n" +
                 "</root>";
         String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);

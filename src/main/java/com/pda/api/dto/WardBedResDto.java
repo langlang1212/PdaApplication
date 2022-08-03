@@ -17,5 +17,5 @@ public class WardBedResDto {
     /**
      * 0:没人 1:有人
      */
-    private String status;
+    private String status = "0";
 }

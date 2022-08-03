@@ -23,4 +23,7 @@ public interface PatientInfoMapper extends BaseMapper<PatientInfo> {
     List<DictDto> selectWardByPatient(String userName);
 
     List<PatientInfoDto> findMyPatient(@Param("keyword") String keyword,@Param("wardCode") String wardCode,@Param("userName") String userName);
+
+    @Select("select distinct bed_no from patient_info where ward_code = #{wardCode}")
+    List<Integer> findAlreadyBed(String wardCode);
 }

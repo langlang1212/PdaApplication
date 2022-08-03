@@ -20,8 +20,8 @@ public class PdaYdyhController {
     @Autowired
     private PdaService pdaService;
 
-    @GetMapping("/bed/{wardCode}/{pageNum}")
-    public Result myPatients(@PathVariable("wardCode") String wardCode,@PathVariable("pageNum") Integer pageNum){
-        return Result.success(pdaService.beds(wardCode,pageNum));
+    @GetMapping("/bed/{wardCode}")
+    public Result myPatients(@PathVariable("wardCode") String wardCode){
+        return Result.success(pdaService.beds(wardCode,1));
     }
 }
