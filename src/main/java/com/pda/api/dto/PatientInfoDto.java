@@ -13,6 +13,10 @@ import java.util.Date;
  */
 @Data
 public class PatientInfoDto {
+    /**
+     * 病人id
+     */
+    private String patientId;
 
     private String name;
 

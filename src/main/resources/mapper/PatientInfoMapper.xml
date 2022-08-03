@@ -3,7 +3,7 @@
 <mapper namespace="com.pda.api.domain.mapper.PatientInfoMapper">
 
     <select id="findMyPatient" resultType="com.pda.api.dto.PatientInfoDto">
-        select name,sex,inp_no "inpNo",bed_no "bedNo",ward_code "wardCode",
+        select patient_id "patientId",name,sex,inp_no "inpNo",bed_no "bedNo",ward_code "wardCode",
                ward_name "wardName",doctor_in_charge "doctorCode",date_of_birth "birthDay",admission_date_time "admissionDate",diagnosis
         from patient_info
         where ward_code = #{wardCode,jdbcType=VARCHAR} and doctor_in_charge = #{userName}

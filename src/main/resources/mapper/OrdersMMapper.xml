@@ -9,7 +9,7 @@
     </select>
 
     <select id="findMyPatient" resultType="com.pda.api.dto.PatientInfoDto">
-        select pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
+        select pi.patient_id "patientId",pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
         pi.ward_name "wardName",pi.doctor_in_charge "doctorCode",pi.date_of_birth "birthDay",pi.admission_date_time "admissionDate",
         pi.diagnosis
         from (select distinct patient_id from orders_m where ward_code = #{wardCode} and nurse = #{userName}) om
