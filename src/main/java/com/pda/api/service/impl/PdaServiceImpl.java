@@ -96,6 +96,37 @@ public class PdaServiceImpl extends PdaBaseService implements PdaService {
         // 返回值
         List<WardBedResDto> result = new ArrayList<>();
         //
+        List bedList = getBedList(pageNum);
+        // 查找病区的已被占用的床位
+        getResult(wardCode, result, bedList);
+        return result;
+    }
+
+    private void getResult(String wardCode, List<WardBedResDto> result, List bedList) {
+        List<Integer> alreadyBeds = patientInfoMapper.findAlreadyBed(wardCode);
+        bedList.stream().forEach(obj -> {
+            JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(obj));
+            String wardCode1 = jsonObject.getString("ward_code");
+            Integer bedNo = jsonObject.getInteger("bed_no");
+            if(wardCode.equals(wardCode1)){
+                WardBedResDto wardBedResDto = new WardBedResDto();
+                wardBedResDto.setWardCode(wardCode);
+                wardBedResDto.setBedNo(bedNo);
+                if(alreadyBeds.contains(bedNo)){
+                    wardBedResDto.setStatus("1");
+                }
+                result.add(wardBedResDto);
+            }
+        });
+        Collections.sort(result, new Comparator<WardBedResDto>() {
+            @Override
+            public int compare(WardBedResDto o1, WardBedResDto o2) {
+                return o1.getBedNo() - o2.getBedNo();
+            }
+        });
+    }
+
+    private List getBedList(Integer pageNum) {
         List bedList = redisService.getCacheList("bed_list");
         if(CollectionUtil.isEmpty(bedList)){
             while(true){
@@ -115,23 +146,7 @@ public class PdaServiceImpl extends PdaBaseService implements PdaService {
             // 存入redis
             asyncService.saveList("bed_list",bedList);
         }
-        // 查找病区的已被占用的床位
-        List<Integer> alreadyBeds = patientInfoMapper.findAlreadyBed(wardCode);
-        bedList.stream().forEach(obj -> {
-            JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(obj));
-            String wardCode1 = jsonObject.getString("ward_code");
-            Integer bedNo = jsonObject.getInteger("bed_no");
-            if(wardCode.equals(wardCode1)){
-                WardBedResDto wardBedResDto = new WardBedResDto();
-                wardBedResDto.setWardCode(wardCode);
-                wardBedResDto.setBedNo(bedNo);
-                if(alreadyBeds.contains(bedNo)){
-                    wardBedResDto.setStatus("1");
-                }
-                result.add(wardBedResDto);
-            }
-        });
-        return result;
+        return bedList;
     }
 
     private String getBeds(Integer pageNum){
