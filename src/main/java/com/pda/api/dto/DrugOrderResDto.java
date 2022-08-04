@@ -26,8 +26,7 @@ public class DrugOrderResDto {
      */
     private String frequency;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date excuteDate;
+    private String excuteDate;
 
     private List<DrugSubOrderDto> subOrderDtoList;
 

@@ -5,6 +5,7 @@ import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.api.dto.DrugOrderResDto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Classname DrugCheckService
@@ -15,5 +16,5 @@ import java.util.List;
 public interface DrugCheckService {
     DrugDispensingCountResDto drugDispensionCount(DrugDispensionReqDto dto);
 
-    List<DrugOrderResDto> drugOrders(DrugDispensionReqDto dto);
+    Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto);
 }

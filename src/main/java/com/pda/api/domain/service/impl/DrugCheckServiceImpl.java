@@ -13,6 +13,7 @@ import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.dto.DrugDispensingCountResDto;
 import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.api.dto.DrugOrderResDto;
+import com.pda.api.dto.DrugSubOrderDto;
 import com.pda.api.service.DrugService;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
@@ -22,8 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -109,7 +109,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
      * @return
      */
     @Override
-    public List<DrugOrderResDto> drugOrders(DrugDispensionReqDto dto) {
+    public Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto) {
         // 2、查询出所有医嘱 今天 or  明天
         Date endTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
@@ -121,18 +121,51 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             Date now = getTomorrowTestTime();
             endTime = DateUtil.getEndDateOfTomorrow(now);
         }
+        List<DrugOrderResDto> longTimeOrder = new ArrayList<>();
+        List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
         List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),endTime);
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 3、查出已经核查过该病人的医嘱
             List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos,Constant.EXCUTE_TYPE_DRUG);
-            if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
-                orders.forEach(order -> {
-                    Integer orderNo = order.getOrderNo();
+
+            Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
+            for(Integer orderNo : orderGroup.keySet()){
+                List<OrdersM> ordersMS = orderGroup.get(orderNo);
+                OrdersM firstSubOrder = ordersMS.get(0);
+                // 第一步初始化
+                DrugOrderResDto drugOrderResDto = new DrugOrderResDto();
+                drugOrderResDto.setPatientId(firstSubOrder.getPatientId());
+                drugOrderResDto.setOrderNo(orderNo);
+                drugOrderResDto.setAdministration(firstSubOrder.getAdministration());
+                drugOrderResDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
+                drugOrderResDto.setExcuteDate(DateUtil.getShortDate(endTime));
+
+                List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
+                ordersMS.forEach(ordersM -> {
+                    DrugSubOrderDto drugSubOrderDto = new DrugSubOrderDto();
+                    drugSubOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
+                    drugSubOrderDto.setOrderText(ordersM.getOrderText());
+                    drugSubOrderDto.setDosage(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
+
+                    subOrderDtoList.add(drugSubOrderDto);
                 });
+                drugOrderResDto.setSubOrderDtoList(subOrderDtoList);
+                if(CHANG == firstSubOrder.getRepeatIndicator()){
+                    longTimeOrder.add(drugOrderResDto);
+                }else{
+                    shortTimeOrder.add(drugOrderResDto);
+                }
             }
         }
-        return null;
+        Map<String,List<DrugOrderResDto>> map = new HashMap<>();
+        if(CollectionUtil.isNotEmpty(longTimeOrder)){
+            map.put("longOrder",longTimeOrder);
+        }
+        if(CollectionUtil.isNotEmpty(shortTimeOrder)){
+            map.put("shortOrder",shortTimeOrder);
+        }
+        return map;
     }
 
 

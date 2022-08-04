@@ -1677,4 +1677,14 @@ public class DateUtil {
         String localTime = df.format(localDateTime);
         return localTime;
     }
+
+    /**
+     * yyyy-MM-dd
+     * @param date
+     * @return
+     */
+    public static String getShortDate(Date date){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(date);
+    }
 }
