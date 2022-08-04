@@ -30,4 +30,9 @@ public class DrugCheckController {
     public Result DrugDispensionCheck(@Validated @RequestBody DrugDispensionReqDto dto){
         return Result.success(drugCheckService.drugDispensionCount(dto));
     }
+
+    @PostMapping("/drug/order")
+    public Result DrugOrders(@Validated @RequestBody DrugDispensionReqDto dto){
+        return Result.success(drugCheckService.drugOrders(dto));
+    }
 }

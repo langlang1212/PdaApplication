@@ -12,6 +12,7 @@ import com.pda.api.domain.service.DrugCheckService;
 import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.dto.DrugDispensingCountResDto;
 import com.pda.api.dto.DrugDispensionReqDto;
+import com.pda.api.dto.DrugOrderResDto;
 import com.pda.api.service.DrugService;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
@@ -42,24 +43,27 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     @Autowired
     private OrderExcuteLogMapper orderExcuteLogMapper;
 
+    /**
+     * 摆药统计
+     * @param dto
+     * @return
+     */
     @Override
     public DrugDispensingCountResDto drugDispensionCount(DrugDispensionReqDto dto) {
         // 1、结果
         DrugDispensingCountResDto result = new DrugDispensingCountResDto();
         // 2、查询出所有医嘱 今天 or  明天
-        Date startTime,endTime;
+        Date endTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         //Date now = new Date();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
             Date now = getTestTime();
-            startTime = DateUtil.getStartDateOfDay(now);
             endTime = DateUtil.getEndDateOfDay(now);
         }else{
             Date now = getTomorrowTestTime();
-            startTime = DateUtil.getStartDateOfTomorrow(now);
             endTime = DateUtil.getEndDateOfTomorrow(now);
         }
-        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),startTime,endTime);
+        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),endTime);
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 3、查出已经核查过该病人的医嘱
@@ -93,10 +97,42 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     }
                 });
             }
+            result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
+            result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
         }
-        result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
-        result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
         return result;
+    }
+
+    /**
+     * 摆药明细
+     * @param dto
+     * @return
+     */
+    @Override
+    public List<DrugOrderResDto> drugOrders(DrugDispensionReqDto dto) {
+        // 2、查询出所有医嘱 今天 or  明天
+        Date endTime;
+        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
+        //Date now = new Date();
+        if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
+            Date now = getTestTime();
+            endTime = DateUtil.getEndDateOfDay(now);
+        }else{
+            Date now = getTomorrowTestTime();
+            endTime = DateUtil.getEndDateOfTomorrow(now);
+        }
+        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),endTime);
+        if(CollectionUtil.isNotEmpty(orders)){
+            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
+            // 3、查出已经核查过该病人的医嘱
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos,Constant.EXCUTE_TYPE_DRUG);
+            if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+                orders.forEach(order -> {
+                    Integer orderNo = order.getOrderNo();
+                });
+            }
+        }
+        return null;
     }
 
 
