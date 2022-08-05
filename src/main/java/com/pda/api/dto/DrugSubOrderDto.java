@@ -16,4 +16,6 @@ public class DrugSubOrderDto {
     private String orderText;
 
     private String dosage;
+
+    private String administation;
 }

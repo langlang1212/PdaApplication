@@ -20,7 +20,6 @@ public class DrugOrderResDto {
 
     private Integer orderNo;
 
-    private String administration;
     /**
      * 例如: 1/日
      */

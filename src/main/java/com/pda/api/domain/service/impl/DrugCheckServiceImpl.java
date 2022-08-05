@@ -1,6 +1,7 @@
 package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -17,6 +18,7 @@ import com.pda.api.dto.DrugSubOrderDto;
 import com.pda.api.service.DrugService;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
+import com.pda.utils.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -111,19 +113,25 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     @Override
     public Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto) {
         // 2、查询出所有医嘱 今天 or  明天
-        Date endTime;
+        Date queryTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        //Date now = new Date();
+        // 今天开始
+        Date startOfToday = new Date();
+        // 明天开始
+        Date startOrTomorrow = DateUtil.getStartDateOfTomorrow(startOfToday);
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            Date now = getTestTime();
-            endTime = DateUtil.getEndDateOfDay(now);
+            queryTime = DateUtil.getStartDateOfDay(startOfToday);
         }else{
-            Date now = getTomorrowTestTime();
-            endTime = DateUtil.getEndDateOfTomorrow(now);
+            queryTime = DateUtil.getStartDateOfTomorrow(startOfToday);
         }
         List<DrugOrderResDto> longTimeOrder = new ArrayList<>();
         List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
-        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),endTime);
+        /**
+         * 1、取今天的医嘱，今天早上0点之前开的医嘱，并且结束时间为null的，都有效
+         * 2、取明天的医嘱，明天早上0点之前开的医嘱，并且结束时间为null的，都有效
+         * 所以日期应该取明天早上0点
+         */
+        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),queryTime);
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 3、查出已经核查过该病人的医嘱
@@ -133,19 +141,27 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
                 OrdersM firstSubOrder = ordersMS.get(0);
+                if(firstSubOrder.getStartDateTime().isAfter(LocalDateUtils.date2LocalDateTime(startOfToday)) && ObjectUtil.isNull(firstSubOrder.getStopDateTime())){ // 今天
+
+                }
+
+                if(firstSubOrder.getStartDateTime().isAfter(LocalDateUtils.date2LocalDateTime(startOrTomorrow)) && ObjectUtil.isNull(firstSubOrder.getStopDateTime())){ // 明天
+
+                }
                 // 第一步初始化
                 DrugOrderResDto drugOrderResDto = new DrugOrderResDto();
                 drugOrderResDto.setPatientId(firstSubOrder.getPatientId());
                 drugOrderResDto.setOrderNo(orderNo);
-                drugOrderResDto.setAdministration(firstSubOrder.getAdministration());
                 drugOrderResDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
-                drugOrderResDto.setExcuteDate(DateUtil.getShortDate(endTime));
+                // 先屏蔽不抱错
+                //drugOrderResDto.setExcuteDate(DateUtil.getShortDate(endTime));
 
                 List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
                 ordersMS.forEach(ordersM -> {
                     DrugSubOrderDto drugSubOrderDto = new DrugSubOrderDto();
                     drugSubOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
                     drugSubOrderDto.setOrderText(ordersM.getOrderText());
+                    drugSubOrderDto.setAdministation(ordersM.getAdministration());
                     drugSubOrderDto.setDosage(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
 
                     subOrderDtoList.add(drugSubOrderDto);
