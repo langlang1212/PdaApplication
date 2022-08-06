@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,9 @@ public class DrugOrderResDto {
     private String frequency;
 
     private String excuteDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
+    private LocalDateTime startDateTime;
 
     private List<DrugSubOrderDto> subOrderDtoList;
 

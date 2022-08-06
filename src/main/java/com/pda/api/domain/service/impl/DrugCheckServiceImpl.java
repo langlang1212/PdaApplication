@@ -172,6 +172,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                 drugOrderResDto.setOrderNo(orderNo);
                 drugOrderResDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
                 drugOrderResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
+                drugOrderResDto.setStartDateTime(firstSubOrder.getStartDateTime());
 
                 List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
                 ordersMS.forEach(ordersM -> {
@@ -180,6 +181,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     drugSubOrderDto.setOrderText(ordersM.getOrderText());
                     drugSubOrderDto.setAdministation(ordersM.getAdministration());
                     drugSubOrderDto.setDosage(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
+                    drugSubOrderDto.setFreqDetail(ordersM.getFreqDetail());
 
                     subOrderDtoList.add(drugSubOrderDto);
                 });
