@@ -49,11 +49,27 @@ public class UserServiceImpl extends PdaBaseService implements UserService {
         return result;
     }
 
-    @Autowired
-    private OrdersMMapper ordersMMapper;
     @Override
     public String test() {
-        List<OrdersM> ordersMS = ordersMMapper.selectList(new QueryWrapper<>());
-        return JSON.toJSONString(ordersMS);
+        String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<root>\n" +
+                "\t<AuthHeader>\n" +
+                "\t\t<msgType>TJ606</msgType>\n" +
+                "\t\t<msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId>\n" +
+                "\t\t<createTime>20181229153806</createTime>\n" +
+                "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                "\t\t<sysPassword/>\n" +
+                "\t</AuthHeader>\n" +
+                "\t<ControlActProcess>\n" +
+                "\t\t<patient_id>0000047548</patient_id>\n" +
+                "\t\t<visit_id>1</visit_id>\n" +
+                "\t\t<start_time>2022-07-01 00:00:00</start_time>\n" +
+                "\t\t<end_time>2022-08-05 00:00:00</end_time>\n" +
+                "\t</ControlActProcess>\n" +
+                "</root>";
+
+        String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
+        return result;
     }
 }

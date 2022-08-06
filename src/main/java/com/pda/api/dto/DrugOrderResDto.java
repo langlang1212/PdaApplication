@@ -38,6 +38,9 @@ public class DrugOrderResDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
     private LocalDateTime startDateTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
+    private LocalDateTime stopDateTime;
+
     private List<DrugSubOrderDto> subOrderDtoList;
 
     private List<OrderExcuteLog> orderExcuteLogs;

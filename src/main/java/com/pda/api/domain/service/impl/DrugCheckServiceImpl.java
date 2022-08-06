@@ -181,6 +181,8 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                         drugOrderResDto.setSchedule(Arrays.asList(split));
                     }
                 }
+                drugOrderResDto.setStopDateTime(firstSubOrder.getStopDateTime());
+
                 List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
                 ordersMS.forEach(ordersM -> {
                     DrugSubOrderDto drugSubOrderDto = new DrugSubOrderDto();
