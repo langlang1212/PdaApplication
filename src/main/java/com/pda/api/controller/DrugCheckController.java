@@ -1,14 +1,19 @@
-package com.pda.api.domain.controller;
+package com.pda.api.controller;
 
 import com.pda.api.domain.service.DrugCheckService;
+import com.pda.api.dto.DrugCheckReqDto;
 import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.common.Result;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @Classname DrugCheckController
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Created by AlanZhang
  */
 @RestController
+@Api(tags = "摆药核查模块")
 public class DrugCheckController {
 
     @Autowired
@@ -26,13 +32,22 @@ public class DrugCheckController {
      * 摆药核查  0:今天 1:明天
      * @return
      */
+    @ApiOperation(value = "摆药核查统计")
     @PostMapping("/drug/dispension/count")
     public Result DrugDispensionCheck(@Validated @RequestBody DrugDispensionReqDto dto){
         return Result.success(drugCheckService.drugDispensionCount(dto));
     }
 
+    @ApiOperation(value = "摆药核查明细")
     @PostMapping("/drug/order")
     public Result DrugOrders(@Validated @RequestBody DrugDispensionReqDto dto){
         return Result.success(drugCheckService.drugOrders(dto));
+    }
+
+    @ApiOperation(value = "摆药核查")
+    @PostMapping
+    public Result DrugCheck(@RequestBody List<DrugCheckReqDto> drugCheckReqDtoList){
+        drugCheckService.check(drugCheckReqDtoList);
+        return Result.success();
     }
 }

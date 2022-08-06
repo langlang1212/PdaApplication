@@ -1,4 +1,4 @@
-package com.pda.api.domain.controller;
+package com.pda.api.controller;
 
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Controller;
  * </p>
  *
  * @author baomidou
- * @since 2022-08-03
+ * @since 2022-08-06
  */
 @Controller
-@RequestMapping("/domain/order-excute-log")
-public class OrderExcuteLogController {
+@RequestMapping("/domain/view-password")
+public class ViewPasswordController {
 
 }

@@ -28,6 +28,6 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
     DrugDispensingCountResDto selectDrugDispensionCount(DrugDispensionReqDto dto);
 
-    @Select("select * from orders_m where patient_id = #{patientId} and start_date_time <= #{endTime}")
+    @Select("select * from orders_m where patient_id = #{patientId} and start_date_time <= #{endTime} order by order_no ")
     List<OrdersM> listByPatientId(@Param("patientId") String patientId, @Param("endTime") Date endTime);
 }

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class LocalDateUtils {
@@ -67,6 +68,31 @@ public class LocalDateUtils {
             return null;
         }
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    /**
+     * 字符串转LocalDate yyyy-MM-dd
+     * @param str
+     * @return
+     */
+    public static LocalDate str2LocalDate(String str){
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate dateParam = LocalDate.parse(str, df);
+        return dateParam;
+    }
+
+    /**
+     * @Description: LocalDateTime转String
+     * @Date: 2021/3/16
+     *
+     * @param
+     * @return
+     * @author mj
+     */
+    public static String localDateTime2Str(LocalDateTime localDateTime){
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String localTime = df.format(localDateTime);
+        return localTime;
     }
 
 }

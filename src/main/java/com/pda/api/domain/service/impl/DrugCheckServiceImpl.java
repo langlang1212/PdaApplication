@@ -4,20 +4,27 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.service.DrugCheckService;
-import com.pda.api.dto.DrugDispensingCountResDto;
-import com.pda.api.dto.DrugDispensionReqDto;
-import com.pda.api.dto.DrugOrderResDto;
-import com.pda.api.dto.DrugSubOrderDto;
+import com.pda.api.domain.service.IOrderExcuteLogService;
+import com.pda.api.dto.*;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.common.Constant;
+import com.pda.common.ExcuteStatusEnum;
+import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
+import com.pda.utils.LocalDateUtils;
+import com.pda.utils.SecurityUtil;
+import io.swagger.annotations.Example;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +44,10 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     private OrdersMMapper ordersMMapper;
     @Autowired
     private OrderExcuteLogMapper orderExcuteLogMapper;
+    @Autowired
+    private IOrderExcuteLogService iOrderExcuteLogService;
+    @Autowired
+    private SecurityUtil securityUtil;
 
     /**
      * 摆药统计
@@ -47,18 +58,16 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     public DrugDispensingCountResDto drugDispensionCount(DrugDispensionReqDto dto) {
         // 1、结果
         DrugDispensingCountResDto result = new DrugDispensingCountResDto();
-        // 2、查询出所有医嘱 今天 or  明天
-        Date endTime;
+        Date queryTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        //Date now = new Date();
+        //Date today = new Date();
+        Date today = getTestTime();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            Date now = getTestTime();
-            endTime = DateUtil.getEndDateOfDay(now);
+            queryTime = DateUtil.getStartDateOfDay(today);
         }else{
-            Date now = getTomorrowTestTime();
-            endTime = DateUtil.getEndDateOfTomorrow(now);
+            queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
-        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),endTime);
+        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),queryTime);
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 3、查出已经核查过该病人的医嘱
@@ -70,16 +79,17 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     }else if(LINSHI == order.getRepeatIndicator()){
                         result.setTempTotalBottles(result.getTempTotalBottles() + 1);
                     }
-
-                    orderExcuteLogs.forEach(orderExcuteLog -> {
-                        if(order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getOrderSubNo() == orderExcuteLog.getOrderSubNo()){
-                            if(CHANG == order.getRepeatIndicator()){
-                                result.setCheckedBottles(result.getCheckedBottles() + 1);
-                            }else if(LINSHI == order.getRepeatIndicator()){
-                                result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
+                    if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+                        orderExcuteLogs.forEach(orderExcuteLog -> {
+                            if(order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getOrderSubNo() == orderExcuteLog.getOrderSubNo()){
+                                if(CHANG == order.getRepeatIndicator()){
+                                    result.setCheckedBottles(result.getCheckedBottles() + 1);
+                                }else if(LINSHI == order.getRepeatIndicator()){
+                                    result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 });
             }else{
                 result.setCheckedBottles(0);
@@ -105,17 +115,14 @@ public class DrugCheckServiceImpl implements DrugCheckService {
      */
     @Override
     public Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto) {
-        // 2、查询出所有医嘱 今天 or  明天
         Date queryTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        // 今天开始
-        Date startOfToday = new Date();
-        // 明天开始
-        Date startOrTomorrow = DateUtil.getStartDateOfTomorrow(startOfToday);
+        //Date today = new Date();
+        Date today = getTestTime();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getStartDateOfDay(startOfToday);
+            queryTime = DateUtil.getStartDateOfDay(today);
         }else{
-            queryTime = DateUtil.getStartDateOfTomorrow(startOfToday);
+            queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
         List<DrugOrderResDto> longTimeOrder = new ArrayList<>();
         List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
@@ -153,6 +160,16 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     subOrderDtoList.add(drugSubOrderDto);
                 });
                 drugOrderResDto.setSubOrderDtoList(subOrderDtoList);
+
+                List<OrderExcuteLog> checkedLog = new ArrayList<>();
+                if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+                    orderExcuteLogs.forEach(orderExcuteLog -> {
+                        if(firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo()){
+                            checkedLog.add(orderExcuteLog);
+                        }
+                    });
+                }
+                drugOrderResDto.setOrderExcuteLogs(checkedLog);
                 if(CHANG == firstSubOrder.getRepeatIndicator()){
                     longTimeOrder.add(drugOrderResDto);
                 }else{
@@ -170,19 +187,44 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         return map;
     }
 
-
-    private Date getTestTime(){
-        String str = "2022-07-28 12:32:54";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            return sdf.parse(str);
-        } catch (ParseException e) {
-            e.printStackTrace();
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void check(List<DrugCheckReqDto> drugCheckReqDtoList) {
+        if(CollectionUtil.isEmpty(drugCheckReqDtoList)){
+            throw new BusinessException("需要核查的摆药不能为空!");
         }
-        return null;
+        // 登陆人
+        UserResDto currentUser = securityUtil.getCurrentUser();
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
+        // 插入核查日志
+        List<OrderExcuteLog> addLog = initAddLog(drugCheckReqDtoList, currentUser, now);
+        // 插入
+        if(CollectionUtil.isNotEmpty(addLog)){
+            iOrderExcuteLogService.saveBatch(addLog);
+        }
     }
 
-    private Date getTomorrowTestTime(){
+    private List<OrderExcuteLog> initAddLog(List<DrugCheckReqDto> drugCheckReqDtoList, UserResDto currentUser, LocalDateTime now) {
+        List<OrderExcuteLog> addLog = new ArrayList<>();
+        drugCheckReqDtoList.forEach(drugCheckReqDto -> {
+            OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
+            BeanUtils.copyProperties(drugCheckReqDto,orderExcuteLog);
+            orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(drugCheckReqDto.getShouldExcuteDate()));
+            orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
+            orderExcuteLog.setExcuteUserName(currentUser.getName());
+            orderExcuteLog.setExcuteStatus(ExcuteStatusEnum.PREPARED.code());
+            orderExcuteLog.setDrugDispensingStatus("1");
+            orderExcuteLog.setDrugDispensionCheckTime(now);
+            orderExcuteLog.setType(Constant.EXCUTE_TYPE_DRUG);
+
+            addLog.add(orderExcuteLog);
+        });
+        return addLog;
+    }
+
+
+    private Date getTestTime(){
         String str = "2022-07-29 12:32:54";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {

@@ -1648,35 +1648,6 @@ public class DateUtil {
         return newDate;
     }
 
-    /**
-     * @Description:LocalDateTime转date
-     * @Date: 2021/3/3
-     *
-     * @Param [localDateTime]
-     * @return java.util.Date
-     * @author 谭思涛
-     */
-    public static Date localDateTime2Date( LocalDateTime localDateTime){
-        ZoneId zoneId = ZoneId.systemDefault();
-        ZonedDateTime zdt = localDateTime.atZone(zoneId);//Combines this date-time with a time-zone to create a  ZonedDateTime.
-        Date date = Date.from(zdt.toInstant());
-        return date;
-    }
-
-
-    /**
-     * @Description: LocalDateTime转String
-     * @Date: 2021/3/16
-     *
-     * @param
-     * @return
-     * @author mj
-     */
-    public static String localDateTime2Str(LocalDateTime localDateTime){
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String localTime = df.format(localDateTime);
-        return localTime;
-    }
 
     /**
      * yyyy-MM-dd

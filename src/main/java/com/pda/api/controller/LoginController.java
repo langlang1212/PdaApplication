@@ -4,6 +4,8 @@ import com.pda.api.dto.LoginDto;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.service.LoginService;
 import com.pda.common.Result;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +19,7 @@ import java.util.Map;
  * @Created by AlanZhang
  */
 @RestController
+@Api(tags = "登陆模块")
 public class LoginController {
 
     @Autowired
@@ -27,6 +30,7 @@ public class LoginController {
      * @param loginDto
      * @return
      */
+    @ApiOperation(value = "登陆")
     @PostMapping("/login")
     public Result login(@RequestBody LoginDto loginDto){
         UserResDto result = loginService.login(loginDto.getAccount(),loginDto.getPassword());

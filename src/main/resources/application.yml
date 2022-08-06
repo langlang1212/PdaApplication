@@ -17,6 +17,13 @@ spring:
       url: jdbc:mysql://47.108.251.176:3306/pda-ydyh?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=true
       username: mysql
       password: 123456
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  level:
+    com.pda.api.mapper.*: debug

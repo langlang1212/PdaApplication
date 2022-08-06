@@ -6,6 +6,7 @@ package com.pda.common.datasource;
  * @Date 2022-08-06 9:28
  * @Created by AlanZhang
  */
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;

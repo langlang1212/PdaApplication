@@ -1,4 +1,4 @@
-package com.pda.api.domain.controller;
+package com.pda.api.controller;
 
 
 import org.springframework.stereotype.Controller;
