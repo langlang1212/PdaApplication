@@ -22,8 +22,8 @@ import java.util.List;
  * @Created by AlanZhang
  */
 @RestController
-@Api(tags = "摆药核查模块")
-public class DrugCheckController {
+@Api(tags = "摆药核查模块、配液核对模块")
+public class CheckController {
 
     @Autowired
     private DrugCheckService drugCheckService;
