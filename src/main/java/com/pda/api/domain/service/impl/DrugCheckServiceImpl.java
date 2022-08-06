@@ -67,45 +67,47 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         }else{
             queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
-        List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),queryTime);
+        List<OrdersM> longOrders = ordersMMapper.listByPatientId(dto.getPatientId(),queryTime);
+        handleOrder(dto, result, longOrders,CHANG);
+        // 处理临时医嘱
+        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
+        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+        List<OrdersM> shortOrders = ordersMMapper.listByPatientIdShort(dto.getPatientId(),startDateOfDay,endDateOfDay);
+        handleOrder(dto, result, shortOrders,LINSHI);
+        // 设置剩余的
+        result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
+        result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
+        return result;
+    }
+
+    private void handleOrder(DrugDispensionReqDto dto, DrugDispensingCountResDto result, List<OrdersM> orders,Integer repeatRedicator) {
         if(CollectionUtil.isNotEmpty(orders)){
+            // 总条数
+            if(CHANG == repeatRedicator){
+                result.setTotalBottles(orders.size());
+            }else{
+                result.setTempTotalBottles(orders.size());
+            }
+            // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            // 3、查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos,Constant.EXCUTE_TYPE_DRUG);
+            // 查出已经核查过该病人的医嘱
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos, Constant.EXCUTE_TYPE_DRUG);
             if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                 orders.forEach(order -> {
-                    if(CHANG == order.getRepeatIndicator()){
-                        result.setTotalBottles(result.getTotalBottles() + 1);
-                    }else if(LINSHI == order.getRepeatIndicator()){
-                        result.setTempTotalBottles(result.getTempTotalBottles() + 1);
-                    }
                     if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                         orderExcuteLogs.forEach(orderExcuteLog -> {
                             if(order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getOrderSubNo() == orderExcuteLog.getOrderSubNo()){
-                                if(CHANG == order.getRepeatIndicator()){
+                                if(CHANG == repeatRedicator){
                                     result.setCheckedBottles(result.getCheckedBottles() + 1);
-                                }else if(LINSHI == order.getRepeatIndicator()){
+                                }else{
                                     result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
                                 }
                             }
                         });
                     }
                 });
-            }else{
-                result.setCheckedBottles(0);
-                result.setTempCheckedBottles(0);
-                orders.forEach(order -> {
-                    if(CHANG == order.getRepeatIndicator()){
-                        result.setTotalBottles(result.getTotalBottles() + 1);
-                    }else if(LINSHI == order.getRepeatIndicator()){
-                        result.setTempTotalBottles(result.getTempTotalBottles() + 1);
-                    }
-                });
             }
-            result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
-            result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
         }
-        return result;
     }
 
     /**
@@ -125,17 +127,39 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
         List<DrugOrderResDto> longTimeOrder = new ArrayList<>();
-        List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
         /**
          * 1、取今天的医嘱，今天早上0点之前开的医嘱，并且结束时间为null的，都有效
          * 2、取明天的医嘱，明天早上0点之前开的医嘱，并且结束时间为null的，都有效
          * 所以日期应该取明天早上0点
          */
+        // 长期
         List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),queryTime);
+        handleOrderInfos(dto, queryTime, longTimeOrder, orders);
+        // 临时
+        // 获取临时医嘱的时间范围
+        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
+        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+        // 临时医嘱返回值
+        List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
+        // 查询临时医嘱
+        List<OrdersM> shortOrders = ordersMMapper.listByPatientIdShort(dto.getPatientId(),startDateOfDay,endDateOfDay);
+        handleOrderInfos(dto, today, shortTimeOrder, shortOrders);
+
+        Map<String,List<DrugOrderResDto>> map = new HashMap<>();
+        if(CollectionUtil.isNotEmpty(longTimeOrder)){
+            map.put("longOrder",longTimeOrder);
+        }
+        if(CollectionUtil.isNotEmpty(shortTimeOrder)){
+            map.put("shortOrder",shortTimeOrder);
+        }
+        return map;
+    }
+
+    private void handleOrderInfos(DrugDispensionReqDto dto, Date queryTime, List<DrugOrderResDto> resOrders, List<OrdersM> orders) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 3、查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos,Constant.EXCUTE_TYPE_DRUG);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos, Constant.EXCUTE_TYPE_DRUG);
 
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             for(Integer orderNo : orderGroup.keySet()){
@@ -170,21 +194,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     });
                 }
                 drugOrderResDto.setOrderExcuteLogs(checkedLog);
-                if(CHANG == firstSubOrder.getRepeatIndicator()){
-                    longTimeOrder.add(drugOrderResDto);
-                }else{
-                    shortTimeOrder.add(drugOrderResDto);
-                }
+                resOrders.add(drugOrderResDto);
             }
         }
-        Map<String,List<DrugOrderResDto>> map = new HashMap<>();
-        if(CollectionUtil.isNotEmpty(longTimeOrder)){
-            map.put("longOrder",longTimeOrder);
-        }
-        if(CollectionUtil.isNotEmpty(shortTimeOrder)){
-            map.put("shortOrder",shortTimeOrder);
-        }
-        return map;
     }
 
     @Transactional(rollbackFor = Exception.class)
