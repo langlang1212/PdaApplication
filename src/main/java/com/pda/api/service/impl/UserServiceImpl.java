@@ -28,9 +28,6 @@ import java.util.List;
 @Slf4j
 public class UserServiceImpl extends PdaBaseService implements UserService {
 
-    @Autowired
-    private SecurityUtil securityUtil;
-
     @Override
     public String list(Integer pageNum) {
         String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

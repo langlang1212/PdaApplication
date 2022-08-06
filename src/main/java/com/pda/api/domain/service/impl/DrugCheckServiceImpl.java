@@ -44,8 +44,6 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     private OrderExcuteLogMapper orderExcuteLogMapper;
     @Autowired
     private IOrderExcuteLogService iOrderExcuteLogService;
-    @Autowired
-    private SecurityUtil securityUtil;
 
     /**
      * 摆药统计
@@ -207,7 +205,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             throw new BusinessException("需要核查的摆药不能为空!");
         }
         // 登陆人
-        UserResDto currentUser = securityUtil.getCurrentUser();
+        UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
         // 插入核查日志

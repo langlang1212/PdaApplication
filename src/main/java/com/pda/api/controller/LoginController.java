@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,7 +34,7 @@ public class LoginController {
     @ApiOperation(value = "登陆")
     @PostMapping("/login")
     public Result login(@RequestBody LoginDto loginDto){
-        UserResDto result = loginService.login(loginDto.getAccount(),loginDto.getPassword());
+        Map<String,Object> result = loginService.login(loginDto.getAccount(),loginDto.getPassword());
         return Result.success(result);
     }
 }

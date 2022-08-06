@@ -40,8 +40,6 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     @Autowired
     private OrdersMMapper ordersMMapper;
     @Autowired
-    private SecurityUtil securityUtil;
-    @Autowired
     private PdaService pdaService;
     @Autowired
     private IUserInfoService iUserInfoService;
@@ -140,7 +138,7 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     public List<PatientInfoDto> findMyPatient(String keyword,String wardCode) {
         List<PatientInfoDto> result = new ArrayList<>();
         // 1、拿到当前用户
-        UserResDto currentUser = securityUtil.getCurrentUser();
+        UserResDto currentUser = SecurityUtil.getCurrentUser();
         if(Constant.DOCTOR.equals(currentUser.getJob())){  // 医生
             result = patientInfoMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
             if(CollectionUtil.isNotEmpty(result)){

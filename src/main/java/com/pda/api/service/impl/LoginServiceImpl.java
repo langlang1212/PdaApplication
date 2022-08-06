@@ -1,5 +1,6 @@
 package com.pda.api.service.impl;
 
+import cn.hutool.crypto.digest.DigestUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -13,6 +14,7 @@ import com.pda.api.service.*;
 import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
 import com.pda.common.dto.DictDto;
+import com.pda.common.redis.service.RedisService;
 import com.pda.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -20,7 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Classname LoginServiceImpl
@@ -40,9 +45,9 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     @Autowired
     private PdaService pdaService;
     @Autowired
-    private ViewPasswordMapper viewPasswordMapper;
+    private RedisService redisService;
     @Override
-    public UserResDto login(String account, String password) {
+    public Map<String,Object> login(String account, String password) {
         if(ObjectUtils.isEmpty(checkUser(account,password))){
             throw new BusinessException("用户名或密码错误，请检查用户名或密码!");
         }
@@ -61,9 +66,13 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
                 // 设置病区列表
                 setWards(userResDto);
                 // 存储当前用户
-                // TODO: 2022-07-31 后续改造成使用token redis存储，暂时用session存储 
-                getSession().setAttribute("user",JSON.toJSONString(userResDto));
-                return userResDto;
+                Map<String,Object> map = new HashMap<>();
+                String key = DigestUtil.md5Hex(userResDto.getUserName(), "utf-8");
+                map.put("accessToken",key);
+                map.put("user",userResDto);
+                // 放入redis 有效期1天
+                redisService.setCacheObject(key,userResDto,1l, TimeUnit.DAYS);
+                return map;
             }
         }
         return null;

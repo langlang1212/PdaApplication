@@ -2,6 +2,8 @@ package com.pda.api.service;
 
 import com.pda.api.dto.UserResDto;
 
+import java.util.Map;
+
 /**
  * @Classname LoginService
  * @Description TODO
@@ -9,5 +11,5 @@ import com.pda.api.dto.UserResDto;
  * @Created by AlanZhang
  */
 public interface LoginService {
-    UserResDto login(String account, String password);
+    Map<String,Object> login(String account, String password);
 }
