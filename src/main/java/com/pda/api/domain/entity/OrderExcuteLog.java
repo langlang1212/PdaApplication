@@ -43,25 +43,31 @@ public class OrderExcuteLog implements Serializable {
      */
     private LocalDateTime excuteTime;
 
+    public String getCheckStatus() {
+        return checkStatus;
+    }
+
+    public void setCheckStatus(String checkStatus) {
+        this.checkStatus = checkStatus;
+    }
+
+    public LocalDateTime getCheckTime() {
+        return checkTime;
+    }
+
+    public void setCheckTime(LocalDateTime checkTime) {
+        this.checkTime = checkTime;
+    }
+
     /**
      * 1:已核查
      */
-    private String drugDispensingStatus;
+    private String checkStatus;
 
     /**
      * 核查时间
      */
-    private LocalDateTime drugDispensionCheckTime;
-
-    /**
-     * 1:已校对
-     */
-    private String liquidStatus;
-
-    /**
-     * 校对时间
-     */
-    private LocalDateTime liquidTime;
+    private LocalDateTime checkTime;
 
     private String type;
 
@@ -129,34 +135,6 @@ public class OrderExcuteLog implements Serializable {
     public void setExcuteTime(LocalDateTime excuteTime) {
         this.excuteTime = excuteTime;
     }
-    public String getDrugDispensingStatus() {
-        return drugDispensingStatus;
-    }
-
-    public void setDrugDispensingStatus(String drugDispensingStatus) {
-        this.drugDispensingStatus = drugDispensingStatus;
-    }
-    public LocalDateTime getDrugDispensionCheckTime() {
-        return drugDispensionCheckTime;
-    }
-
-    public void setDrugDispensionCheckTime(LocalDateTime drugDispensionCheckTime) {
-        this.drugDispensionCheckTime = drugDispensionCheckTime;
-    }
-    public String getLiquidStatus() {
-        return liquidStatus;
-    }
-
-    public void setLiquidStatus(String liquidStatus) {
-        this.liquidStatus = liquidStatus;
-    }
-    public LocalDateTime getLiquidTime() {
-        return liquidTime;
-    }
-
-    public void setLiquidTime(LocalDateTime liquidTime) {
-        this.liquidTime = liquidTime;
-    }
 
     @Override
     public String toString() {
@@ -169,10 +147,6 @@ public class OrderExcuteLog implements Serializable {
             ", excuteUserName=" + excuteUserName +
             ", excuteStatus=" + excuteStatus +
             ", excuteTime=" + excuteTime +
-            ", drugDispensingStatus=" + drugDispensingStatus +
-            ", drugDispensionCheckTime=" + drugDispensionCheckTime +
-            ", liquidStatus=" + liquidStatus +
-            ", liquidTime=" + liquidTime +
         "}";
     }
 }

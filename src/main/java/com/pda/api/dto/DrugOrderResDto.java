@@ -22,6 +22,11 @@ public class DrugOrderResDto {
     private Integer orderNo;
 
     /**
+     * 0:临时 1:长期
+     */
+    private Integer repeatIndicator;
+
+    /**
      * 例如: 1/日
      */
     private String frequency;

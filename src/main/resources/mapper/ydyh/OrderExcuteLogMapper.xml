@@ -5,7 +5,8 @@
     <select id="selectCheckedExcuteLog" resultType="com.pda.api.domain.entity.OrderExcuteLog">
         select distinct order_no,order_sub_no
         from order_excute_log
-        where patient_id = #{patientId} and type = #{excuteTypeDrug}
+        where patient_id = #{patientId} and type = #{type}
+        and checkStatus = '1'
         <if test='orderNos != null and orderNos.size() > 0'>
             and order_no in
             <foreach collection="orderNos" index="index" item="orderNo" separator="," close=")" open="(">

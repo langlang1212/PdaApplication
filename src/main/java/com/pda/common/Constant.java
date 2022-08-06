@@ -25,4 +25,8 @@ public class Constant {
     public static final String TOMORROW = "1";
 
     public static final String EXCUTE_TYPE_DRUG = "1";
+    /**
+     * 配液
+     */
+    public static final String EXCUTE_TYPE_LIQUID = "2";
 }
