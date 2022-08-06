@@ -3,7 +3,7 @@
 <mapper namespace="com.pda.api.mapper.slave.OrderExcuteLogMapper">
 
     <select id="selectCheckedExcuteLog" resultType="com.pda.api.domain.entity.OrderExcuteLog">
-        select distinct order_no,order_sub_no
+        select *
         from order_excute_log
         where patient_id = #{patientId} and type = #{type}
         and check_status = '1'
@@ -13,5 +13,6 @@
                 #{orderNo}
             </foreach>
         </if>
+        order by check_time
     </select>
 </mapper>
