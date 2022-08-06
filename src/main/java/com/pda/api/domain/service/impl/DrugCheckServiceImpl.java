@@ -14,13 +14,11 @@ import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
 import com.pda.utils.SecurityUtil;
-import io.swagger.annotations.Example;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,9 +53,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
      * @return
      */
     @Override
-    public DrugDispensingCountResDto drugDispensionCount(DrugDispensionReqDto dto) {
+    public CheckCountResDto drugDispensionCount(DrugDispensionReqDto dto) {
         // 1、结果
-        DrugDispensingCountResDto result = new DrugDispensingCountResDto();
+        CheckCountResDto result = new CheckCountResDto();
         Date queryTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         //Date today = new Date();
@@ -80,7 +78,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         return result;
     }
 
-    private void handleOrder(DrugDispensionReqDto dto, DrugDispensingCountResDto result, List<OrdersM> orders,Integer repeatRedicator) {
+    private void handleOrder(DrugDispensionReqDto dto, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator) {
         if(CollectionUtil.isNotEmpty(orders)){
             // 总条数
             if(CHANG == repeatRedicator){

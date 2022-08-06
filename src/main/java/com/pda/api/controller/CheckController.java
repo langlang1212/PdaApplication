@@ -50,4 +50,6 @@ public class CheckController {
         drugCheckService.check(drugCheckReqDtoList);
         return Result.success();
     }
+
+
 }

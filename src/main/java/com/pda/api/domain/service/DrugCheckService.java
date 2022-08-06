@@ -1,7 +1,7 @@
 package com.pda.api.domain.service;
 
 import com.pda.api.dto.DrugCheckReqDto;
-import com.pda.api.dto.DrugDispensingCountResDto;
+import com.pda.api.dto.CheckCountResDto;
 import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.api.dto.DrugOrderResDto;
 
@@ -15,7 +15,7 @@ import java.util.Map;
  * @Created by AlanZhang
  */
 public interface DrugCheckService {
-    DrugDispensingCountResDto drugDispensionCount(DrugDispensionReqDto dto);
+    CheckCountResDto drugDispensionCount(DrugDispensionReqDto dto);
 
     Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto);
 

@@ -4,13 +4,13 @@ import lombok.Data;
 
 
 /**
- * @Classname DrugDispensingCountResDto
+ * @Classname CheckCountResDto
  * @Description TODO
  * @Date 2022-08-02 22:18
  * @Created by AlanZhang
  */
 @Data
-public class DrugDispensingCountResDto {
+public class CheckCountResDto {
     /**
      * 总瓶数
      */

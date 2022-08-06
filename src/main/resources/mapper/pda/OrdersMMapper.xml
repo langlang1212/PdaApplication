@@ -19,7 +19,7 @@
         </if>
     </select>
 
-    <select id="selectDrugDispensionCount" resultType="com.pda.api.dto.DrugDispensingCountResDto">
+    <select id="selectDrugDispensionCount" resultType="com.pda.api.dto.CheckCountResDto">
         select *
         from orders_m
         where patient_id = #{patientId,jdbcType=VARCHAR}
