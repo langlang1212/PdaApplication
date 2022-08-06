@@ -27,3 +27,9 @@ mybatis-plus:
 logging:
   level:
     com.pda.api.mapper.*: debug
+
+security :
+  ignore :
+    whites :
+      - /login
+      - /doc.html
