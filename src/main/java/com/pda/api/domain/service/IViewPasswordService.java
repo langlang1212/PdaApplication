@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author baomidou
- * @since 2022-07-31
+ * @since 2022-08-06
  */
 public interface IViewPasswordService extends IService<ViewPassword> {
 

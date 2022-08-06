@@ -1,4 +1,4 @@
-package com.pda.api.mapper;
+package com.pda.api.mapper.slave;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pda.api.domain.entity.UserInfo;

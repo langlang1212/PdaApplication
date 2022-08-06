@@ -24,7 +24,7 @@ import javax.sql.DataSource;
  * @see  DataSourceConfig
  */
 @Configuration
-@MapperScan(basePackages ="com.pda.api.mapper", sqlSessionTemplateRef  = "ds2SqlSessionTemplate")
+@MapperScan(basePackages ="com.pda.api.mapper.slave", sqlSessionTemplateRef  = "ds2SqlSessionTemplate")
 public class MybatisConfig4ds2 {
 
     //ds2数据源
@@ -33,7 +33,7 @@ public class MybatisConfig4ds2 {
         SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
         sqlSessionFactory.setDataSource(dataSource);
         sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().
-                getResources("classpath:mapper/*.xml"));
+                getResources("classpath*:mapper/ydyh/*.xml"));
         return sqlSessionFactory.getObject();
     }
 

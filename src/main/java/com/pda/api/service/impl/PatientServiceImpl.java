@@ -1,16 +1,13 @@
 package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.alibaba.fastjson.JSONObject;
-import com.pda.api.domain.entity.PatientInfo;
 import com.pda.api.domain.entity.UserInfo;
-import com.pda.api.domain.mapper.OrdersMMapper;
-import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.domain.service.IUserInfoService;
-import com.pda.api.dto.PatientAllergyReqDto;
 import com.pda.api.dto.PatientInfoDto;
 import com.pda.api.dto.PatientReqDto;
 import com.pda.api.dto.UserResDto;
+import com.pda.api.mapper.primary.OrdersMMapper;
+import com.pda.api.mapper.primary.PatientInfoMapper;
 import com.pda.api.service.PatientService;
 import com.pda.api.service.PdaService;
 import com.pda.common.Constant;

@@ -1,23 +1,19 @@
 package com.pda.api.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.XmlUtil;
-import cn.hutool.crypto.digest.MD5;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.ViewPassword;
-import com.pda.api.domain.mapper.OrdersMMapper;
-import com.pda.api.domain.mapper.PatientInfoMapper;
 import com.pda.api.domain.service.IViewPasswordService;
 import com.pda.api.dto.UserResDto;
+import com.pda.api.mapper.primary.OrdersMMapper;
+import com.pda.api.mapper.primary.PatientInfoMapper;
+import com.pda.api.mapper.primary.ViewPasswordMapper;
 import com.pda.api.service.*;
 import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
 import com.pda.common.dto.DictDto;
-import com.pda.common.redis.service.RedisService;
 import com.pda.exception.BusinessException;
-import com.pda.utils.PdaToJavaObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Classname LoginServiceImpl
@@ -45,6 +39,8 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     private PatientInfoMapper patientInfoMapper;
     @Autowired
     private PdaService pdaService;
+    @Autowired
+    private ViewPasswordMapper viewPasswordMapper;
     @Override
     public UserResDto login(String account, String password) {
         if(ObjectUtils.isEmpty(checkUser(account,password))){

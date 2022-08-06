@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.pda.api.domain.mapper.OrdersMMapper">
+<mapper namespace="com.pda.api.mapper.primary.OrdersMMapper">
 
     <select id="selectWardByOrder" parameterType="string" resultType="com.pda.common.dto.DictDto">
         select pi.ward_code "key" ,pi.ward_name "value"

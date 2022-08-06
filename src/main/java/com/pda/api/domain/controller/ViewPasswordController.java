@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller;
  * </p>
  *
  * @author baomidou
- * @since 2022-07-31
+ * @since 2022-08-06
  */
 @Controller
 @RequestMapping("/domain/view-password")
