@@ -1,8 +1,9 @@
 package com.pda.api.controller;
 
 import com.pda.api.domain.service.DrugCheckService;
-import com.pda.api.dto.DrugCheckReqDto;
+import com.pda.api.dto.CheckReqDto;
 import com.pda.api.dto.DrugDispensionReqDto;
+import com.pda.common.Constant;
 import com.pda.common.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,8 +44,8 @@ public class CheckController {
 
     @ApiOperation(value = "摆药核查")
     @PostMapping("/drug/check")
-    public Result DrugCheck(@RequestBody List<DrugCheckReqDto> drugCheckReqDtoList){
-        drugCheckService.check(drugCheckReqDtoList);
+    public Result DrugCheck(@RequestBody List<CheckReqDto> checkReqDtoList){
+        drugCheckService.check(checkReqDtoList,Constant.EXCUTE_TYPE_DRUG);
         return Result.success();
     }
 
@@ -58,5 +59,12 @@ public class CheckController {
     @PostMapping("/distribution/check/order")
     public Result distributionOrders(@Validated @RequestBody DrugDispensionReqDto dto){
         return Result.success(drugCheckService.distributionOrders(dto));
+    }
+
+    @ApiOperation(value = "摆药核查")
+    @PostMapping("/distribution/check")
+    public Result distributionCheck(@RequestBody List<CheckReqDto> checkReqDtoList){
+        drugCheckService.check(checkReqDtoList, Constant.EXCUTE_TYPE_LIQUID);
+        return Result.success();
     }
 }

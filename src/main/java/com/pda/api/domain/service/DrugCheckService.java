@@ -1,6 +1,6 @@
 package com.pda.api.domain.service;
 
-import com.pda.api.dto.DrugCheckReqDto;
+import com.pda.api.dto.CheckReqDto;
 import com.pda.api.dto.CheckCountResDto;
 import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.api.dto.DrugOrderResDto;
@@ -19,9 +19,9 @@ public interface DrugCheckService {
 
     Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto);
 
-    void check(List<DrugCheckReqDto> drugCheckReqDtoList);
-
     CheckCountResDto distributionCount(DrugDispensionReqDto dto);
 
     List<DrugOrderResDto> distributionOrders(DrugDispensionReqDto dto);
+
+    void check(List<CheckReqDto> checkReqDtoList,String type);
 }

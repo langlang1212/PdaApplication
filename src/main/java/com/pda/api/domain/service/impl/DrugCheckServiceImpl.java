@@ -202,7 +202,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void check(List<DrugCheckReqDto> drugCheckReqDtoList) {
+    public void check(List<CheckReqDto> drugCheckReqDtoList,String type) {
         if(CollectionUtil.isEmpty(drugCheckReqDtoList)){
             throw new BusinessException("需要核查的摆药不能为空!");
         }
@@ -211,13 +211,12 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
         // 插入核查日志
-        List<OrderExcuteLog> addLog = initAddLog(drugCheckReqDtoList, currentUser, now);
+        List<OrderExcuteLog> addLog = initAddLog(drugCheckReqDtoList, currentUser, now,type);
         // 插入
         if(CollectionUtil.isNotEmpty(addLog)){
             iOrderExcuteLogService.saveBatch(addLog);
         }
     }
-
     /**
      * 配液核对统计
      * @param dto
@@ -284,7 +283,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         return result;
     }
 
-    private List<OrderExcuteLog> initAddLog(List<DrugCheckReqDto> drugCheckReqDtoList, UserResDto currentUser, LocalDateTime now) {
+    private List<OrderExcuteLog> initAddLog(List<CheckReqDto> drugCheckReqDtoList, UserResDto currentUser, LocalDateTime now,String type) {
         List<OrderExcuteLog> addLog = new ArrayList<>();
         drugCheckReqDtoList.forEach(drugCheckReqDto -> {
             OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
@@ -295,7 +294,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             orderExcuteLog.setExcuteStatus(ExcuteStatusEnum.PREPARED.code());
             orderExcuteLog.setCheckStatus("1");
             orderExcuteLog.setCheckTime(now);
-            orderExcuteLog.setType(Constant.EXCUTE_TYPE_DRUG);
+            orderExcuteLog.setType(type);
 
             addLog.add(orderExcuteLog);
         });
