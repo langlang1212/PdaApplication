@@ -1,24 +1,16 @@
 package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
-import com.pda.api.domain.mapper.OrderExcuteLogMapper;
 import com.pda.api.domain.mapper.OrdersMMapper;
 import com.pda.api.domain.service.DrugCheckService;
-import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.dto.DrugDispensingCountResDto;
 import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.api.dto.DrugOrderResDto;
 import com.pda.api.dto.DrugSubOrderDto;
-import com.pda.api.service.DrugService;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
-import com.pda.utils.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -141,20 +133,13 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
                 OrdersM firstSubOrder = ordersMS.get(0);
-                if(firstSubOrder.getStartDateTime().isAfter(LocalDateUtils.date2LocalDateTime(startOfToday)) && ObjectUtil.isNull(firstSubOrder.getStopDateTime())){ // 今天
 
-                }
-
-                if(firstSubOrder.getStartDateTime().isAfter(LocalDateUtils.date2LocalDateTime(startOrTomorrow)) && ObjectUtil.isNull(firstSubOrder.getStopDateTime())){ // 明天
-
-                }
                 // 第一步初始化
                 DrugOrderResDto drugOrderResDto = new DrugOrderResDto();
                 drugOrderResDto.setPatientId(firstSubOrder.getPatientId());
                 drugOrderResDto.setOrderNo(orderNo);
                 drugOrderResDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
-                // 先屏蔽不抱错
-                //drugOrderResDto.setExcuteDate(DateUtil.getShortDate(endTime));
+                drugOrderResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
 
                 List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
                 ordersMS.forEach(ordersM -> {

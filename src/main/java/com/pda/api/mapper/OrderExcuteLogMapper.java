@@ -1,7 +1,7 @@
-package com.pda.api.domain.mapper;
+package com.pda.api.mapper;
 
-import com.pda.api.domain.entity.OrderExcuteLog;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.pda.api.domain.entity.OrderExcuteLog;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -16,5 +16,5 @@ import java.util.List;
  */
 public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
 
-    List<OrderExcuteLog> selectCheckedExcuteLog(@Param("patientId") String patientId,@Param("orderNos") List<Integer> orderNos,@Param("excuteTypeDrug") String excuteTypeDrug);
+    List<OrderExcuteLog> selectCheckedExcuteLog(@Param("patientId") String patientId, @Param("orderNos") List<Integer> orderNos, @Param("excuteTypeDrug") String excuteTypeDrug);
 }

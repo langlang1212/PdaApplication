@@ -2,7 +2,6 @@ package com.pda.api.domain.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pda.api.domain.entity.UserInfo;
-import com.pda.api.domain.mapper.UserInfoMapper;
 import com.pda.api.domain.service.IUserInfoService;
 import org.springframework.stereotype.Service;
 
