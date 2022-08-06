@@ -25,7 +25,7 @@ import javax.sql.DataSource;
  * @see  DataSourceConfig
  */
 @Configuration
-@MapperScan(basePackages ="com.pda.api.domain.mapper.**", sqlSessionTemplateRef  = "ds1SqlSessionTemplate")
+@MapperScan(basePackages ="com.pda.api.domain.mapper", sqlSessionTemplateRef  = "ds1SqlSessionTemplate")
 public class MybatisConfig4ds1 {
 
     //主数据源 ds1数据源

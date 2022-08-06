@@ -38,15 +38,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class LoginServiceImpl extends PdaBaseService implements LoginService {
     @Autowired
-    private UserService userService;
-    @Autowired
-    private AsyncService asyncService;
-    @Autowired
-    private RedisService redisService;
-    @Autowired
     private IViewPasswordService iViewPasswordService;
-    @Autowired
-    private DeptService deptService;
     @Autowired
     private OrdersMMapper ordersMMapper;
     @Autowired
