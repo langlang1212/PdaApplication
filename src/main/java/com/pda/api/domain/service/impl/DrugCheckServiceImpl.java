@@ -249,7 +249,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     }
 
     @Override
-    public List<DrugOrderResDto> distributionOrders(DrugDispensionReqDto dto) {
+    public Map<String,List<DrugOrderResDto>> distributionOrders(DrugDispensionReqDto dto) {
         List<DrugOrderResDto> result = new ArrayList<>();
         Date queryTime;
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
@@ -273,14 +273,33 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 查询临时医嘱
         List<OrdersM> shortOrders = ordersMMapper.listByPatientIdShort(dto.getPatientId(),startDateOfDay,endDateOfDay);
         handleOrderInfos(dto, today, shortTimeOrder, shortOrders,Constant.EXCUTE_TYPE_LIQUID);
-
-        if(CollectionUtil.isNotEmpty(shortOrders)){
-            result.addAll(shortTimeOrder);
+        // 封装结果
+        Map<String,List<DrugOrderResDto>> resultMap = new HashMap<>();
+        if(CollectionUtil.isNotEmpty(shortTimeOrder)){
+            List<DrugOrderResDto> noCheckedOrder = new ArrayList<>();
+            List<DrugOrderResDto> checkedOrder = new ArrayList<>();
+            groupList(shortTimeOrder, noCheckedOrder, checkedOrder);
+            resultMap.put("noChecked",noCheckedOrder);
+            resultMap.put("checked",checkedOrder);
         }
         if(CollectionUtil.isNotEmpty(longTimeOrder)){
-            result.addAll(longTimeOrder);
+            List<DrugOrderResDto> noCheckedOrder = new ArrayList<>();
+            List<DrugOrderResDto> checkedOrder = new ArrayList<>();
+            groupList(longTimeOrder, noCheckedOrder, checkedOrder);
+            resultMap.get("noChecked").addAll(noCheckedOrder);
+            resultMap.get("checked").addAll(checkedOrder);
         }
-        return result;
+        return resultMap;
+    }
+
+    private void groupList(List<DrugOrderResDto> orders, List<DrugOrderResDto> noCheckedOrder, List<DrugOrderResDto> checkedOrder) {
+        orders.forEach(shortOrder -> {
+            if (CollectionUtil.isNotEmpty(shortOrder.getOrderExcuteLogs())) {
+                checkedOrder.add(shortOrder);
+            } else {
+                noCheckedOrder.add(shortOrder);
+            }
+        });
     }
 
     private List<OrderExcuteLog> initAddLog(List<CheckReqDto> drugCheckReqDtoList, UserResDto currentUser, LocalDateTime now,String type) {

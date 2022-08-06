@@ -21,7 +21,7 @@ public interface DrugCheckService {
 
     CheckCountResDto distributionCount(DrugDispensionReqDto dto);
 
-    List<DrugOrderResDto> distributionOrders(DrugDispensionReqDto dto);
+    Map<String,List<DrugOrderResDto>>  distributionOrders(DrugDispensionReqDto dto);
 
     void check(List<CheckReqDto> checkReqDtoList,String type);
 }
