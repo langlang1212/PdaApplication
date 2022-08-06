@@ -210,7 +210,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         }
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(transactionManager = "ds2TransactionManager",rollbackFor = Exception.class)
     @Override
     public void check(List<CheckReqDto> drugCheckReqDtoList,String type) {
         if(CollectionUtil.isEmpty(drugCheckReqDtoList)){
@@ -223,9 +223,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 插入核查日志
         List<OrderExcuteLog> addLog = initAddLog(drugCheckReqDtoList, currentUser, now,type);
         // 插入
-        if(CollectionUtil.isNotEmpty(addLog)){
+        /*if(CollectionUtil.isNotEmpty(addLog)){
             iOrderExcuteLogService.saveBatch(addLog);
-        }
+        }*/
     }
     /**
      * 配液核对统计
@@ -285,21 +285,25 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         handleOrderInfos(dto, today, shortTimeOrder, shortOrders,Constant.EXCUTE_TYPE_LIQUID);
         // 封装结果
         Map<String,List<DrugOrderResDto>> resultMap = new HashMap<>();
+        List<DrugOrderResDto> noChecked = new ArrayList<>();
+        List<DrugOrderResDto> checked = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(shortTimeOrder)){
-            List<DrugOrderResDto> noCheckedOrder = new ArrayList<>();
-            List<DrugOrderResDto> checkedOrder = new ArrayList<>();
-            groupList(shortTimeOrder, noCheckedOrder, checkedOrder);
-            resultMap.put("noChecked",noCheckedOrder);
-            resultMap.put("checked",checkedOrder);
+            group(shortTimeOrder, noChecked, checked);
         }
         if(CollectionUtil.isNotEmpty(longTimeOrder)){
-            List<DrugOrderResDto> noCheckedOrder = new ArrayList<>();
-            List<DrugOrderResDto> checkedOrder = new ArrayList<>();
-            groupList(longTimeOrder, noCheckedOrder, checkedOrder);
-            resultMap.get("noChecked").addAll(noCheckedOrder);
-            resultMap.get("checked").addAll(checkedOrder);
+            group(longTimeOrder, noChecked, checked);
         }
+        resultMap.put("noChecked",noChecked);
+        resultMap.put("checked",checked);
         return resultMap;
+    }
+
+    private void group(List<DrugOrderResDto> longTimeOrder, List<DrugOrderResDto> noChecked, List<DrugOrderResDto> checked) {
+        List<DrugOrderResDto> noCheckedOrder = new ArrayList<>();
+        List<DrugOrderResDto> checkedOrder = new ArrayList<>();
+        groupList(longTimeOrder, noCheckedOrder, checkedOrder);
+        noChecked.addAll(noCheckedOrder);
+        checked.addAll(checkedOrder);
     }
 
     private void groupList(List<DrugOrderResDto> orders, List<DrugOrderResDto> noCheckedOrder, List<DrugOrderResDto> checkedOrder) {
@@ -326,6 +330,8 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             orderExcuteLog.setType(type);
 
             addLog.add(orderExcuteLog);
+
+            iOrderExcuteLogService.getBaseMapper().insert(orderExcuteLog);
         });
         return addLog;
     }

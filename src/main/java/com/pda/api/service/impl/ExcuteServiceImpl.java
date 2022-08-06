@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * @Classname ExcuteServiceImpl
@@ -41,19 +43,18 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOralByPatientId(patientId,startDateOfDay,endDateOfDay);
-        addOral(result, queryTime, shortOrders);
+        addOral(result, queryTime, shortOrders,patientId);
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOralByPatientId(patientId, queryTime);
-        addOral(result,queryTime,longOrders);
+        addOral(result,queryTime,longOrders,patientId);
 
-        //
-        Map<String,List<OrdersM>> resultMap = new HashMap<>();
-        /*List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),orderNos, type);*/
         return result;
     }
 
-    private void addOral(List<OralResDto> result, Date queryTime, List<OrdersM> shortOrders) {
+    private void addOral(List<OralResDto> result, Date queryTime, List<OrdersM> shortOrders,String patientId) {
         if(CollectionUtil.isNotEmpty(shortOrders)){
+            List<Integer> orderNos = shortOrders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, Constant.EXCUTE_TYPE_ORAL);
             shortOrders.forEach(ordersM -> {
                 OralResDto oralResDto = new OralResDto();
                 oralResDto.setOrderText(ordersM.getOrderText());
@@ -64,6 +65,7 @@ public class ExcuteServiceImpl implements ExcuteService {
                 oralResDto.setStartDateTime(ordersM.getStartDateTime());
                 oralResDto.setStopDateTime(ordersM.getStopDateTime());
                 oralResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
+
 
                 result.add(oralResDto);
             });

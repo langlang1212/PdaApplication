@@ -32,4 +32,9 @@ public class OralResDto {
     private LocalDateTime stopDateTime;
 
     private String excuteDate;
+
+    /**
+     *
+     */
+    private String excuteStatus;
 }

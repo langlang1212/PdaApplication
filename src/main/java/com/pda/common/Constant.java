@@ -29,4 +29,6 @@ public class Constant {
      * 配液
      */
     public static final String EXCUTE_TYPE_LIQUID = "2";
+
+    public static final String EXCUTE_TYPE_ORAL = "3";
 }
