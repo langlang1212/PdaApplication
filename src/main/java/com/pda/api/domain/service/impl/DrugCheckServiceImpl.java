@@ -15,6 +15,7 @@ import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
 import com.pda.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -170,7 +171,16 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                 drugOrderResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
                 drugOrderResDto.setStartDateTime(firstSubOrder.getStartDateTime());
                 drugOrderResDto.setRepeatIndicator(firstSubOrder.getRepeatIndicator());
-
+                if(StringUtils.isNotBlank(firstSubOrder.getPerformSchedule())){
+                    String[] split = firstSubOrder.getPerformSchedule().split("-");
+                    if(split.length == 1){
+                        List<String> schedule = new ArrayList<>();
+                        schedule.add(split[0]);
+                        drugOrderResDto.setSchedule(schedule);
+                    }else{
+                        drugOrderResDto.setSchedule(Arrays.asList(split));
+                    }
+                }
                 List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
                 ordersMS.forEach(ordersM -> {
                     DrugSubOrderDto drugSubOrderDto = new DrugSubOrderDto();
