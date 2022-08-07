@@ -50,7 +50,7 @@ public class ExcuteController {
     }
 
     /**
-     * 1:输液 2:雾化 3、注射 4、静推
+     * 0:全部 1:输液 2:雾化 3、注射 4、静推
      * @param patientId
      * @param drugType
      * @return

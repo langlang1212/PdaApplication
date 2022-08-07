@@ -164,10 +164,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,startDateOfDay,endDateOfDay,null,drugType);
-        handleOrder(patientId,result,shortOrders,1,Constant.EXCUTE_TYPE_ORDER);
+        handleOrder(patientId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER);
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, queryTime,null,drugType);
-        handleOrder(patientId,result,longOrders,0,Constant.EXCUTE_TYPE_ORDER);
+        handleOrder(patientId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER);
         return result;
     }
 
