@@ -42,6 +42,22 @@
                 </when>
             </choose>
         </if>
+        <if test='drugType != null and drugType != ""'>
+            <choose>
+                <when test="drugType == '1'">
+                    and administration in ('续静滴','静脉输液')
+                </when>
+                <when test="drugType == '2'">
+                    and administration = '空气压缩泵雾化'
+                </when>
+                <!--<when test="drugType == '3'">
+
+                </when>
+                <when test="drugType == '4'">
+
+                </when>-->
+            </choose>
+        </if>
         order by order_no
     </select>
 
@@ -55,6 +71,22 @@
                 <when test="type == '5'">
                     and administration = '皮内注射'
                 </when>
+            </choose>
+        </if>
+        <if test='drugType != null and drugType != ""'>
+            <choose>
+                <when test="drugType == '1'">
+                    and administration in ('续静滴','静脉输液')
+                </when>
+                <when test="drugType == '2'">
+                    and administration = '空气压缩泵雾化'
+                </when>
+                <!--<when test="drugType == '3'">
+
+                </when>
+                <when test="drugType == '4'">
+
+                </when>-->
             </choose>
         </if>
         order by order_no

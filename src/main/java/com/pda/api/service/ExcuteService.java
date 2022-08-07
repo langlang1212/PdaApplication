@@ -1,9 +1,6 @@
 package com.pda.api.service;
 
-import com.pda.api.dto.ExcuteReq;
-import com.pda.api.dto.OralResDto;
-import com.pda.api.dto.OrderCountResDto;
-import com.pda.api.dto.SkinResDto;
+import com.pda.api.dto.*;
 
 import java.util.List;
 
@@ -22,5 +19,7 @@ public interface ExcuteService {
 
     void skinExcute(List<ExcuteReq> skinExcuteReqs);
 
-    OrderCountResDto orderCount(String patientId);
+    OrderCountResDto orderCount(String patientId,String drugType);
+
+    List<OrderResDto> orderExcuteList(String patientId,String drugType);
 }

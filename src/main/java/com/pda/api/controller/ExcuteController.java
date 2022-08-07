@@ -49,16 +49,21 @@ public class ExcuteController {
         return Result.success();
     }
 
-    @GetMapping("/order/count/{patientId}")
+    /**
+     * 1:输液 2:雾化 3、注射 4、静推
+     * @param patientId
+     * @param drugType
+     * @return
+     */
+    @GetMapping("/order/count/{patientId}/{drugType}")
     @ApiOperation("医嘱执行统计")
-    public Result orderCount(@PathVariable("patientId") String patientId){
-        return Result.success(excuteService.orderCount(patientId));
+    public Result orderCount(@PathVariable("patientId") String patientId,@PathVariable("drugType") String drugType){
+        return Result.success(excuteService.orderCount(patientId,drugType));
     }
 
-    @GetMapping("/order/{patientId}")
+    @GetMapping("/order/{patientId}/{drugType}")
     @ApiOperation("医嘱执行")
-    public Result orderExcute(@PathVariable("patientId") String patientId){
-        /*return Result.success(excuteService.orderExcuteList(patientId));*/
-        return null;
+    public Result orderExcute(@PathVariable("patientId") String patientId,@PathVariable("drugType") String drugType){
+        return Result.success(excuteService.orderExcuteList(patientId,drugType));
     }
 }
