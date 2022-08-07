@@ -48,4 +48,17 @@ public class ExcuteController {
         excuteService.skinExcute(skinExcuteReqs);
         return Result.success();
     }
+
+    @GetMapping("/order/count/{patientId}")
+    @ApiOperation("医嘱执行统计")
+    public Result orderCount(@PathVariable("patientId") String patientId){
+        return Result.success(excuteService.orderCount(patientId));
+    }
+
+    @GetMapping("/order/{patientId}")
+    @ApiOperation("医嘱执行")
+    public Result orderExcute(@PathVariable("patientId") String patientId){
+        /*return Result.success(excuteService.orderExcuteList(patientId));*/
+        return null;
+    }
 }

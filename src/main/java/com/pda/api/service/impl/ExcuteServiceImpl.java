@@ -6,14 +6,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
-import com.pda.api.dto.ExcuteReq;
-import com.pda.api.dto.OralResDto;
-import com.pda.api.dto.SkinResDto;
-import com.pda.api.dto.UserResDto;
+import com.pda.api.dto.*;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.ExcuteService;
 import com.pda.common.Constant;
+import com.pda.common.ExcuteStatusEnum;
 import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
@@ -146,6 +144,30 @@ public class ExcuteServiceImpl implements ExcuteService {
         addExcuteLog(skinExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_SKIN);
     }
 
+    /**
+     * 医嘱执行条数统计
+     * @param patientId
+     * @return
+     */
+    @Override
+    public OrderCountResDto orderCount(String patientId) {
+        // 最后结果
+        OrderCountResDto result = new OrderCountResDto();
+        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
+        //Date today = new Date();
+        Date today = getTestTime();
+        Date queryTime = DateUtil.getStartDateOfDay(today);
+        // 临时
+        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
+        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,startDateOfDay,endDateOfDay,Constant.EXCUTE_TYPE_ORDER);
+        handleOrder(patientId,result,shortOrders,1,Constant.EXCUTE_TYPE_ORDER);
+        // 长期
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, queryTime,Constant.EXCUTE_TYPE_ORDER);
+        handleOrder(patientId,result,longOrders,0,Constant.EXCUTE_TYPE_ORDER);
+        return result;
+    }
+
     private void addSkin(List<SkinResDto> result, Date queryTime, List<OrdersM> orders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
@@ -213,5 +235,35 @@ public class ExcuteServiceImpl implements ExcuteService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void handleOrder(String patientId, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type) {
+        if(CollectionUtil.isNotEmpty(orders)){
+            // 总条数
+            if(1 == repeatRedicator){
+                result.setTotalBottles(orders.size());
+            }else{
+                result.setTempTotalBottles(orders.size());
+            }
+            // 已核查条数
+            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
+            // 查出已经核查过该病人的医嘱
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type);
+            if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+                orders.forEach(order -> {
+                    if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+                        orderExcuteLogs.forEach(orderExcuteLog -> {
+                            if(order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getOrderSubNo() == orderExcuteLog.getOrderSubNo() && ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())){
+                                if(1 == repeatRedicator){
+                                    result.setCheckedBottles(result.getCheckedBottles() + 1);
+                                }else{
+                                    result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
     }
 }
