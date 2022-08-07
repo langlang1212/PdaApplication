@@ -24,7 +24,7 @@ public class ExcuteReq {
     @ApiModelProperty("子单号")
     private Integer orderSubNo;
 
-    @ApiModelProperty("1:待配液 2:未执行 3:正在执行 4:暂停 5:执行完毕  口服给药的时候没有记录就是未执行，医嘱执行没有记录就是待配液")
+    @ApiModelProperty("1:待配液 2:未执行 3:正在执行 4:暂停 5:执行完毕  口服给药的时候没有记录就是未执行，医嘱执行没有记录就是待配液  传入的是下一个状态")
     private String excuteStatus;
 
     @ApiModelProperty("1:摆药 2:配液 3:医嘱执行 4:口服给药 5:皮试医嘱")
