@@ -1,6 +1,9 @@
 package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.dto.ExcuteReq;
@@ -68,26 +71,43 @@ public class ExcuteServiceImpl implements ExcuteService {
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
-
+        //
         addExcuteLog(oralExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORAL);
 
     }
 
     private void addExcuteLog(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
         oralExcuteReqs.forEach(oralExcuteReq -> {
-            OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
-            orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
-            orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
-            orderExcuteLog.setOrderSubNo(oralExcuteReq.getOrderSubNo());
-            orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
-            orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
-            orderExcuteLog.setExcuteUserName(currentUser.getName());
-            orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
-            orderExcuteLog.setExcuteTime(now);
-            orderExcuteLog.setType(type);
-            // 插入
-            orderExcuteLogMapper.insert(orderExcuteLog);
+            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORAL);
+            if(ObjectUtil.isNotNull(existLog)){
+                existLog.setExcuteUserCode(currentUser.getUserName());
+                existLog.setExcuteUserName(currentUser.getName());
+                existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+                existLog.setExcuteTime(now);
+                orderExcuteLogMapper.updateById(existLog);
+            }else{
+                OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
+                orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
+                orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
+                orderExcuteLog.setOrderSubNo(oralExcuteReq.getOrderSubNo());
+                orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
+                orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
+                orderExcuteLog.setExcuteUserName(currentUser.getName());
+                orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+                orderExcuteLog.setExcuteTime(now);
+                orderExcuteLog.setType(type);
+                // 插入
+                orderExcuteLogMapper.insert(orderExcuteLog);
+            }
         });
+    }
+
+    private OrderExcuteLog getExcuteLog(ExcuteReq oralExcuteReq,String type) {
+        LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,oralExcuteReq.getPatientId()).eq(OrderExcuteLog::getOrderNo,oralExcuteReq.getOrderNo())
+                .eq(OrderExcuteLog::getOrderSubNo,oralExcuteReq.getOrderSubNo()).eq(OrderExcuteLog::getType,type);
+        OrderExcuteLog orderExcuteLog = orderExcuteLogMapper.selectOne(logLambdaQueryWrapper);
+        return orderExcuteLog;
     }
 
     @Override
