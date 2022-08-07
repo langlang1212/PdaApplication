@@ -30,8 +30,22 @@ public class ExcuteController {
     }
 
     @PostMapping("/oral/excute")
+    @ApiOperation("口服给药执行")
     public Result oralExcute(@RequestBody List<ExcuteReq> oralExcuteReqs){
         excuteService.oralExcute(oralExcuteReqs);
+        return Result.success();
+    }
+
+    @GetMapping("/skin/{patientId}")
+    @ApiOperation("皮试医嘱")
+    public Result skinExcute(@PathVariable("patientId") String patientId){
+        return Result.success(excuteService.skinList(patientId));
+    }
+
+    @PostMapping("/skin/excute")
+    @ApiOperation("皮试医嘱执行")
+    public Result skinExcute(@RequestBody List<ExcuteReq> skinExcuteReqs){
+        excuteService.skinExcute(skinExcuteReqs);
         return Result.success();
     }
 }

@@ -39,4 +39,8 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
     @Select("select * from orders_m where patient_id = #{patientId} and start_date_time <= #{endTime} and repeat_indicator = 1 and stop_date_time is null and administration = '口服' order by order_no")
     List<OrdersM> listLongOralByPatientId(@Param("patientId") String patientId, @Param("endTime") Date endTime);
+
+    List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay,@Param("type") String type);
+
+    List<OrdersM> listLongOrderByPatientId(@Param("patientId") String patientId,@Param("queryTime") Date queryTime,@Param("type") String type);
 }

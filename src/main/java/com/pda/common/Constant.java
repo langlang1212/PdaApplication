@@ -31,4 +31,6 @@ public class Constant {
     public static final String EXCUTE_TYPE_LIQUID = "2";
 
     public static final String EXCUTE_TYPE_ORAL = "4";
+
+    public static final String EXCUTE_TYPE_SKIN = "5";
 }
