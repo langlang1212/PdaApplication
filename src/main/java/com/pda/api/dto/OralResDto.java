@@ -15,6 +15,12 @@ import java.time.LocalDateTime;
 @Data
 public class OralResDto {
 
+    private String patientId;
+
+    private Integer orderNo;
+
+    private Integer orderSubNo;
+
     private String orderText;
 
     private Integer repeatIndicator;

@@ -1,12 +1,14 @@
 package com.pda.api.controller;
 
+import com.pda.api.dto.ExcuteReq;
 import com.pda.api.service.ExcuteService;
 import com.pda.common.Result;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @Classname ExcuteController
@@ -22,7 +24,14 @@ public class ExcuteController {
     private ExcuteService excuteService;
 
     @GetMapping("/oral/{patientId}")
+    @ApiOperation("口服给药列表")
     public Result oralList(@PathVariable("patientId") String patientId){
         return Result.success(excuteService.oralList(patientId));
+    }
+
+    @PostMapping("/oral/excute")
+    public Result oralExcute(@RequestBody List<ExcuteReq> oralExcuteReqs){
+        excuteService.oralExcute(oralExcuteReqs);
+        return Result.success();
     }
 }

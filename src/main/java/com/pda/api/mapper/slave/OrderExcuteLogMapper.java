@@ -17,4 +17,6 @@ import java.util.List;
 public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
 
     List<OrderExcuteLog> selectCheckedExcuteLog(@Param("patientId") String patientId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type);
+
+    List<OrderExcuteLog> selectExcuteLog(@Param("patientId") String patientId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type);
 }

@@ -3,19 +3,24 @@ package com.pda.api.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
+import com.pda.api.dto.ExcuteReq;
 import com.pda.api.dto.OralResDto;
+import com.pda.api.dto.UserResDto;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.ExcuteService;
 import com.pda.common.Constant;
+import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
+import com.pda.utils.LocalDateUtils;
+import com.pda.utils.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -51,12 +56,42 @@ public class ExcuteServiceImpl implements ExcuteService {
         return result;
     }
 
+    @Override
+    public void oralExcute(List<ExcuteReq> oralExcuteReqs) {
+        if(CollectionUtil.isEmpty(oralExcuteReqs)){
+            throw new BusinessException("口服给药医嘱不能为空!");
+        }
+        // 登陆人
+        UserResDto currentUser = SecurityUtil.getCurrentUser();
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
+
+        oralExcuteReqs.forEach(oralExcuteReq -> {
+            OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
+            orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
+            orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
+            orderExcuteLog.setOrderSubNo(oralExcuteReq.getOrderSubNo());
+            orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
+            orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
+            orderExcuteLog.setExcuteUserName(currentUser.getName());
+            orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+            orderExcuteLog.setExcuteTime(now);
+            orderExcuteLog.setType(Constant.EXCUTE_TYPE_ORAL);
+            // 插入
+            orderExcuteLogMapper.insert(orderExcuteLog);
+        });
+
+    }
+
     private void addOral(List<OralResDto> result, Date queryTime, List<OrdersM> shortOrders,String patientId) {
         if(CollectionUtil.isNotEmpty(shortOrders)){
             List<Integer> orderNos = shortOrders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, Constant.EXCUTE_TYPE_ORAL);
             shortOrders.forEach(ordersM -> {
                 OralResDto oralResDto = new OralResDto();
+                oralResDto.setPatientId(ordersM.getPatientId());
+                oralResDto.setOrderNo(ordersM.getOrderNo());
+                oralResDto.setOrderSubNo(ordersM.getOrderSubNo());
                 oralResDto.setOrderText(ordersM.getOrderText());
                 oralResDto.setRepeatIndicator(0);
                 oralResDto.setDosAge(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
@@ -65,10 +100,19 @@ public class ExcuteServiceImpl implements ExcuteService {
                 oralResDto.setStartDateTime(ordersM.getStartDateTime());
                 oralResDto.setStopDateTime(ordersM.getStopDateTime());
                 oralResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
-
-
+                if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+                    setExcuteStatus(oralResDto,orderExcuteLogs);
+                }
                 result.add(oralResDto);
             });
+        }
+    }
+
+    private void setExcuteStatus(OralResDto oralResDto,List<OrderExcuteLog> orderExcuteLogs){
+        for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
+            if(oralResDto.getPatientId().equals(orderExcuteLog.getPatientId()) && oralResDto.getOrderNo() == orderExcuteLog.getOrderNo() && oralResDto.getOrderSubNo() == orderExcuteLog.getOrderSubNo()){
+                oralResDto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
+            }
         }
     }
 
