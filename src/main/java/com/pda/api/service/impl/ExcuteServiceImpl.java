@@ -84,6 +84,9 @@ public class ExcuteServiceImpl implements ExcuteService {
                 existLog.setExcuteUserName(currentUser.getName());
                 existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
                 existLog.setExcuteTime(now);
+                if("5".equals(oralExcuteReq.getExcuteStatus())){
+                    // TODO: 2022-08-07 反写his
+                }
                 orderExcuteLogMapper.updateById(existLog);
             }else{
                 OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
