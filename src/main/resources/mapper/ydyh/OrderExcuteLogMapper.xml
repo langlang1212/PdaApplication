@@ -6,7 +6,7 @@
         select *
         from order_excute_log
         where patient_id = #{patientId} and type = #{type}
-        and check_status = '1'
+        and check_status = '1' and excute_date = #{excute}
         <if test='orderNos != null and orderNos.size() > 0'>
             and order_no in
             <foreach collection="orderNos" index="index" item="orderNo" separator="," close=")" open="(">

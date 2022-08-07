@@ -22,4 +22,6 @@ public interface ExcuteService {
     OrderCountResDto orderCount(String patientId,String drugType);
 
     List<OrderResDto> orderExcuteList(String patientId,String drugType);
+
+    void excute(List<ExcuteReq> excuteReqs);
 }

@@ -66,4 +66,10 @@ public class ExcuteController {
     public Result orderExcute(@PathVariable("patientId") String patientId,@PathVariable("drugType") String drugType){
         return Result.success(excuteService.orderExcuteList(patientId,drugType));
     }
+
+    @PostMapping("/order/excute")
+    public Result doExcute(@RequestBody List<ExcuteReq> excuteReqs){
+        excuteService.excute(excuteReqs);
+        return Result.success();
+    }
 }

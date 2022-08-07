@@ -164,10 +164,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,startDateOfDay,endDateOfDay,null,drugType);
-        handleOrder(patientId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER);
+        handleOrder(patientId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today));
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, queryTime,null,drugType);
-        handleOrder(patientId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER);
+        handleOrder(patientId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today));
         return result;
     }
 
@@ -190,14 +190,21 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 处理短期医嘱
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, queryTime,null,drugType);
+        addOrder(result,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
         // 处理长期医嘱
-        return null;
+        return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class,transactionManager = "ds2TransactionManager")
+    @Override
+    public void excute(List<ExcuteReq> excuteReqs) {
+
     }
 
     private void addOrder(List<OrderResDto> result, Date queryTime, List<OrdersM> orders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type,DateUtil.getShortDate(queryTime));
             orders.forEach(ordersM -> {
                 OrderResDto orderResDto = new OrderResDto();
                 orderResDto.setPatientId(ordersM.getPatientId());
@@ -222,7 +229,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     private void addSkin(List<SkinResDto> result, Date queryTime, List<OrdersM> orders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type,DateUtil.getShortDate(queryTime));
             orders.forEach(ordersM -> {
                 SkinResDto skinResDto = new SkinResDto();
                 skinResDto.setPatientId(ordersM.getPatientId());
@@ -247,7 +254,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     private void addOral(List<OralResDto> result, Date queryTime, List<OrdersM> shortOrders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(shortOrders)){
             List<Integer> orderNos = shortOrders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type,DateUtil.getShortDate(queryTime));
             shortOrders.forEach(ordersM -> {
                 OralResDto oralResDto = new OralResDto();
                 oralResDto.setPatientId(ordersM.getPatientId());
@@ -288,7 +295,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         return null;
     }
 
-    private void handleOrder(String patientId, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type) {
+    private void handleOrder(String patientId, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate) {
         if(CollectionUtil.isNotEmpty(orders)){
             // 总条数
             if(1 == repeatRedicator){
@@ -299,7 +306,7 @@ public class ExcuteServiceImpl implements ExcuteService {
             // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(patientId,orderNos, type,excuteDate);
             if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                 orders.forEach(order -> {
                     if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
