@@ -42,21 +42,8 @@
                 </when>
             </choose>
         </if>
-        <if test='drugType != null and drugType != ""'>
-            <choose>
-                <when test="drugType == '1'">
-                    and administration in ('续静滴','静脉输液')
-                </when>
-                <when test="drugType == '2'">
-                    and administration = '空气压缩泵雾化'
-                </when>
-                <!--<when test="drugType == '3'">
-
-                </when>
-                <when test="drugType == '4'">
-
-                </when>-->
-            </choose>
+        <if test='drugType != null'>
+            and administration in (select distinct label from order_label_param where id = #{drugType})
         </if>
         order by order_no
     </select>
@@ -73,22 +60,24 @@
                 </when>
             </choose>
         </if>
-        <if test='drugType != null and drugType != ""'>
-            <choose>
-                <when test="drugType == '1'">
-                    and administration in ('续静滴','静脉输液')
-                </when>
-                <when test="drugType == '2'">
-                    and administration = '空气压缩泵雾化'
-                </when>
-                <!--<when test="drugType == '3'">
-
-                </when>
-                <when test="drugType == '4'">
-
-                </when>-->
-            </choose>
+        <if test='drugType != null'>
+            and administration in (select distinct label from order_label_param where id = #{drugType})
         </if>
+        order by order_no
+    </select>
+
+    <select id="listShortOralByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
+        select * from orders_m
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        and repeat_indicator = 0 and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
+        and administration in (select distinct label from order_label_param where id = 1002) order by order_no
+    </select>
+
+    <select id="listLongOralByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
+        select * from orders_m
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
+        and administration in (select distinct label from order_label_param where id = 1002)
         order by order_no
     </select>
 </mapper>

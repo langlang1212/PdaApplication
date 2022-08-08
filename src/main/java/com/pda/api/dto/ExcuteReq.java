@@ -18,6 +18,9 @@ public class ExcuteReq {
     @ApiModelProperty("病人id")
     private String patientId;
 
+    @ApiModelProperty("住院次数")
+    private Integer visitId;
+
     @ApiModelProperty("单号no")
     private Integer orderNo;
 

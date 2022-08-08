@@ -41,7 +41,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     private OrderExcuteLogMapper orderExcuteLogMapper;
 
     @Override
-    public List<OralResDto> oralList(String patientId) {
+    public List<OralResDto> oralList(String patientId,Integer visitId) {
         List<OralResDto> result = new ArrayList<>();
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         //Date today = new Date();
@@ -50,10 +50,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        List<OrdersM> shortOrders = ordersMMapper.listShortOralByPatientId(patientId,startDateOfDay,endDateOfDay);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOralByPatientId(patientId,startDateOfDay,endDateOfDay,visitId);
         addOral(result, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOralByPatientId(patientId, queryTime);
+        List<OrdersM> longOrders = ordersMMapper.listLongOralByPatientId(patientId, queryTime,visitId);
         addOral(result,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
 
         return result;
@@ -76,7 +76,7 @@ public class ExcuteServiceImpl implements ExcuteService {
 
     private void addExcuteLog(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
         oralExcuteReqs.forEach(oralExcuteReq -> {
-            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER);
+            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER,oralExcuteReq.getVisitId());
             if(ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
@@ -92,6 +92,7 @@ public class ExcuteServiceImpl implements ExcuteService {
             }else{
                 OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
                 orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
+                orderExcuteLog.setVisitId(oralExcuteReq.getVisitId());
                 orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
                 orderExcuteLog.setOrderSubNo(oralExcuteReq.getOrderSubNo());
                 orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
@@ -106,16 +107,17 @@ public class ExcuteServiceImpl implements ExcuteService {
         });
     }
 
-    private OrderExcuteLog getExcuteLog(ExcuteReq excuteReq,String type) {
+    private OrderExcuteLog getExcuteLog(ExcuteReq excuteReq,String type,Integer visitId) {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
+        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,visitId)
+                .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
                 .eq(OrderExcuteLog::getOrderSubNo,excuteReq.getOrderSubNo()).eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate());
         OrderExcuteLog orderExcuteLog = orderExcuteLogMapper.selectOne(logLambdaQueryWrapper);
         return orderExcuteLog;
     }
 
     @Override
-    public List<SkinResDto> skinList(String patientId) {
+    public List<SkinResDto> skinList(String patientId,Integer visitId) {
         List<SkinResDto> result = new ArrayList<>();
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         //Date today = new Date();

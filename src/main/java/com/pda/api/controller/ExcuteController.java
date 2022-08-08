@@ -23,10 +23,10 @@ public class ExcuteController {
     @Autowired
     private ExcuteService excuteService;
 
-    @GetMapping("/oral/{patientId}")
+    @GetMapping("/oral/{patientId}/{visitId}")
     @ApiOperation("口服给药列表")
-    public Result oralList(@PathVariable("patientId") String patientId){
-        return Result.success(excuteService.oralList(patientId));
+    public Result oralList(@PathVariable("patientId") String patientId,@PathVariable("visitId") Integer visitId){
+        return Result.success(excuteService.oralList(patientId,visitId));
     }
 
     @PostMapping("/oral/excute")
@@ -36,10 +36,10 @@ public class ExcuteController {
         return Result.success();
     }
 
-    @GetMapping("/skin/{patientId}")
+    @GetMapping("/skin/{patientId}/{visitId}")
     @ApiOperation("皮试医嘱")
-    public Result skinExcute(@PathVariable("patientId") String patientId){
-        return Result.success(excuteService.skinList(patientId));
+    public Result skinExcute(@PathVariable("patientId") String patientId,@PathVariable("visitId") Integer visitId){
+        return Result.success(excuteService.skinList(patientId,visitId));
     }
 
     @PostMapping("/skin/excute")

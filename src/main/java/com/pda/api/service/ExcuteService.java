@@ -11,11 +11,11 @@ import java.util.List;
  * @Created by AlanZhang
  */
 public interface ExcuteService {
-    List<OralResDto> oralList(String patientId);
+    List<OralResDto> oralList(String patientId,Integer visitId);
 
     void oralExcute(List<ExcuteReq> oralExcuteReq);
 
-    List<SkinResDto> skinList(String patientId);
+    List<SkinResDto> skinList(String patientId,Integer visitId);
 
     void skinExcute(List<ExcuteReq> skinExcuteReqs);
 
