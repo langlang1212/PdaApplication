@@ -21,6 +21,8 @@ public class DrugOrderResDto {
 
     private Integer orderNo;
 
+    private Integer visitId;
+
     /**
      * 0:临时 1:长期
      */

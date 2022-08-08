@@ -3,7 +3,6 @@ package com.pda.api.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -16,6 +15,8 @@ import java.time.LocalDateTime;
 public class OralResDto {
 
     private String patientId;
+
+    private Integer visitId;
 
     private Integer orderNo;
 

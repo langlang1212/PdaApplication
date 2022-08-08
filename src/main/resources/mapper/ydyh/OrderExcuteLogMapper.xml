@@ -5,7 +5,8 @@
     <select id="selectCheckedExcuteLog" resultType="com.pda.api.domain.entity.OrderExcuteLog">
         select *
         from order_excute_log
-        where patient_id = #{patientId} and type = #{type}
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        and type = #{type}
         and check_status = '1' and excute_date = #{excuteDate}
         <if test='orderNos != null and orderNos.size() > 0'>
             and order_no in
@@ -19,7 +20,8 @@
     <select id="selectExcuteLog" resultType="com.pda.api.domain.entity.OrderExcuteLog">
         select *
         from order_excute_log
-        where patient_id = #{patientId} and type = #{type} and excute_date = #{excuteDate}
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        and type = #{type} and excute_date = #{excuteDate}
         <if test='orderNos != null and orderNos.size() > 0'>
             and order_no in
             <foreach collection="orderNos" index="index" item="orderNo" separator="," close=")" open="(">

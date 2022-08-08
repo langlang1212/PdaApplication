@@ -51,10 +51,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOralByPatientId(patientId,startDateOfDay,endDateOfDay,visitId);
-        addOral(result, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addOral(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOralByPatientId(patientId, queryTime,visitId);
-        addOral(result,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addOral(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
 
         return result;
     }
@@ -127,10 +127,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,Constant.EXCUTE_TYPE_ORDER,null);
-        addSkin(result, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addSkin(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,Constant.EXCUTE_TYPE_ORDER,null);
-        addSkin(result,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addSkin(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
 
         return result;
     }
@@ -166,10 +166,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,null,drugType);
-        handleOrder(patientId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today));
+        handleOrder(patientId,visitId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today));
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,null,drugType);
-        handleOrder(patientId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today));
+        handleOrder(patientId,visitId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today));
         return result;
     }
 
@@ -188,11 +188,11 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,null,drugType);
-        addOrder(result,queryTime,shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addOrder(result,visitId,queryTime,shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
         // 处理短期医嘱
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,null,drugType);
-        addOrder(result,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addOrder(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
         // 处理长期医嘱
         return result;
     }
@@ -200,16 +200,25 @@ public class ExcuteServiceImpl implements ExcuteService {
     @Transactional(rollbackFor = Exception.class,transactionManager = "ds2TransactionManager")
     @Override
     public void excute(List<ExcuteReq> excuteReqs) {
+        if(CollectionUtil.isEmpty(excuteReqs)){
+            throw new BusinessException("执行医嘱不能为空!");
+        }
+        // 登陆人
+        UserResDto currentUser = SecurityUtil.getCurrentUser();
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
 
+        addExcuteLog(excuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
     }
 
-    private void addOrder(List<OrderResDto> result, Date queryTime, List<OrdersM> orders,String patientId,String type) {
+    private void addOrder(List<OrderResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,orderNos, type,DateUtil.getShortDate(queryTime));
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, type,DateUtil.getShortDate(queryTime));
             orders.forEach(ordersM -> {
                 OrderResDto orderResDto = new OrderResDto();
                 orderResDto.setPatientId(ordersM.getPatientId());
+                orderResDto.setVisitId(ordersM.getVisitId());
                 orderResDto.setOrderNo(ordersM.getOrderNo());
                 orderResDto.setOrderSubNo(ordersM.getOrderSubNo());
                 orderResDto.setOrderText(ordersM.getOrderText());
@@ -228,10 +237,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         }
     }
 
-    private void addSkin(List<SkinResDto> result, Date queryTime, List<OrdersM> orders,String patientId,String type) {
+    private void addSkin(List<SkinResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,orderNos, type,DateUtil.getShortDate(queryTime));
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, type,DateUtil.getShortDate(queryTime));
             orders.forEach(ordersM -> {
                 SkinResDto skinResDto = new SkinResDto();
                 skinResDto.setPatientId(ordersM.getPatientId());
@@ -253,10 +262,10 @@ public class ExcuteServiceImpl implements ExcuteService {
         }
     }
 
-    private void addOral(List<OralResDto> result, Date queryTime, List<OrdersM> shortOrders,String patientId,String type) {
+    private void addOral(List<OralResDto> result,Integer visitId ,Date queryTime, List<OrdersM> shortOrders,String patientId,String type) {
         if(CollectionUtil.isNotEmpty(shortOrders)){
             List<Integer> orderNos = shortOrders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,orderNos, type,DateUtil.getShortDate(queryTime));
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, type,DateUtil.getShortDate(queryTime));
             shortOrders.forEach(ordersM -> {
                 OralResDto oralResDto = new OralResDto();
                 oralResDto.setPatientId(ordersM.getPatientId());
@@ -297,7 +306,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         return null;
     }
 
-    private void handleOrder(String patientId, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate) {
+    private void handleOrder(String patientId,Integer visitId ,CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate) {
         if(CollectionUtil.isNotEmpty(orders)){
             // 总条数
             if(1 == repeatRedicator){
@@ -308,7 +317,7 @@ public class ExcuteServiceImpl implements ExcuteService {
             // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,orderNos, type,excuteDate);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, type,excuteDate);
             if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                 orders.forEach(order -> {
                     if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
