@@ -28,16 +28,17 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
     CheckCountResDto selectDrugDispensionCount(DrugDispensionReqDto dto);
 
-    @Select("select * from orders_m where patient_id = #{patientId} and start_date_time <= #{endTime} and repeat_indicator = 1 and stop_date_time is null and administration in ('续静滴','静脉输液') order by order_no")
+    @Select("select * from orders_m where patient_id = #{patientId} and visit_id = #{visitId} and start_date_time <= #{endTime} and repeat_indicator = 1 " +
+            "and stop_date_time is null and administration in ('续静滴','静脉输液') order by order_no")
     List<OrdersM> listByPatientId(@Param("patientId") String patientId, @Param("endTime") Date endTime);
 
-    @Select("select * from orders_m where patient_id = #{patientId} and repeat_indicator = 0 and start_date_time >= #{startDateOfDay} and start_date_time <= #{endDateOfDay} and administration in ('续静滴','静脉输液') order by order_no")
+    @Select("select * from orders_m where patient_id = #{patientId} and visit_id = #{visitId} and repeat_indicator = 0 and start_date_time >= #{startDateOfDay} and start_date_time <= #{endDateOfDay} and administration in ('续静滴','静脉输液') order by order_no")
     List<OrdersM> listByPatientIdShort(@Param("patientId") String patientId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay);
 
-    @Select("select * from orders_m where patient_id = #{patientId} and repeat_indicator = 0 and start_date_time >= #{startDateOfDay} and start_date_time <= #{endDateOfDay} and administration = '口服' order by order_no")
+    @Select("select * from orders_m where patient_id = #{patientId} and visit_id = #{visitId} and repeat_indicator = 0 and start_date_time >= #{startDateOfDay} and start_date_time <= #{endDateOfDay} and administration = '口服' order by order_no")
     List<OrdersM> listShortOralByPatientId(String patientId, Date startDateOfDay, Date endDateOfDay);
 
-    @Select("select * from orders_m where patient_id = #{patientId} and start_date_time <= #{endTime} and repeat_indicator = 1 and stop_date_time is null and administration = '口服' order by order_no")
+    @Select("select * from orders_m where patient_id = #{patientId} and visit_id = #{visitId} and start_date_time <= #{endTime} and repeat_indicator = 1 and stop_date_time is null and administration = '口服' order by order_no")
     List<OrdersM> listLongOralByPatientId(@Param("patientId") String patientId, @Param("endTime") Date endTime);
 
     List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay,@Param("type") String type,@Param("drugType") String drugType);

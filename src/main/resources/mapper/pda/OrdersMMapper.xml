@@ -9,7 +9,7 @@
     </select>
 
     <select id="findMyPatient" resultType="com.pda.api.dto.PatientInfoDto">
-        select pi.patient_id "patientId",pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
+        select pi.patient_id "patientId",visit_id "visitId",pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
         pi.ward_name "wardName",pi.doctor_in_charge "doctorCode",pi.date_of_birth "birthDay",pi.admission_date_time "admissionDate",
         pi.diagnosis
         from (select distinct patient_id from orders_m where ward_code = #{wardCode} and nurse = #{userName}) om
@@ -22,7 +22,7 @@
     <select id="selectDrugDispensionCount" resultType="com.pda.api.dto.CheckCountResDto">
         select *
         from orders_m
-        where patient_id = #{patientId,jdbcType=VARCHAR}
+        where patient_id = #{patientId,jdbcType=VARCHAR} and visit_id = #{visitId}
         <if test='repeatIndicator != null'>
             repeat_indicator = #{repeatIndicator}
         </if>
@@ -32,7 +32,7 @@
     <select id="listShortOrderByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
         select *
         from orders_m
-        where patient_id = #{patientId}
+        where patient_id = #{patientId} and visit_id = #{visitId}
         and repeat_indicator = 0
         and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
         <if test='type != null and type != ""'>
@@ -64,7 +64,7 @@
     <select id="listLongOrderByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
         select *
         from orders_m
-        where patient_id = #{patientId}
+        where patient_id = #{patientId} and visit_id = #{visitId}
         and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
         <if test='type != null and type != ""'>
             <choose>

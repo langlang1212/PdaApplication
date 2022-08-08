@@ -16,6 +16,8 @@ public class DrugDispensionReqDto {
 
     @NotBlank(message = "病人id不能为空")
     private String patientId;
+
+    private Integer visitId;
     /**
      * j今天或者明天 0  1
      */

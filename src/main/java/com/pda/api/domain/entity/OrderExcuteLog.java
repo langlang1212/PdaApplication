@@ -20,6 +20,8 @@ public class OrderExcuteLog implements Serializable {
 
     private String patientId;
 
+    private Integer visitId;
+
     private Integer orderNo;
 
     private Integer orderSubNo;
@@ -42,6 +44,14 @@ public class OrderExcuteLog implements Serializable {
      * 执行时间
      */
     private LocalDateTime excuteTime;
+
+    public Integer getVisitId() {
+        return visitId;
+    }
+
+    public void setVisitId(Integer visitId) {
+        this.visitId = visitId;
+    }
 
     public String getCheckStatus() {
         return checkStatus;

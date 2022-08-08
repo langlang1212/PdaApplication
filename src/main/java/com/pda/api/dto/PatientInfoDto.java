@@ -18,6 +18,8 @@ public class PatientInfoDto {
      */
     private String patientId;
 
+    private Integer visitId;
+
     private String name;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
