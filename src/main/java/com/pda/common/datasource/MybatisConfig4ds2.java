@@ -7,6 +7,7 @@ package com.pda.common.datasource;
  * @Created by AlanZhang
  */
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -40,7 +41,7 @@ public class MybatisConfig4ds2 {
     //ds2数据源
     @Bean("ds2SqlSessionFactory")
     public SqlSessionFactory ds2SqlSessionFactory(@Qualifier("ds2DataSource") DataSource dataSource) throws Exception {
-        SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
+        MybatisSqlSessionFactoryBean sqlSessionFactory = new MybatisSqlSessionFactoryBean();
         sqlSessionFactory.setDataSource(dataSource);
         sqlSessionFactory.setConfiguration(globalConfiguration2());
         sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().
