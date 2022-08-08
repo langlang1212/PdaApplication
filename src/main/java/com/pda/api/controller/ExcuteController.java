@@ -55,16 +55,22 @@ public class ExcuteController {
      * @param drugType
      * @return
      */
-    @GetMapping("/order/count/{patientId}/{drugType}")
+    @GetMapping("/order/count/{patientId}/{visitId}/{drugType}")
     @ApiOperation("医嘱执行统计")
-    public Result orderCount(@PathVariable("patientId") String patientId,@PathVariable("drugType") String drugType){
-        return Result.success(excuteService.orderCount(patientId,drugType));
+    public Result orderCount(@PathVariable("patientId") String patientId,
+                             @PathVariable("visitId") Integer visitId,
+                             @PathVariable("drugType") Integer drugType)
+    {
+        return Result.success(excuteService.orderCount(patientId,visitId,drugType));
     }
 
-    @GetMapping("/order/{patientId}/{drugType}")
+    @GetMapping("/order/{patientId}/{visitId}/{drugType}")
     @ApiOperation("医嘱执行")
-    public Result orderExcute(@PathVariable("patientId") String patientId,@PathVariable("drugType") String drugType){
-        return Result.success(excuteService.orderExcuteList(patientId,drugType));
+    public Result orderExcute(@PathVariable("patientId") String patientId,
+                              @PathVariable("visitId") Integer visitId,
+                              @PathVariable("drugType") Integer drugType)
+    {
+        return Result.success(excuteService.orderExcuteList(patientId,visitId,drugType));
     }
 
     @PostMapping("/order/excute")
