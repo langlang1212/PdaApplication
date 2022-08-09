@@ -96,7 +96,7 @@ public class ExcuteServiceImpl implements ExcuteService {
                 if("5".equals(oralExcuteReq.getExcuteStatus())){
                     // TODO: 2022-08-07 反写his
                 }
-                orderExcuteLogMapper.updateById(existLog);
+                orderExcuteLogMapper.updateLog(existLog);
             }else{
                 OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
                 orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
