@@ -182,7 +182,7 @@ public class ExcuteServiceImpl implements ExcuteService {
             labelParams.add(1003);
             labelParams.add(1004);
             labelParams.add(1005);
-            labelParams.add(10066);
+            labelParams.add(1006);
         }else{
             labelParams.add(drugType);
         }
@@ -218,7 +218,7 @@ public class ExcuteServiceImpl implements ExcuteService {
             labelParams.add(1003);
             labelParams.add(1004);
             labelParams.add(1005);
-            labelParams.add(10066);
+            labelParams.add(1006);
         }else{
             labelParams.add(drugType);
         }
@@ -260,7 +260,7 @@ public class ExcuteServiceImpl implements ExcuteService {
                     orderResDto.setOrderNo(ordersM.getOrderNo());
                     orderResDto.setOrderSubNo(ordersM.getOrderSubNo());
                     orderResDto.setOrderText(ordersM.getOrderText());
-                    orderResDto.setRepeatIndicator(0);
+                    orderResDto.setRepeatIndicator(ordersM.getRepeatIndicator());
                     orderResDto.setDosAge(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
                     orderResDto.setFrequency(String.format("%s/%s",ordersM.getFreqCounter(),ordersM.getFreqIntervalUnit()));
                     orderResDto.setAdministration(ordersM.getAdministration());
