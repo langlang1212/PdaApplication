@@ -42,9 +42,6 @@
                 </when>
             </choose>
         </if>
-        <if test='drugType != null'>
-            and administration in (select distinct label from order_label_param where id = #{drugType})
-        </if>
         order by order_no
     </select>
 
@@ -59,9 +56,6 @@
                     and administration = '皮内注射'
                 </when>
             </choose>
-        </if>
-        <if test='drugType != null'>
-            and administration in (select distinct label from order_label_param where id = #{drugType})
         </if>
         order by order_no
     </select>
