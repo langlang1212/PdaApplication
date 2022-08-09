@@ -70,6 +70,11 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // TODO: 2022-08-09 暂时只查找了输液的数据
         List<Integer> labelParams = new ArrayList<>();
         labelParams.add(1001);
+        labelParams.add(1002);
+        labelParams.add(1003);
+        labelParams.add(1004);
+        labelParams.add(1005);
+        labelParams.add(1006);
         Set<String> labels = iOrderLabelParamService.labels(labelParams);
         // 查询病人所有药
         List<OrdersM> longOrders = ordersMMapper.listByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
@@ -143,6 +148,11 @@ public class DrugCheckServiceImpl implements DrugCheckService {
          */
         List<Integer> labelParams = new ArrayList<>();
         labelParams.add(1001);
+        labelParams.add(1002);
+        labelParams.add(1003);
+        labelParams.add(1004);
+        labelParams.add(1005);
+        labelParams.add(1006);
         Set<String> labels = iOrderLabelParamService.labels(labelParams);
         // 长期
         List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
