@@ -85,7 +85,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     private void addExcuteLog(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
         oralExcuteReqs.forEach(oralExcuteReq -> {
             OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER,oralExcuteReq.getVisitId());
-            if(ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
+            if(ObjectUtil.isNotNull(existLog) && ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
             if(ObjectUtil.isNotNull(existLog)){
@@ -193,6 +193,9 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,null,drugType);
         handleOrder(patientId,visitId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today),labels);
+        // 设置剩余的
+        result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
+        result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
         return result;
     }
 
