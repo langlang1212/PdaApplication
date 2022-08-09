@@ -23,6 +23,6 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
     List<OrderExcuteLog> selectExcuteLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type,@Param("excuteDate") String excuteDate);
 
     @Update("update order_excute_log set excute_user_code = #{excuteUserCode},excute_user_name = #{excuteUserName},excute_status = #{excuteStatus},excute_time=#{excuteTime} " +
-            "where patient_id = #{patientId} and visit_id = #{visitId} and order_no = #{orderNo} and order_sub_no = #{orderSubNo}")
+            "where patient_id = #{patientId} and visit_id = #{visitId} and order_no = #{orderNo} and order_sub_no = #{orderSubNo} and type = #{type}")
     void updateLog(OrderExcuteLog existLog);
 }
