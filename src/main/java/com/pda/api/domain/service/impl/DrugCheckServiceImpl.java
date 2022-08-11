@@ -1,7 +1,9 @@
 package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
+import com.pda.api.domain.entity.OrderLabelParam;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.service.DrugCheckService;
 import com.pda.api.domain.service.IOrderExcuteLogService;
@@ -37,6 +39,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class DrugCheckServiceImpl implements DrugCheckService {
+
+    private static final String BAIYAO = "m0001";
+
     private static final Integer CHANG = 1;
 
     private static final Integer LINSHI = 0;
@@ -68,14 +73,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
         // TODO: 2022-08-09 暂时只查找了输液的数据
-        List<Integer> labelParams = new ArrayList<>();
-        labelParams.add(1001);
-        labelParams.add(1002);
-        labelParams.add(1003);
-        labelParams.add(1004);
-        labelParams.add(1005);
-        labelParams.add(1006);
-        Set<String> labels = iOrderLabelParamService.labels(labelParams);
+        Set<String> labels = iOrderLabelParamService.getLaeblsByModule(BAIYAO);
         // 查询病人所有药
         List<OrdersM> longOrders = ordersMMapper.listByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
         handleOrder(dto, result, longOrders,CHANG,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
@@ -104,7 +102,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
             if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                 orders.forEach(order -> {
-                    if(labels.contains(order.getAdministration())){
+                    if(CollectionUtil.isNotEmpty(labels) && labels.contains(order.getAdministration())){
                         if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                             orderExcuteLogs.forEach(orderExcuteLog -> {
                                 if(order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
@@ -146,14 +144,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
          * 2、取明天的医嘱，明天早上0点之前开的医嘱，并且结束时间为null的，都有效
          * 所以日期应该取明天早上0点
          */
-        List<Integer> labelParams = new ArrayList<>();
-        labelParams.add(1001);
-        labelParams.add(1002);
-        labelParams.add(1003);
-        labelParams.add(1004);
-        labelParams.add(1005);
-        labelParams.add(1006);
-        Set<String> labels = iOrderLabelParamService.labels(labelParams);
+        Set<String> labels = iOrderLabelParamService.getLaeblsByModule(BAIYAO);
         // 长期
         List<OrdersM> orders = ordersMMapper.listByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
         handleOrderInfos(dto, queryTime, longTimeOrder, orders,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
@@ -187,7 +178,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
                 OrdersM firstSubOrder = ordersMS.get(0);
-                if(labels.contains(firstSubOrder.getAdministration())){
+                if(CollectionUtil.isNotEmpty(labels) && labels.contains(firstSubOrder.getAdministration())){
                     // 第一步初始化
                     DrugOrderResDto drugOrderResDto = new DrugOrderResDto();
                     drugOrderResDto.setPatientId(firstSubOrder.getPatientId());

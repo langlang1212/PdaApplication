@@ -22,6 +22,26 @@ public class OrderLabelParam implements Serializable {
 
     private String label;
 
+    private String moduleCode;
+
+    private String moduleName;
+
+    public String getModuleCode() {
+        return moduleCode;
+    }
+
+    public void setModuleCode(String moduleCode) {
+        this.moduleCode = moduleCode;
+    }
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
+    }
+
     public Integer getId() {
         return id;
     }

@@ -18,4 +18,6 @@ public interface IOrderLabelParamService extends IService<OrderLabelParam> {
 
     public Set<String> labels(List<Integer> ids);
 
+    public Set<String> getLaeblsByModule(String moduleCode);
+
 }

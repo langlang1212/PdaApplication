@@ -53,7 +53,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-
+        // 口服的
         List<Integer> labelParams = new ArrayList<>();
         labelParams.add(1002);
         Set<String> labels = iOrderLabelParamService.labels(labelParams);
@@ -134,12 +134,14 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+        // 皮试用法
+        Set<String> labels = new HashSet<>();
 
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,Constant.EXCUTE_TYPE_ORDER,null);
-        addSkin(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addSkin(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,Constant.EXCUTE_TYPE_ORDER,null);
-        addSkin(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER);
+        addSkin(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
 
         return result;
     }
@@ -279,12 +281,12 @@ public class ExcuteServiceImpl implements ExcuteService {
         }
     }
 
-    private void addSkin(List<SkinResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type) {
+    private void addSkin(List<SkinResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type,Set<String> labels) {
         if(CollectionUtil.isNotEmpty(orders)){
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, type,DateUtil.getShortDate(queryTime));
             orders.forEach(ordersM -> {
-                if("皮内注射".equals(ordersM.getAdministration())){
+                if(labels.contains(ordersM.getAdministration())){
                     SkinResDto skinResDto = new SkinResDto();
                     skinResDto.setPatientId(ordersM.getPatientId());
                     skinResDto.setOrderNo(ordersM.getOrderNo());

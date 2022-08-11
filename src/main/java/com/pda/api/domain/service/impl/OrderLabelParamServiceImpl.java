@@ -1,5 +1,6 @@
 package com.pda.api.domain.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -32,5 +33,17 @@ public class OrderLabelParamServiceImpl extends ServiceImpl<OrderLabelParamMappe
         List<OrderLabelParam> params = this.list(paramQueryWrapper);
         Set<String> labelSet = params.stream().map(OrderLabelParam::getLabel).collect(Collectors.toSet());
         return labelSet;
+    }
+
+    @Override
+    public Set<String> getLaeblsByModule(String moduleCode) {
+        LambdaQueryWrapper<OrderLabelParam> labelParamLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        labelParamLambdaQueryWrapper.eq(OrderLabelParam::getModuleCode,moduleCode);
+        List<OrderLabelParam> list = this.list(labelParamLambdaQueryWrapper);
+        if(CollectionUtil.isNotEmpty(list)){
+            Set<String> set = list.stream().map(OrderLabelParam::getLabel).collect(Collectors.toSet());
+            return set;
+        }
+        return null;
     }
 }
