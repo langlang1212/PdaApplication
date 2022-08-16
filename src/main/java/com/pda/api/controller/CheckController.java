@@ -3,6 +3,8 @@ package com.pda.api.controller;
 import com.pda.api.domain.service.DrugCheckService;
 import com.pda.api.dto.CheckReqDto;
 import com.pda.api.dto.DrugDispensionReqDto;
+import com.pda.api.dto.SpecimenCheckResDto;
+import com.pda.api.service.CheckService;
 import com.pda.common.Constant;
 import com.pda.common.Result;
 import io.swagger.annotations.Api;
@@ -12,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.zip.CheckedInputStream;
 
 /**
  * @Classname DrugCheckController
@@ -25,6 +28,8 @@ public class CheckController {
 
     @Autowired
     private DrugCheckService drugCheckService;
+    @Autowired
+    private CheckService checkService;
 
     /**
      * 摆药核查  0:今天 1:明天
@@ -66,5 +71,13 @@ public class CheckController {
     public Result distributionCheck(@RequestBody List<CheckReqDto> checkReqDtoList){
         drugCheckService.check(checkReqDtoList, Constant.EXCUTE_TYPE_LIQUID);
         return Result.success();
+    }
+
+    @ApiOperation(value = "标本送检")
+    @GetMapping("/specimen/check/{patientId}/{visitId}")
+    public Result specimenCheck(@PathVariable("patientId") String patientId,
+                                @PathVariable("visitId") Integer visitId){
+        List<SpecimenCheckResDto> result = checkService.specimenCheck(patientId,visitId);
+        return Result.success(result);
     }
 }

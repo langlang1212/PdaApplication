@@ -35,4 +35,8 @@ public class Constant {
     public static final String EXCUTE_TYPE_ORAL = "4";
 
     public static final String EXCUTE_TYPE_SKIN = "5";
+
+    public static final String YDYH_RESPONSE_CODE = "AA";
+
+    public static final String YDYH_RESPONSE_TEXT = "查询成功！";
 }

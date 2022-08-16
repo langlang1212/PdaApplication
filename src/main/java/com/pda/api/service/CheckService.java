@@ -1,5 +1,9 @@
 package com.pda.api.service;
 
+import com.pda.api.dto.SpecimenCheckResDto;
+
+import java.util.List;
+
 /**
  * @Classname CheckService
  * @Description TODO
@@ -12,4 +16,6 @@ public interface CheckService {
     String findCheckInfo(Integer pageNum);
 
     String findCheckApplyInfo(Integer pageNum);
+
+    List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId);
 }
