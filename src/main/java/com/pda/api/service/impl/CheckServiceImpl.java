@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.SpecimenCheck;
 import com.pda.api.domain.service.ISpecimenCheckService;
+import com.pda.api.dto.SpecimenCheckCountDto;
 import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.service.CheckService;
 import com.pda.common.Constant;
@@ -173,6 +174,24 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             }
         }
         return null;
+    }
+
+    @Override
+    public SpecimenCheckCountDto specimenCheckCount(String patientId, Integer visitId) {
+        SpecimenCheckCountDto result = new SpecimenCheckCountDto();
+        // 查询已有的
+        List<SpecimenCheckResDto> specimenCheckResDtos = this.specimenCheck(patientId, visitId);
+        if(CollectionUtil.isNotEmpty(specimenCheckResDtos)){
+            result.setTotal(specimenCheckResDtos.size());
+            for(SpecimenCheckResDto resDto : specimenCheckResDtos){
+                if("1".equals(resDto.getStatus())){
+                    result.setCollaredCount(result.getCollaredCount() + 1);
+                }else if("2".equals(resDto.getStatus())){
+                    result.setSentCount(result.getSentCount() + 1);
+                }
+            }
+        }
+        return result;
     }
 
     private List<SpecimenCheck> getCheckInfo(SpecimenCheckResDto specimenCheckResDto) {

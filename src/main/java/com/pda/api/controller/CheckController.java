@@ -3,6 +3,7 @@ package com.pda.api.controller;
 import com.pda.api.domain.service.DrugCheckService;
 import com.pda.api.dto.CheckReqDto;
 import com.pda.api.dto.DrugDispensionReqDto;
+import com.pda.api.dto.SpecimenCheckCountDto;
 import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.service.CheckService;
 import com.pda.common.Constant;
@@ -78,6 +79,14 @@ public class CheckController {
     public Result specimenCheck(@PathVariable("patientId") String patientId,
                                 @PathVariable("visitId") Integer visitId){
         List<SpecimenCheckResDto> result = checkService.specimenCheck(patientId,visitId);
+        return Result.success(result);
+    }
+
+    @ApiOperation(value = "标本送检统计")
+    @GetMapping("/specimen/check/count/{patientId}/{visitId}")
+    public Result specimenCheckCount(@PathVariable("patientId") String patientId,
+                                @PathVariable("visitId") Integer visitId){
+        SpecimenCheckCountDto result = checkService.specimenCheckCount(patientId,visitId);
         return Result.success(result);
     }
 }
