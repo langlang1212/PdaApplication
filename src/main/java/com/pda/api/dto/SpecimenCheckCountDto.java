@@ -16,4 +16,6 @@ public class SpecimenCheckCountDto {
     private Integer collaredCount = 0;
 
     private Integer sentCount = 0;
+
+    private Integer remainingCount = 0;
 }

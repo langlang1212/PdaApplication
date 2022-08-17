@@ -200,6 +200,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 }
             }
         }
+        result.setRemainingCount(result.getTotal() - result.getCollaredCount() - result.getSentCount());
         return result;
     }
 
