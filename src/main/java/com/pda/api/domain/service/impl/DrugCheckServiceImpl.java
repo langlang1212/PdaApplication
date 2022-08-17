@@ -90,19 +90,18 @@ public class DrugCheckServiceImpl implements DrugCheckService {
 
     private void handleOrder(DrugDispensionReqDto dto, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate,Set<String> labels) {
         if(CollectionUtil.isNotEmpty(orders)){
-            // 总条数
-            if(CHANG == repeatRedicator){
-                result.setTotalBottles(orders.size());
-            }else{
-                result.setTempTotalBottles(orders.size());
-            }
             // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 查出已经核查过该病人的医嘱
             List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
-            if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
+            if(CollectionUtil.isNotEmpty(orders)){
                 orders.forEach(order -> {
                     if(CollectionUtil.isNotEmpty(labels) && labels.contains(order.getAdministration())){
+                        if(CHANG == repeatRedicator){
+                            result.setTotalBottles(result.getTotalBottles()+1);
+                        }else{
+                            result.setTempTotalBottles(result.getTempTotalBottles()+1);
+                        }
                         if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                             orderExcuteLogs.forEach(orderExcuteLog -> {
                                 if(order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
