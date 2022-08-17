@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -17,15 +19,15 @@ import javax.validation.constraints.NotNull;
 public class SpecimenCheckOperDto {
 
     @ApiModelProperty("病人id")
-    @NotNull
+    @NotEmpty(message = "病人id为空")
     private String patientId;
     @ApiModelProperty("第几次住院")
-    @NotNull
+    @NotNull(message = "来访次数不能为null")
     private Integer visitId;
     @ApiModelProperty("检验单号")
-    @NotNull
+    @NotEmpty(message = "测试号不能为空")
     private String testNo;
     @ApiModelProperty("1:核对 2:送检")
-    @NotNull
+    @NotEmpty(message = "状态不能为空")
     private String status;
 }
