@@ -1,6 +1,7 @@
 package com.pda.api.service;
 
 import com.pda.api.dto.SpecimenCheckCountDto;
+import com.pda.api.dto.SpecimenCheckOperDto;
 import com.pda.api.dto.SpecimenCheckResDto;
 
 import java.util.List;
@@ -21,4 +22,6 @@ public interface CheckService {
     List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId);
 
     SpecimenCheckCountDto specimenCheckCount(String patientId, Integer visitId);
+
+    void doSpecimenCheck(SpecimenCheckOperDto specimenCheckOperDto);
 }

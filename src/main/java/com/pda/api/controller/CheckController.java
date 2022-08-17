@@ -1,10 +1,7 @@
 package com.pda.api.controller;
 
 import com.pda.api.domain.service.DrugCheckService;
-import com.pda.api.dto.CheckReqDto;
-import com.pda.api.dto.DrugDispensionReqDto;
-import com.pda.api.dto.SpecimenCheckCountDto;
-import com.pda.api.dto.SpecimenCheckResDto;
+import com.pda.api.dto.*;
 import com.pda.api.service.CheckService;
 import com.pda.common.Constant;
 import com.pda.common.Result;
@@ -88,5 +85,12 @@ public class CheckController {
                                 @PathVariable("visitId") Integer visitId){
         SpecimenCheckCountDto result = checkService.specimenCheckCount(patientId,visitId);
         return Result.success(result);
+    }
+
+    @PostMapping("/specimen/check/do")
+    @ApiOperation("标本送检核对以及送检")
+    public Result doSpecimenCheck(@RequestBody @Validated SpecimenCheckOperDto specimenCheckOperDto){
+        checkService.doSpecimenCheck(specimenCheckOperDto);
+        return Result.success();
     }
 }

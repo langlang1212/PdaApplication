@@ -10,19 +10,22 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.SpecimenCheck;
 import com.pda.api.domain.service.ISpecimenCheckService;
 import com.pda.api.dto.SpecimenCheckCountDto;
+import com.pda.api.dto.SpecimenCheckOperDto;
 import com.pda.api.dto.SpecimenCheckResDto;
+import com.pda.api.dto.UserResDto;
 import com.pda.api.service.CheckService;
 import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
-import com.pda.utils.CxfClient;
-import com.pda.utils.DateUtil;
-import com.pda.utils.LocalDateUtils;
-import com.pda.utils.PdaTimeUtil;
+import com.pda.exception.BusinessException;
+import com.pda.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -143,37 +146,43 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                     List<SpecimenCheckResDto> resultList = new ArrayList<>();
                     for(Object obj : jsonArray){
                         JSONObject jsonObj = (JSONObject) obj;
-
-                        SpecimenCheckResDto specimenCheckResDto = new SpecimenCheckResDto();
-                        specimenCheckResDto.setTestNo(jsonObj.getString("test_no"));
-                        specimenCheckResDto.setPatientId(jsonObj.getString("patient_id"));
-                        specimenCheckResDto.setVisitId(jsonObj.getInteger("visit_id"));
-                        specimenCheckResDto.setSubject(jsonObj.getString("subject"));
-                        specimenCheckResDto.setSpecimen(jsonObj.getString("specimen"));
-                        specimenCheckResDto.setRequestedDateTime(jsonObj.getDate("requested_date_time"));
-                        specimenCheckResDto.setPerformedBy(jsonObj.getString("performed_by"));
-                        specimenCheckResDto.setPerformedDeptName(jsonObj.getString("performed_dept_name"));
-                        // 核对信息
-                        List<SpecimenCheck> checkInfos = getCheckInfo(specimenCheckResDto);
-                        if(CollectionUtil.isNotEmpty(checkInfos)){
-                            for(SpecimenCheck specimenCheck : checkInfos){
-                                if("1".equals(specimenCheck.getStatus())){
-                                    specimenCheckResDto.setCollartor(specimenCheck.getOperUser());
-                                    specimenCheckResDto.setCollarDate(LocalDateUtils.localDateTime2Date(specimenCheck.getOperTime()));
-                                }else if("2".equals(specimenCheck.getStatus())){
-                                    specimenCheckResDto.setSendUser(specimenCheck.getOperUser());
-                                    specimenCheckResDto.setSendTime(LocalDateUtils.localDateTime2Date(specimenCheck.getOperTime()));
-                                }
-                                specimenCheckResDto.setStatus(specimenCheck.getStatus());
-                            }
+                        if("2".equals(jsonObj.getString("result_status"))){
+                            SpecimenCheckResDto specimenCheckResDto = initSpecimenCheckInfo(jsonObj);
+                            resultList.add(specimenCheckResDto);
                         }
-                        resultList.add(specimenCheckResDto);
                     }
                     return resultList;
                 }
             }
         }
         return null;
+    }
+
+    private SpecimenCheckResDto initSpecimenCheckInfo(JSONObject jsonObj) {
+        SpecimenCheckResDto specimenCheckResDto = new SpecimenCheckResDto();
+        specimenCheckResDto.setTestNo(jsonObj.getString("test_no"));
+        specimenCheckResDto.setPatientId(jsonObj.getString("patient_id"));
+        specimenCheckResDto.setVisitId(jsonObj.getInteger("visit_id"));
+        specimenCheckResDto.setSubject(jsonObj.getString("subject"));
+        specimenCheckResDto.setSpecimen(jsonObj.getString("specimen"));
+        specimenCheckResDto.setRequestedDateTime(jsonObj.getDate("requested_date_time"));
+        specimenCheckResDto.setPerformedBy(jsonObj.getString("performed_by"));
+        specimenCheckResDto.setPerformedDeptName(jsonObj.getString("performed_dept_name"));
+        // 核对信息
+        List<SpecimenCheck> checkInfos = getCheckInfo(specimenCheckResDto);
+        if(CollectionUtil.isNotEmpty(checkInfos)){
+            for(SpecimenCheck specimenCheck : checkInfos){
+                if("1".equals(specimenCheck.getStatus())){
+                    specimenCheckResDto.setCollartor(specimenCheck.getOperUser());
+                    specimenCheckResDto.setCollarDate(LocalDateUtils.localDateTime2Date(specimenCheck.getOperTime()));
+                }else if("2".equals(specimenCheck.getStatus())){
+                    specimenCheckResDto.setSendUser(specimenCheck.getOperUser());
+                    specimenCheckResDto.setSendTime(LocalDateUtils.localDateTime2Date(specimenCheck.getOperTime()));
+                }
+                specimenCheckResDto.setStatus(specimenCheck.getStatus());
+            }
+        }
+        return specimenCheckResDto;
     }
 
     @Override
@@ -192,6 +201,29 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             }
         }
         return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void doSpecimenCheck(SpecimenCheckOperDto specimenCheckOperDto) {
+        LambdaQueryWrapper<SpecimenCheck> checkLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        checkLambdaQueryWrapper.eq(SpecimenCheck::getPatientId,specimenCheckOperDto.getPatientId())
+                .eq(SpecimenCheck::getVisitId,specimenCheckOperDto.getVisitId())
+                .eq(SpecimenCheck::getTestNo,specimenCheckOperDto.getTestNo())
+                .eq(SpecimenCheck::getStatus,specimenCheckOperDto.getStatus());
+        SpecimenCheck checkInfo = iSpecimenCheckService.getOne(checkLambdaQueryWrapper);
+        if(ObjectUtil.isNotNull(checkInfo)){
+            throw new BusinessException("当前标本送检已经执行过当前操作!");
+        }else{
+            UserResDto currentUser = SecurityUtil.getCurrentUser();
+            checkInfo = new SpecimenCheck();
+            BeanUtils.copyProperties(specimenCheckOperDto,checkInfo);
+            checkInfo.setOperUserCode(currentUser.getUserName());
+            checkInfo.setOperUser(currentUser.getName());
+            checkInfo.setOperTime(LocalDateTime.now());
+
+            iSpecimenCheckService.save(checkInfo);
+        }
     }
 
     private List<SpecimenCheck> getCheckInfo(SpecimenCheckResDto specimenCheckResDto) {
