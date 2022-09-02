@@ -99,6 +99,11 @@
             <!--在引用时请在maven中央仓库搜索2.X最新版本号-->
             <version>3.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0.3</version>
+        </dependency>
     </dependencies>
 
     <build>
