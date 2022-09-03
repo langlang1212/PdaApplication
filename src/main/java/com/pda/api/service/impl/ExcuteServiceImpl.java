@@ -47,8 +47,8 @@ public class ExcuteServiceImpl implements ExcuteService {
     public List<OralResDto> oralList(String patientId,Integer visitId) {
         List<OralResDto> result = new ArrayList<>();
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        //Date today = new Date();
-        Date today = getTestTime();
+        Date today = new Date();
+        //Date today = getTestTime();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
@@ -128,8 +128,8 @@ public class ExcuteServiceImpl implements ExcuteService {
     public List<SkinResDto> skinList(String patientId,Integer visitId) {
         List<SkinResDto> result = new ArrayList<>();
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        //Date today = new Date();
-        Date today = getTestTime();
+        Date today = new Date();
+        //Date today = getTestTime();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
@@ -170,8 +170,8 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 最后结果
         OrderCountResDto result = new OrderCountResDto();
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        //Date today = new Date();
-        Date today = getTestTime();
+        Date today = new Date();
+        //Date today = getTestTime();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
@@ -210,7 +210,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     public List<OrderResDto> orderExcuteList(String patientId,Integer visitId,Integer drugType) {
         List<OrderResDto> result = new ArrayList<>();
 
-        Date today = getTestTime();
+        Date today = new Date();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
