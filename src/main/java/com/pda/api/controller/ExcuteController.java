@@ -59,7 +59,7 @@ public class ExcuteController {
     @ApiOperation("医嘱执行统计")
     public Result orderCount(@PathVariable("patientId") String patientId,
                              @PathVariable("visitId") Integer visitId,
-                             @PathVariable("drugType") Integer drugType)
+                             @PathVariable("drugType") String drugType)
     {
         return Result.success(excuteService.orderCount(patientId,visitId,drugType));
     }
@@ -68,7 +68,7 @@ public class ExcuteController {
     @ApiOperation("医嘱执行")
     public Result orderExcute(@PathVariable("patientId") String patientId,
                               @PathVariable("visitId") Integer visitId,
-                              @PathVariable("drugType") Integer drugType)
+                              @PathVariable("drugType") String drugType)
     {
         return Result.success(excuteService.orderExcuteList(patientId,visitId,drugType));
     }

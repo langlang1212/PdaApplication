@@ -19,9 +19,9 @@ public interface ExcuteService {
 
     void skinExcute(List<ExcuteReq> skinExcuteReqs);
 
-    OrderCountResDto orderCount(String patientId,Integer visitId,Integer drugType);
+    OrderCountResDto orderCount(String patientId,Integer visitId,String drugType);
 
-    List<OrderResDto> orderExcuteList(String patientId,Integer visitId,Integer drugType);
+    List<OrderResDto> orderExcuteList(String patientId,Integer visitId,String drugType);
 
     void excute(List<ExcuteReq> excuteReqs);
 }

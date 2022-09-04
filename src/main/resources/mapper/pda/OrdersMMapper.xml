@@ -19,29 +19,12 @@
         </if>
     </select>
 
-    <select id="selectDrugDispensionCount" resultType="com.pda.api.dto.CheckCountResDto">
-        select *
-        from orders_m
-        where patient_id = #{patientId,jdbcType=VARCHAR} and visit_id = #{visitId}
-        <if test='repeatIndicator != null'>
-            repeat_indicator = #{repeatIndicator}
-        </if>
-        and (ADMINISTRATION like concat('续静滴','%') or ADMINISTRATION like concat('静脉输液','%'))
-    </select>
-
     <select id="listShortOrderByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
         select *
         from orders_m
         where patient_id = #{patientId} and visit_id = #{visitId}
         and repeat_indicator = 0
         and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
-        <if test='type != null and type != ""'>
-            <choose>
-                <when test="type == '5'">
-                    and administration = '皮内注射'
-                </when>
-            </choose>
-        </if>
         order by order_no
     </select>
 
@@ -50,27 +33,7 @@
         from orders_m
         where patient_id = #{patientId} and visit_id = #{visitId}
         and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
-        <if test='type != null and type != ""'>
-            <choose>
-                <when test="type == '5'">
-                    and administration = '皮内注射'
-                </when>
-            </choose>
-        </if>
         order by order_no
     </select>
 
-    <select id="listShortOralByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
-        select * from orders_m
-        where patient_id = #{patientId} and visit_id = #{visitId}
-        and repeat_indicator = 0 and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
-        order by order_no
-    </select>
-
-    <select id="listLongOralByPatientId" resultType="com.pda.api.domain.entity.OrdersM">
-        select * from orders_m
-        where patient_id = #{patientId} and visit_id = #{visitId}
-        and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
-        order by order_no
-    </select>
 </mapper>

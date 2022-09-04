@@ -4,9 +4,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.pda.api.domain.constant.DomainConstant;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
+import com.pda.api.domain.enums.ModuleTypeEnum;
 import com.pda.api.domain.service.IOrderLabelParamService;
+import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.dto.*;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
@@ -17,6 +20,7 @@ import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
 import com.pda.utils.SecurityUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,26 +46,26 @@ public class ExcuteServiceImpl implements ExcuteService {
     private OrderExcuteLogMapper orderExcuteLogMapper;
     @Autowired
     private IOrderLabelParamService iOrderLabelParamService;
+    @Autowired
+    private IOrderTypeDictService iOrderTypeDictService;
 
     @Override
     public List<OralResDto> oralList(String patientId,Integer visitId) {
         List<OralResDto> result = new ArrayList<>();
-        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         Date today = new Date();
-        //Date today = getTestTime();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         // 口服的
-        List<Integer> labelParams = new ArrayList<>();
-        labelParams.add(1002);
-        Set<String> labels = iOrderLabelParamService.labels(labelParams);
+        List<String> types = new ArrayList<>();
+        types.add(ModuleTypeEnum.TYPE2.code());
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
 
-        List<OrdersM> shortOrders = ordersMMapper.listShortOralByPatientId(patientId,startDateOfDay,endDateOfDay,visitId);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
         addOral(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOralByPatientId(patientId, queryTime,visitId);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId,queryTime);
         addOral(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
 
         return result;
@@ -127,20 +131,18 @@ public class ExcuteServiceImpl implements ExcuteService {
     @Override
     public List<SkinResDto> skinList(String patientId,Integer visitId) {
         List<SkinResDto> result = new ArrayList<>();
-        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         Date today = new Date();
-        //Date today = getTestTime();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         // 皮试用法
-        Set<String> labels = new HashSet<>();
+        Set<String> labels = DomainConstant.skinSet;
 
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,Constant.EXCUTE_TYPE_ORDER,null);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
         addSkin(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,Constant.EXCUTE_TYPE_ORDER,null);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime);
         addSkin(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
 
         return result;
@@ -166,34 +168,28 @@ public class ExcuteServiceImpl implements ExcuteService {
      * @return
      */
     @Override
-    public OrderCountResDto orderCount(String patientId,Integer visitId,Integer drugType) {
+    public OrderCountResDto orderCount(String patientId,Integer visitId,String drugType) {
         // 最后结果
         OrderCountResDto result = new OrderCountResDto();
         // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         Date today = new Date();
-        //Date today = getTestTime();
         Date queryTime = DateUtil.getStartDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
 
-        List<Integer> labelParams = new ArrayList<>();
-        if(drugType == 0 ){
-            labelParams.add(1001);
-            labelParams.add(1002);
-            labelParams.add(1003);
-            labelParams.add(1004);
-            labelParams.add(1005);
-            labelParams.add(1006);
+        List<String> types = new ArrayList<>();
+        if(!StringUtils.isBlank(drugType)){  // 为空就是全部
+            types = ModuleTypeEnum.getAllCodes();
         }else{
-            labelParams.add(drugType);
+            types.add(drugType);
         }
-        Set<String> labels = iOrderLabelParamService.labels(labelParams);
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
 
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,null,drugType);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
         handleOrder(patientId,visitId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today),labels);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,null,drugType);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime);
         handleOrder(patientId,visitId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today),labels);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
@@ -207,7 +203,7 @@ public class ExcuteServiceImpl implements ExcuteService {
      * @return
      */
     @Override
-    public List<OrderResDto> orderExcuteList(String patientId,Integer visitId,Integer drugType) {
+    public List<OrderResDto> orderExcuteList(String patientId,Integer visitId,String drugType) {
         List<OrderResDto> result = new ArrayList<>();
 
         Date today = new Date();
@@ -216,24 +212,19 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
 
-        List<Integer> labelParams = new ArrayList<>();
-        if(drugType == 0 ){
-            labelParams.add(1001);
-            labelParams.add(1002);
-            labelParams.add(1003);
-            labelParams.add(1004);
-            labelParams.add(1005);
-            labelParams.add(1006);
+        List<String> types = new ArrayList<>();
+        if(StringUtils.isBlank(drugType)){
+            types = ModuleTypeEnum.getAllCodes();
         }else{
-            labelParams.add(drugType);
+            types.add(drugType);
         }
-        Set<String> labels = iOrderLabelParamService.labels(labelParams);
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
 
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,null,drugType);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
         addOrder(result,visitId,queryTime,shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
         // 处理短期医嘱
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,null,drugType);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime);
         addOrder(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
         // 处理长期医嘱
         return result;

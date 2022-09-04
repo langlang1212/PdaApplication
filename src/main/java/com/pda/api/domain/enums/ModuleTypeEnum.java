@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @Classname ModuleTypeEnum
  * @Description TODO
@@ -21,5 +24,15 @@ public enum ModuleTypeEnum {
 
     public String code(){
         return this.code;
+    }
+
+    public static List<String> getAllCodes(){
+        List<String> types = new ArrayList<>();
+
+        ModuleTypeEnum[] values = values();
+        for(ModuleTypeEnum moduleTypeEnum : values){
+            types.add(moduleTypeEnum.code());
+        }
+        return types;
     }
 }

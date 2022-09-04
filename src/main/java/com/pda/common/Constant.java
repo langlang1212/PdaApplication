@@ -22,8 +22,6 @@ public class Constant {
 
     public static final String TODAY = "0";
 
-    public static final String TOMORROW = "1";
-
     public static final String EXCUTE_TYPE_DRUG = "1";
     /**
      * 配液
@@ -31,10 +29,6 @@ public class Constant {
     public static final String EXCUTE_TYPE_LIQUID = "2";
 
     public static final String EXCUTE_TYPE_ORDER = "3";
-
-    public static final String EXCUTE_TYPE_ORAL = "4";
-
-    public static final String EXCUTE_TYPE_SKIN = "5";
 
     public static final String YDYH_RESPONSE_CODE = "AA";
 
