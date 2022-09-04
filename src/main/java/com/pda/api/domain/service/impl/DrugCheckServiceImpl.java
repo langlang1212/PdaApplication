@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrderLabelParam;
 import com.pda.api.domain.entity.OrdersM;
+import com.pda.api.domain.enums.ModuleTypeEnum;
 import com.pda.api.domain.service.DrugCheckService;
 import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.domain.service.IOrderLabelParamService;
+import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.dto.*;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
@@ -53,6 +55,8 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     private IOrderExcuteLogService iOrderExcuteLogService;
     @Autowired
     private IOrderLabelParamService iOrderLabelParamService;
+    @Autowired
+    private IOrderTypeDictService iOrderTypeDictService;
 
     /**
      * 摆药统计
@@ -278,9 +282,11 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         }else{
             queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
-        List<Integer> labelParams = new ArrayList<>();
-        labelParams.add(1001);
-        Set<String> labels = iOrderLabelParamService.labels(labelParams);
+        List<String> types = new ArrayList<>();
+        types.add(ModuleTypeEnum.TYPE3.code());
+        types.add(ModuleTypeEnum.TYPE5.code());
+        types.add(ModuleTypeEnum.TYPE6.code());
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
 
         List<OrdersM> longOrders = ordersMMapper.listByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
         handleOrder(dto, result, longOrders,CHANG,Constant.EXCUTE_TYPE_LIQUID,DateUtil.getShortDate(today),labels);
