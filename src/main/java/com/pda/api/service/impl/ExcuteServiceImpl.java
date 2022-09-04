@@ -57,7 +57,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        // 口服的
+        // 口服
         List<String> types = new ArrayList<>();
         types.add(ModuleTypeEnum.TYPE2.code());
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);

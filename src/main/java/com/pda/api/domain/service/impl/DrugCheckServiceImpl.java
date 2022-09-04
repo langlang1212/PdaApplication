@@ -66,9 +66,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 1、结果
         CheckCountResDto result = new CheckCountResDto();
         Date queryTime;
-        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         Date today = new Date();
-        //Date today = getTestTime();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
             queryTime = DateUtil.getStartDateOfDay(today);
         }else{
@@ -135,9 +133,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     @Override
     public Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto) {
         Date queryTime;
-        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
         Date today = new Date();
-        //Date today = getTestTime();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
             queryTime = DateUtil.getStartDateOfDay(today);
         }else{

@@ -20,7 +20,7 @@ public class DomainConstant {
             add("皮内注射");
             add("皮内注射(儿童)");
             add("皮下注射");
-            add(";皮下注射(儿童)");
+            add("皮下注射(儿童)");
         }
     };
 }
