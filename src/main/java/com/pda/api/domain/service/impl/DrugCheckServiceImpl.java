@@ -72,20 +72,53 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         }else{
             queryTime = DateUtil.getStartDateOfTomorrow(today);
         }
-        // TODO: 2022-08-09 暂时只查找了输液的数据
-        Set<String> labels = iOrderLabelParamService.getLaeblsByModule(BAIYAO);
         // 查询病人所有药
         List<OrdersM> longOrders = ordersMMapper.listByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
-        handleOrder(dto, result, longOrders,CHANG,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
+        handleDrugOrder(dto, result, longOrders,CHANG,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today));
         // 处理临时医嘱
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
         List<OrdersM> shortOrders = ordersMMapper.listByPatientIdShort(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay);
-        handleOrder(dto, result, shortOrders,LINSHI,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
+        handleDrugOrder(dto, result, shortOrders,LINSHI,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today));
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
         return result;
+    }
+
+    private void handleDrugOrder(DrugDispensionReqDto dto, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate) {
+        if(CollectionUtil.isNotEmpty(orders)){
+            // 已核查条数
+            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
+            // 查出已经核查过该病人的医嘱
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
+            if(CollectionUtil.isNotEmpty(orders)){
+                orders.forEach(order -> {
+                    setCount(result, repeatRedicator, orderExcuteLogs, order);
+                });
+            }
+        }
+    }
+
+    private void setCount(CheckCountResDto result, Integer repeatRedicator, List<OrderExcuteLog> orderExcuteLogs, OrdersM order) {
+        if (CHANG == repeatRedicator) {
+            result.setTotalBottles(result.getTotalBottles() + 1);
+        } else {
+            result.setTempTotalBottles(result.getTempTotalBottles() + 1);
+        }
+        if (CollectionUtil.isNotEmpty(orderExcuteLogs)) {
+            orderExcuteLogs.forEach(orderExcuteLog -> {
+                if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
+                        order.getOrderNo() == orderExcuteLog.getOrderNo() &&
+                        order.getOrderSubNo() == orderExcuteLog.getOrderSubNo()) {
+                    if (CHANG == repeatRedicator) {
+                        result.setCheckedBottles(result.getCheckedBottles() + 1);
+                    } else {
+                        result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
+                    }
+                }
+            });
+        }
     }
 
     private void handleOrder(DrugDispensionReqDto dto, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate,Set<String> labels) {
@@ -97,24 +130,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             if(CollectionUtil.isNotEmpty(orders)){
                 orders.forEach(order -> {
                     if(CollectionUtil.isNotEmpty(labels) && labels.contains(order.getAdministration())){
-                        if(CHANG == repeatRedicator){
-                            result.setTotalBottles(result.getTotalBottles()+1);
-                        }else{
-                            result.setTempTotalBottles(result.getTempTotalBottles()+1);
-                        }
-                        if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
-                            orderExcuteLogs.forEach(orderExcuteLog -> {
-                                if(order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
-                                        order.getOrderNo() == orderExcuteLog.getOrderNo() &&
-                                        order.getOrderSubNo() == orderExcuteLog.getOrderSubNo()){
-                                    if(CHANG == repeatRedicator){
-                                        result.setCheckedBottles(result.getCheckedBottles() + 1);
-                                    }else{
-                                        result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
-                                    }
-                                }
-                            });
-                        }
+                        setCount(result, repeatRedicator, orderExcuteLogs, order);
                     }
                 });
             }
