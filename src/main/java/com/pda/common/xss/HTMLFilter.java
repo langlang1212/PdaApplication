@@ -563,4 +563,9 @@ public final class HTMLFilter
     {
         return allowed(name) && (vAllowed.isEmpty() || vAllowed.get(name).contains(paramName));
     }
+
+    public static void main(String[] args) {
+        HTMLFilter filter = new HTMLFilter();
+        System.out.println(filter.filter("<script>alert(1)</script>"));
+    }
 }

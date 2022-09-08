@@ -16,15 +16,13 @@ import com.pda.common.PdaBaseService;
 import com.pda.common.dto.DictDto;
 import com.pda.common.redis.service.RedisService;
 import com.pda.exception.BusinessException;
+import com.pda.utils.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -67,7 +65,7 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
                 setWards(userResDto);
                 // 存储当前用户
                 Map<String,Object> map = new HashMap<>();
-                String key = DigestUtil.md5Hex(userResDto.getUserName(), "utf-8");
+                String key = DigestUtil.md5Hex(userResDto.getUserName()+":"+ DateUtil.getShortDate(new Date()), "utf-8");
                 map.put("accessToken",key);
                 map.put("user",userResDto);
                 // 放入redis 有效期1天

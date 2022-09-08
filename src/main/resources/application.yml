@@ -1,5 +1,5 @@
 server:
-  port: 9091
+  port: 9092
   servlet:
     context-path: /pda/
 
@@ -8,15 +8,15 @@ spring:
     include: ws,redis
   datasource:
     ds1 :
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://47.108.251.176:3306/pda?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=true
-      username: mysql
-      password: 123456
+      driver-class-name: oracle.jdbc.OracleDriver
+      url: jdbc:oracle:thin:@//192.168.61.15:1521/qmghis
+      username: mobile
+      password: mobile
     ds2 :
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://47.108.251.176:3306/pda-ydyh?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=true
-      username: mysql
-      password: 123456
+      url: jdbc:mysql://localhost:3306/pda-ydyh?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=true
+      username: ydyd
+      password: ydyh123456
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -33,3 +33,12 @@ security :
     whites :
       - /login
       - /doc.html
+
+# 防止XSS攻击
+xss:
+  # 过滤开关
+  enabled: true
+  # 排除链接（多个用逗号分隔）
+  excludes: /system/notice/*
+  # 匹配链接
+  urlPatterns: /system/*,/monitor/*,/tool/*

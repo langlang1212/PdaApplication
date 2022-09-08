@@ -39,7 +39,7 @@ public class PdaController {
     private CheckService checkService;
 
     @GetMapping("/test")
-    public Result test(){
+    public Result test(String str){
         Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(userService.test());
         return Result.success(stringObjectMap);
     }

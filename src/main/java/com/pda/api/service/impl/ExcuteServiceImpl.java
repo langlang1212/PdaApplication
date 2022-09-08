@@ -82,11 +82,11 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
         //
-        addExcuteLog(oralExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+        excute(oralExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
 
     }
 
-    private void addExcuteLog(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
+    private void excute(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
         oralExcuteReqs.forEach(oralExcuteReq -> {
             OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER,oralExcuteReq.getVisitId());
             if(ObjectUtil.isNotNull(existLog) && ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
@@ -159,7 +159,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
 
-        addExcuteLog(skinExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+        excute(skinExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
     }
 
     /**
@@ -241,7 +241,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
 
-        addExcuteLog(excuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+        excute(excuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
     }
 
     private void addOrder(List<OrderResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type,Set<String> labels) {
