@@ -37,4 +37,10 @@ public class LoginController {
         Map<String,Object> result = loginService.login(loginDto.getAccount(),loginDto.getPassword());
         return Result.success(result);
     }
+
+    @GetMapping("/logout")
+    public Result logout(@RequestHeader String accessToken){
+        loginService.logout(accessToken);
+        return Result.success();
+    }
 }

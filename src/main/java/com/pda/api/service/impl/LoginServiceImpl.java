@@ -76,6 +76,11 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
         return null;
     }
 
+    @Override
+    public void logout(String accessToken) {
+        redisService.deleteObject(accessToken);
+    }
+
     private void setWards(UserResDto userResDto) {
         List<DictDto> wards = new ArrayList<>();
         if(Constant.DOCTOR.equals(userResDto.getJob())){ //医生
