@@ -15,7 +15,7 @@ import java.util.List;
  * @Created by AlanZhang
  */
 @Data
-public class DrugOrderResDto {
+public class DrugOrderResDto implements Comparable<DrugOrderResDto>{
 
     private String patientId;
 
@@ -46,4 +46,9 @@ public class DrugOrderResDto {
     private List<DrugSubOrderDto> subOrderDtoList;
 
     private List<OrderExcuteLog> orderExcuteLogs;
+
+    @Override
+    public int compareTo(DrugOrderResDto o) {
+        return this.getOrderNo() - o.getOrderNo();
+    }
 }
