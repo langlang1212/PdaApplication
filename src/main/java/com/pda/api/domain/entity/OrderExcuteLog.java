@@ -1,6 +1,8 @@
 package com.pda.api.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +45,7 @@ public class OrderExcuteLog implements Serializable {
     /**
      * 执行时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
     private LocalDateTime excuteTime;
 
     public Integer getVisitId() {
@@ -77,6 +80,7 @@ public class OrderExcuteLog implements Serializable {
     /**
      * 核查时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
     private LocalDateTime checkTime;
 
     private String type;

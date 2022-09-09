@@ -230,6 +230,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     resOrders.add(drugOrderResDto);
                 }
             }
+            Collections.sort(resOrders);
         }
     }
 

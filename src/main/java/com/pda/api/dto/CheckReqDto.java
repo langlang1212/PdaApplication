@@ -13,6 +13,8 @@ public class CheckReqDto {
 
     private String patientId;
 
+    private Integer visitId;
+
     private Integer orderNo;
 
     private Integer orderSubNo;
