@@ -20,6 +20,7 @@ import com.pda.utils.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,6 +45,10 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     private PdaService pdaService;
     @Autowired
     private RedisService redisService;
+
+    @Value("${cache.loginToken}")
+    private Long invalidDuration;
+
     @Override
     public Map<String,Object> login(String account, String password) {
         if(ObjectUtils.isEmpty(checkUser(account,password))){
@@ -69,7 +74,7 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
                 map.put("accessToken",key);
                 map.put("user",userResDto);
                 // 放入redis 有效期1天
-                redisService.setCacheObject(key,userResDto,1l, TimeUnit.DAYS);
+                redisService.setCacheObject(key,userResDto,invalidDuration, TimeUnit.DAYS);
                 return map;
             }
         }

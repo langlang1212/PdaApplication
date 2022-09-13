@@ -179,7 +179,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
 
         List<String> types = new ArrayList<>();
-        if(!StringUtils.isBlank(drugType)){  // 为空就是全部
+        if("0".equals(drugType)){  // 为空就是全部
             types = ModuleTypeEnum.getAllCodes();
         }else{
             types.add(drugType);
@@ -213,7 +213,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);
 
         List<String> types = new ArrayList<>();
-        if(StringUtils.isBlank(drugType)){
+        if("0".equals(drugType)){
             types = ModuleTypeEnum.getAllCodes();
         }else{
             types.add(drugType);
@@ -283,7 +283,7 @@ public class ExcuteServiceImpl implements ExcuteService {
                     skinResDto.setOrderNo(ordersM.getOrderNo());
                     skinResDto.setOrderSubNo(ordersM.getOrderSubNo());
                     skinResDto.setOrderText(ordersM.getOrderText());
-                    skinResDto.setRepeatIndicator(0);
+                    skinResDto.setRepeatIndicator(ordersM.getRepeatIndicator());
                     skinResDto.setDosAge(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
                     skinResDto.setFrequency(String.format("%s/%s",ordersM.getFreqCounter(),ordersM.getFreqIntervalUnit()));
                     skinResDto.setAdministration(ordersM.getAdministration());
@@ -310,7 +310,7 @@ public class ExcuteServiceImpl implements ExcuteService {
                     oralResDto.setOrderNo(ordersM.getOrderNo());
                     oralResDto.setOrderSubNo(ordersM.getOrderSubNo());
                     oralResDto.setOrderText(ordersM.getOrderText());
-                    oralResDto.setRepeatIndicator(0);
+                    oralResDto.setRepeatIndicator(ordersM.getRepeatIndicator());
                     oralResDto.setDosAge(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
                     oralResDto.setFrequency(String.format("%s/%s",ordersM.getFreqCounter(),ordersM.getFreqIntervalUnit()));
                     oralResDto.setAdministration(ordersM.getAdministration());
