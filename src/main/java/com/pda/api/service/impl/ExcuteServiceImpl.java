@@ -87,8 +87,10 @@ public class ExcuteServiceImpl implements ExcuteService {
     }
 
     private void excute(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
+        Set<String> labels = getLiquidLabels();
+
         oralExcuteReqs.forEach(oralExcuteReq -> {
-            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER,oralExcuteReq.getVisitId());
+            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER);
             if(ObjectUtil.isNotNull(existLog) && ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
@@ -98,7 +100,13 @@ public class ExcuteServiceImpl implements ExcuteService {
                 existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
                 existLog.setExcuteTime(now);
                 if("5".equals(oralExcuteReq.getExcuteStatus())){
-                    // TODO: 2022-08-07 反写his
+                    // 校验配液类的是否核对
+                    if(labels.contains(oralExcuteReq.getAdministration())){
+                        List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
+                        if(CollectionUtil.isNotEmpty(orderCheckLog)){
+                            throw new BusinessException("当前医嘱没有核对,请先核对医嘱单!");
+                        }
+                    }
                 }
                 orderExcuteLogMapper.updateLog(existLog);
             }else{
@@ -119,13 +127,22 @@ public class ExcuteServiceImpl implements ExcuteService {
         });
     }
 
-    private OrderExcuteLog getExcuteLog(ExcuteReq excuteReq,String type,Integer visitId) {
+    private OrderExcuteLog getExcuteLog(ExcuteReq excuteReq,String type) {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,visitId)
+        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
                 .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
                 .eq(OrderExcuteLog::getOrderSubNo,excuteReq.getOrderSubNo()).eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate());
         OrderExcuteLog orderExcuteLog = orderExcuteLogMapper.selectOne(logLambdaQueryWrapper);
         return orderExcuteLog;
+    }
+
+    private List<OrderExcuteLog> getOrderCheckLog(ExcuteReq excuteReq,String type) {
+        LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
+                .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
+                .eq(OrderExcuteLog::getOrderSubNo,excuteReq.getOrderSubNo()).eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getCheckStatus,"1");
+        List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectList(logLambdaQueryWrapper);
+        return orderExcuteLogs;
     }
 
     @Override
@@ -242,6 +259,14 @@ public class ExcuteServiceImpl implements ExcuteService {
         LocalDateTime now = LocalDateTime.now();
 
         excute(excuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+    }
+
+    private Set<String> getLiquidLabels() {
+        List<String> types = new ArrayList<>();
+        types.add(ModuleTypeEnum.TYPE3.code());
+        types.add(ModuleTypeEnum.TYPE5.code());
+        types.add(ModuleTypeEnum.TYPE6.code());
+        return iOrderTypeDictService.findLabelsByType(types);
     }
 
     private void addOrder(List<OrderResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type,Set<String> labels) {

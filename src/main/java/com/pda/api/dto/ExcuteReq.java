@@ -35,4 +35,7 @@ public class ExcuteReq {
 
     @ApiModelProperty("执行日期 yyyy-MM-dd")
     private String excuteDate;
+
+    @ApiModelProperty("用法")
+    private String administration;
 }
