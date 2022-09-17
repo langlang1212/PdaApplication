@@ -112,7 +112,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedLatestLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
             if(CollectionUtil.isNotEmpty(orderGroup)){
                 for(Integer orderNo : orderGroup.keySet()){
                     OrdersM order = orderGroup.get(orderNo).get(0);
