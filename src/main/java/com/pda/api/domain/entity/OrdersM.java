@@ -42,7 +42,7 @@ public class OrdersM implements Serializable {
 
     private String orderCode;
 
-    private Integer dosage;
+    private String dosage;
 
     private String dosageUnits;
 
@@ -164,11 +164,11 @@ public class OrdersM implements Serializable {
     public void setOrderCode(String orderCode) {
         this.orderCode = orderCode;
     }
-    public Integer getDosage() {
+    public String getDosage() {
         return dosage;
     }
 
-    public void setDosage(Integer dosage) {
+    public void setDosage(String dosage) {
         this.dosage = dosage;
     }
     public String getDosageUnits() {

@@ -53,7 +53,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     public List<OralResDto> oralList(String patientId,Integer visitId) {
         List<OralResDto> result = new ArrayList<>();
         Date today = new Date();
-        Date queryTime = DateUtil.getStartDateOfDay(today);
+        Date queryTime = DateUtil.getEndDateOfDay(today);
         // 临时
         Date startDateOfDay = DateUtil.getStartDateOfDay(today);
         Date endDateOfDay = DateUtil.getEndDateOfDay(today);

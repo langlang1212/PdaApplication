@@ -1,10 +1,12 @@
 package com.pda.api.domain.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pda.api.domain.entity.OrderTypeDict;
 import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.mapper.slave.OrderTypeDictMapper;
+import com.pda.utils.StringUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -30,8 +32,10 @@ public class OrderTypeDictServiceImpl extends ServiceImpl<OrderTypeDictMapper, O
         lambdaQueryWrapper.in(OrderTypeDict::getCode,types);
         List<OrderTypeDict> list = list(lambdaQueryWrapper);
         list.forEach(o -> {
-            List<String> splits = Arrays.asList(o.getText().split(";"));
-            labels.addAll(splits);
+            if(StringUtil.isNotBlank(o.getText())){
+                List<String> splits = Arrays.asList(o.getText().split(";"));
+                labels.addAll(splits);
+            }
         });
         return labels;
     }

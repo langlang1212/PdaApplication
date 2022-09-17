@@ -18,7 +18,8 @@ import java.util.List;
 @Getter
 public enum ModuleTypeEnum {
 
-    TYPE1("1001"),TYPE2("1002"),TYPE3("1003"),TYPE4("1004"),TYPE5("1005"),TYPE6("1006");
+    TYPE1("1001"),TYPE2("1002"),TYPE3("1003"),TYPE4("1004"),TYPE5("1005"),
+    TYPE6("1006"),TYPE7("1007"),TYPE8("1008"),TYPE9("1009");
 
     private String code;
 

@@ -64,7 +64,7 @@ public class CheckController {
         return Result.success(drugCheckService.distributionOrders(dto));
     }
 
-    @ApiOperation(value = "摆药核查")
+    @ApiOperation(value = "配液校对")
     @PostMapping("/distribution/check")
     public Result distributionCheck(@RequestBody List<CheckReqDto> checkReqDtoList){
         drugCheckService.check(checkReqDtoList, Constant.EXCUTE_TYPE_LIQUID);

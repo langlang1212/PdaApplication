@@ -52,8 +52,6 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     @Autowired
     private IOrderExcuteLogService iOrderExcuteLogService;
     @Autowired
-    private IOrderLabelParamService iOrderLabelParamService;
-    @Autowired
     private IOrderTypeDictService iOrderTypeDictService;
 
     /**
@@ -68,9 +66,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date queryTime;
         Date today = new Date();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getStartDateOfDay(today);
+            queryTime = DateUtil.getEndDateOfDay(today);
         }else{
-            queryTime = DateUtil.getStartDateOfTomorrow(today);
+            queryTime = DateUtil.getEndDateOfTomorrow(today);
         }
         List<String> types = ModuleTypeEnum.getAllCodes();
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
@@ -97,8 +95,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         if (CollectionUtil.isNotEmpty(orderExcuteLogs)) {
             orderExcuteLogs.forEach(orderExcuteLog -> {
                 if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
-                        order.getOrderNo() == orderExcuteLog.getOrderNo() &&
-                        order.getOrderSubNo() == orderExcuteLog.getOrderSubNo()) {
+                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId()) {
                     if (CHANG == repeatRedicator) {
                         result.setCheckedBottles(result.getCheckedBottles() + 1);
                     } else {
@@ -111,16 +108,16 @@ public class DrugCheckServiceImpl implements DrugCheckService {
 
     private void handleOrder(DrugDispensionReqDto dto, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate,Set<String> labels) {
         if(CollectionUtil.isNotEmpty(orders)){
+            Map<Integer,List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 查出已经核查过该病人的医嘱
             List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
-            if(CollectionUtil.isNotEmpty(orders)){
-                orders.forEach(order -> {
-                    if(CollectionUtil.isNotEmpty(labels) && labels.contains(order.getAdministration())){
-                        setCount(result, repeatRedicator, orderExcuteLogs, order);
-                    }
-                });
+            if(CollectionUtil.isNotEmpty(orderGroup)){
+                for(Integer orderNo : orderGroup.keySet()){
+                    OrdersM order = orderGroup.get(orderNo).get(0);
+                    setCount(result, repeatRedicator, orderExcuteLogs, order);
+                }
             }
         }
     }
@@ -135,9 +132,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date queryTime;
         Date today = new Date();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getStartDateOfDay(today);
+            queryTime = DateUtil.getEndDateOfDay(today);
         }else{
-            queryTime = DateUtil.getStartDateOfTomorrow(today);
+            queryTime = DateUtil.getEndDateOfTomorrow(today);
         }
 
         //
@@ -211,7 +208,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                         drugSubOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
                         drugSubOrderDto.setOrderText(ordersM.getOrderText());
                         drugSubOrderDto.setAdministation(ordersM.getAdministration());
-                        drugSubOrderDto.setDosage(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
+                        drugSubOrderDto.setDosage(ordersM.getDosage()+ordersM.getDosageUnits());
                         drugSubOrderDto.setFreqDetail(ordersM.getFreqDetail());
 
                         subOrderDtoList.add(drugSubOrderDto);
@@ -265,9 +262,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date today = new Date();
         //Date today = getTestTime();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getStartDateOfDay(today);
+            queryTime = DateUtil.getEndDateOfDay(today);
         }else{
-            queryTime = DateUtil.getStartDateOfTomorrow(today);
+            queryTime = DateUtil.getEndDateOfTomorrow(today);
         }
         Set<String> labels = getLiquidLabels();
 
@@ -300,9 +297,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date today = new Date();
         //Date today = getTestTime();
         if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getStartDateOfDay(today);
+            queryTime = DateUtil.getEndDateOfDay(today);
         }else{
-            queryTime = DateUtil.getStartDateOfTomorrow(today);
+            queryTime = DateUtil.getEndDateOfTomorrow(today);
         }
         Set<String> labels = getLiquidLabels();
 

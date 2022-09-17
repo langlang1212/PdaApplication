@@ -17,7 +17,7 @@ public class CheckReqDto {
 
     private Integer orderNo;
 
-    private Integer orderSubNo;
+//    private Integer orderSubNo;
     /**
      * yyyy-MM-dd
      */
