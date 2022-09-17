@@ -29,7 +29,6 @@
                 #{orderNo}
             </foreach>
         </if>
-        order by check_time
     </select>
 
     <select id="selectExcuteLog" resultType="com.pda.api.domain.entity.OrderExcuteLog">
@@ -56,6 +55,5 @@
                 #{orderNo}
             </foreach>
         </if>
-        order by check_time
     </select>
 </mapper>
