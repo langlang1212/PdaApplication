@@ -381,13 +381,14 @@ public class ExcuteServiceImpl implements ExcuteService {
             // 已核查条数
             List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             // 查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, type,excuteDate);
+            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLatestLog(patientId,visitId,orderNos, type,excuteDate);
             if(CollectionUtil.isNotEmpty(orders)){
                 orders.forEach(order -> {
                     if(labels.contains(order.getAdministration())){
                         if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                             orderExcuteLogs.forEach(orderExcuteLog -> {
-                                if(order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getOrderSubNo() == orderExcuteLog.getOrderSubNo() && ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())){
+                                if(order.getPatientId().equals(orderExcuteLog.getPatientId()) && order.getVisitId() == orderExcuteLog.getVisitId() && order.getOrderNo() == orderExcuteLog.getOrderNo()
+                                        && ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())){
                                     if(1 == repeatRedicator){
                                         result.setCheckedBottles(result.getCheckedBottles() + 1);
                                     }else{
