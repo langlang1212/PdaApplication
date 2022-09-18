@@ -22,7 +22,7 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
 
     List<OrderExcuteLog> selectCheckedLatestLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type,@Param("excuteDate") String excuteDate);
 
-    List<OrderExcuteLog> selectExcuteLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type,@Param("excuteDate") String excuteDate);
+    List<OrderExcuteLog> selectExcuteLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("types") List<String> types,@Param("excuteDate") String excuteDate);
 
     List<OrderExcuteLog> selectExcuteLatestLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type,@Param("excuteDate") String excuteDate);
 

@@ -3,12 +3,11 @@ package com.pda.api.dto;
 import lombok.Data;
 
 /**
- * @Classname DrugOrderResDto
+ * @Classname SubOrderDto
  * @Description TODO
- * @Date 2022-08-04 21:19
+ * @Date 2022-09-18 17:25
  * @Created by AlanZhang
  */
 @Data
-public class DrugOrderResDto extends BaseOrderDto{
-
+public class SubOrderDto extends DrugSubOrderDto{
 }

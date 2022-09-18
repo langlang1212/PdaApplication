@@ -65,7 +65,7 @@ public class ExcuteController {
     }
 
     @GetMapping("/order/{patientId}/{visitId}/{drugType}")
-    @ApiOperation("医嘱执行")
+    @ApiOperation("医嘱执行列表")
     public Result orderExcute(@PathVariable("patientId") String patientId,
                               @PathVariable("visitId") Integer visitId,
                               @PathVariable("drugType") String drugType)

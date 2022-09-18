@@ -9,5 +9,10 @@ import lombok.Data;
  * @Created by AlanZhang
  */
 @Data
-public class OrderResDto extends OralResDto{
+public class OrderResDto extends DrugOrderResDto{
+
+    /**
+     *
+     */
+    private String excuteStatus;
 }

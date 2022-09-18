@@ -1,5 +1,7 @@
 package com.pda.utils;
 
+import com.pda.common.Constant;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -81,6 +83,14 @@ public class PdaTimeUtil {
             e.printStackTrace();
         }
         return result.intValue();
+    }
+
+    public static Date getTodayOrTomorrow(Date date,String todayOrTomorrow){
+        if(Constant.TODAY.equals(todayOrTomorrow)){
+            return DateUtil.getEndDateOfDay(date);
+        }else {
+            return DateUtil.getEndDateOfTomorrow(date);
+        }
     }
 
 

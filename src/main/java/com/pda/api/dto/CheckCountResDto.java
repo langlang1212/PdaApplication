@@ -10,30 +10,6 @@ import lombok.Data;
  * @Created by AlanZhang
  */
 @Data
-public class CheckCountResDto {
-    /**
-     * 总瓶数
-     */
-    private Integer totalBottles = 0;
-    /**
-     * 已核查瓶数
-     */
-    private Integer checkedBottles = 0;
-    /**
-     * 剩余
-     */
-    private Integer surplusBottles = 0;
+public class CheckCountResDto extends BaseCountDto{
 
-    /**
-     * 临时总瓶数
-     */
-    private Integer tempTotalBottles = 0;
-    /**
-     * 临时已核查瓶数
-     */
-    private Integer tempCheckedBottles = 0;
-    /**
-     * 临时剩余
-     */
-    private Integer tempSurplusBottles = 0;
 }

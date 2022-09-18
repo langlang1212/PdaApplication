@@ -16,6 +16,7 @@ import com.pda.common.ExcuteStatusEnum;
 import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
+import com.pda.utils.PdaTimeUtil;
 import com.pda.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -63,13 +64,10 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     public CheckCountResDto drugDispensionCount(DrugDispensionReqDto dto) {
         // 1、结果
         CheckCountResDto result = new CheckCountResDto();
-        Date queryTime;
+        // 拿到时间
         Date today = new Date();
-        if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getEndDateOfDay(today);
-        }else{
-            queryTime = DateUtil.getEndDateOfTomorrow(today);
-        }
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(today,dto.getTodayOrTomorrow());
+        // 拿到所有用法
         List<String> types = ModuleTypeEnum.getAllCodes();
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
         // 查询病人所有药
@@ -218,7 +216,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                     List<OrderExcuteLog> checkedLog = new ArrayList<>();
                     if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
                         orderExcuteLogs.forEach(orderExcuteLog -> {
-                            if(firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo()){
+                            if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo() && firstSubOrder.getVisitId() == orderExcuteLog.getVisitId()){
                                 checkedLog.add(orderExcuteLog);
                             }
                         });
