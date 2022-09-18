@@ -11,13 +11,5 @@ import lombok.Data;
 @Data
 public class DrugSubOrderDto {
 
-    private Integer orderSubNo;
 
-    private String orderText;
-
-    private String dosage;
-
-    private String administation;
-
-    private String freqDetail;
 }

@@ -1,4 +1,4 @@
-package com.pda.api.dto;
+package com.pda.api.dto.base;
 
 import lombok.Data;
 

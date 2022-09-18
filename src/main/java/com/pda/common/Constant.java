@@ -33,4 +33,8 @@ public class Constant {
     public static final String YDYH_RESPONSE_CODE = "AA";
 
     public static final String YDYH_RESPONSE_TEXT = "查询成功！";
+
+    public static final Integer CHANG = 1;
+
+    public static final Integer LINSHI = 0;
 }

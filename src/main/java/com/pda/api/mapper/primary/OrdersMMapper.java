@@ -8,9 +8,11 @@ import com.pda.api.dto.PatientInfoDto;
 import com.pda.common.dto.DictDto;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -26,7 +28,7 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
     List<PatientInfoDto> findMyPatient(@Param("keyword") String keyword, @Param("wardCode") String wardCode, @Param("userName") String userName);
 
-    List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay);
+    List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay,@Param("labels") Set<String> labels);
 
-    List<OrdersM> listLongOrderByPatientId(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("endTime") Date queryTime);
+    List<OrdersM> listLongOrderByPatientId(@Param("patientId") String patientId, @Param("visitId") Integer visitId, @Param("endTime") Date queryTime, @Param("labels") Set<String> labels);
 }

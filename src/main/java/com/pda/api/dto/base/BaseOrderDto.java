@@ -1,7 +1,8 @@
-package com.pda.api.dto;
+package com.pda.api.dto.base;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pda.api.domain.entity.OrderExcuteLog;
+import com.pda.api.dto.DrugSubOrderDto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -42,7 +43,7 @@ public class BaseOrderDto implements Comparable<BaseOrderDto>{
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
     private LocalDateTime stopDateTime;
 
-    private List<? extends DrugSubOrderDto> subOrderDtoList;
+    private List<? extends BaseSubOrderDto> subOrderDtoList;
 
     private List<OrderExcuteLog> orderExcuteLogs;
 

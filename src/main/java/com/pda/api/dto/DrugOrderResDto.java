@@ -1,5 +1,6 @@
 package com.pda.api.dto;
 
+import com.pda.api.dto.base.BaseOrderDto;
 import lombok.Data;
 
 /**
@@ -9,6 +10,6 @@ import lombok.Data;
  * @Created by AlanZhang
  */
 @Data
-public class DrugOrderResDto extends BaseOrderDto{
+public class DrugOrderResDto extends BaseOrderDto {
 
 }

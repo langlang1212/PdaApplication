@@ -1,5 +1,6 @@
 package com.pda.utils;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.pda.common.Constant;
 
 import java.text.DateFormat;
@@ -85,7 +86,14 @@ public class PdaTimeUtil {
         return result.intValue();
     }
 
+    public static Date getTodayOrTomorrow(String todayOrTomorrow){
+        return getTodayOrTomorrow(null,todayOrTomorrow);
+    }
+
     public static Date getTodayOrTomorrow(Date date,String todayOrTomorrow){
+        if(ObjectUtil.isEmpty(date)){
+            date = new Date();
+        }
         if(Constant.TODAY.equals(todayOrTomorrow)){
             return DateUtil.getEndDateOfDay(date);
         }else {

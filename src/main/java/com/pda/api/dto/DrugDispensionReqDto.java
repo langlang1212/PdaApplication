@@ -1,5 +1,6 @@
 package com.pda.api.dto;
 
+import com.pda.api.dto.base.BaseReqDto;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -12,19 +13,11 @@ import javax.validation.constraints.NotNull;
  * @Created by AlanZhang
  */
 @Data
-public class DrugDispensionReqDto {
+public class DrugDispensionReqDto extends BaseReqDto {
 
-    @NotBlank(message = "病人id不能为空")
-    private String patientId;
-
-    private Integer visitId;
     /**
      * j今天或者明天 0  1
      */
     @NotNull
     private String todayOrTomorrow;
-    /**
-     * 临时或者长期  0  1
-     */
-    private Integer repeatIndicator = 1;
 }

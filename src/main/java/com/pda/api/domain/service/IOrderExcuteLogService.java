@@ -2,6 +2,9 @@ package com.pda.api.domain.service;
 
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.pda.api.dto.query.LogQuery;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
 
+    List<OrderExcuteLog> findDistinctLog(LogQuery logQuery);
+
+    List<OrderExcuteLog> findOperLog(LogQuery logQuery);
 }

@@ -4,11 +4,14 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.enums.ModuleTypeEnum;
+import com.pda.api.domain.handler.HandleOrderService;
 import com.pda.api.domain.service.DrugCheckService;
 import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.domain.service.IOrderLabelParamService;
 import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.dto.*;
+import com.pda.api.dto.base.BaseOrderDto;
+import com.pda.api.dto.query.LogQuery;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.common.Constant;
@@ -54,6 +57,8 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     private IOrderExcuteLogService iOrderExcuteLogService;
     @Autowired
     private IOrderTypeDictService iOrderTypeDictService;
+    @Autowired
+    private HandleOrderService handleOrderService;
 
     /**
      * 摆药统计
@@ -65,59 +70,26 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 1、结果
         CheckCountResDto result = new CheckCountResDto();
         // 拿到时间
-        Date today = new Date();
-        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(today,dto.getTodayOrTomorrow());
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(dto.getTodayOrTomorrow());
         // 拿到所有用法
-        List<String> types = ModuleTypeEnum.getAllCodes();
-        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(null);
         // 查询病人所有药
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
-        handleOrder(dto, result, longOrders,CHANG,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        // 获取操作日志
+        LogQuery logQuery = LogQuery.create(dto,longOrders,Constant.EXCUTE_TYPE_DRUG,queryTime);
+        List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        handleOrderService.countOrder(dto,result,longOrders,Constant.CHANG,Constant.EXCUTE_TYPE_DRUG,distinctLogs);
         // 处理临时医嘱
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay);
-        handleOrder(dto, result, shortOrders,LINSHI,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        LogQuery logQueryShort = LogQuery.create(dto,shortOrders,Constant.EXCUTE_TYPE_DRUG,queryTime);
+        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
+        handleOrderService.countOrder(dto,result,shortOrders,Constant.LINSHI,Constant.EXCUTE_TYPE_DRUG,shortDistinctLogs);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
         return result;
-    }
-
-    private void setCount(CheckCountResDto result, Integer repeatRedicator, List<OrderExcuteLog> orderExcuteLogs, OrdersM order) {
-        if (CHANG == repeatRedicator) {
-            result.setTotalBottles(result.getTotalBottles() + 1);
-        } else {
-            result.setTempTotalBottles(result.getTempTotalBottles() + 1);
-        }
-        if (CollectionUtil.isNotEmpty(orderExcuteLogs)) {
-            orderExcuteLogs.forEach(orderExcuteLog -> {
-                if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
-                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId()) {
-                    if (CHANG == repeatRedicator) {
-                        result.setCheckedBottles(result.getCheckedBottles() + 1);
-                    } else {
-                        result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
-                    }
-                }
-            });
-        }
-    }
-
-    private void handleOrder(DrugDispensionReqDto dto, CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate,Set<String> labels) {
-        if(CollectionUtil.isNotEmpty(orders)){
-            Map<Integer,List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
-            // 已核查条数
-            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            // 查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedLatestLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
-            if(CollectionUtil.isNotEmpty(orderGroup)){
-                for(Integer orderNo : orderGroup.keySet()){
-                    OrdersM order = orderGroup.get(orderNo).get(0);
-                    setCount(result, repeatRedicator, orderExcuteLogs, order);
-                }
-            }
-        }
     }
 
     /**
@@ -126,107 +98,39 @@ public class DrugCheckServiceImpl implements DrugCheckService {
      * @return
      */
     @Override
-    public Map<String,List<DrugOrderResDto>> drugOrders(DrugDispensionReqDto dto) {
-        Date queryTime;
-        Date today = new Date();
-        if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getEndDateOfDay(today);
-        }else{
-            queryTime = DateUtil.getEndDateOfTomorrow(today);
-        }
+    public Map<String,List<BaseOrderDto>> drugOrders(DrugDispensionReqDto dto) {
+        // 拿到时间
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(dto.getTodayOrTomorrow());
+        // 拿到所有用法
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(null);
 
-        //
-        List<String> types = ModuleTypeEnum.getAllCodes();
-        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
-
-        List<DrugOrderResDto> longTimeOrder = new ArrayList<>();
-        /**
-         * 1、取今天的医嘱，今天早上0点之前开的医嘱，并且结束时间为null的，都有效
-         * 2、取明天的医嘱，明天早上0点之前开的医嘱，并且结束时间为null的，都有效
-         * 所以日期应该取明天早上0点
-         */
         // 长期
-        List<OrdersM> orders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
-        handleOrderInfos(dto, queryTime, longTimeOrder, orders,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        // 拿到所有核查日志
+        LogQuery logQuery = LogQuery.create(dto,longOrders,Constant.EXCUTE_TYPE_DRUG,queryTime);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
+        // 处理返回数据
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(dto,longOrders,Constant.EXCUTE_TYPE_DRUG,longCheckedLogs);
         // 临时
         // 获取临时医嘱的时间范围
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        // 临时医嘱返回值
-        List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
         // 查询临时医嘱
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay);
-        handleOrderInfos(dto, today, shortTimeOrder, shortOrders,Constant.EXCUTE_TYPE_DRUG,DateUtil.getShortDate(today),labels);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        // 拿到所有核查日志
+        LogQuery shortLogQuery = LogQuery.create(dto,longOrders,Constant.EXCUTE_TYPE_DRUG,queryTime);
+        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
+        // 处理返回数据
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(dto,shortOrders,Constant.EXCUTE_TYPE_DRUG,shortCheckedLogs);
 
-        Map<String,List<DrugOrderResDto>> map = new HashMap<>();
-        if(CollectionUtil.isNotEmpty(longTimeOrder)){
-            map.put("longOrder",longTimeOrder);
+        Map<String,List<BaseOrderDto>> map = new HashMap<>();
+        if(CollectionUtil.isNotEmpty(longResOrders)){
+            map.put("longOrder",longResOrders);
         }
-        if(CollectionUtil.isNotEmpty(shortTimeOrder)){
-            map.put("shortOrder",shortTimeOrder);
+        if(CollectionUtil.isNotEmpty(shortResOrders)){
+            map.put("shortOrder",shortResOrders);
         }
         return map;
-    }
-
-    private void handleOrderInfos(DrugDispensionReqDto dto, Date queryTime, List<DrugOrderResDto> resOrders, List<OrdersM> orders,String type,String excuteDate,Set<String> labels) {
-        if(CollectionUtil.isNotEmpty(orders)){
-            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            // 3、查出已经核查过该病人的医嘱
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(dto.getPatientId(),dto.getVisitId(),orderNos, type,excuteDate);
-
-            Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
-            for(Integer orderNo : orderGroup.keySet()){
-                List<OrdersM> ordersMS = orderGroup.get(orderNo);
-                OrdersM firstSubOrder = ordersMS.get(0);
-                if(CollectionUtil.isNotEmpty(labels) && labels.contains(firstSubOrder.getAdministration())){
-                    // 第一步初始化
-                    DrugOrderResDto drugOrderResDto = new DrugOrderResDto();
-                    drugOrderResDto.setPatientId(firstSubOrder.getPatientId());
-                    drugOrderResDto.setVisitId(firstSubOrder.getVisitId());
-                    drugOrderResDto.setOrderNo(orderNo);
-                    drugOrderResDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
-                    drugOrderResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
-                    drugOrderResDto.setStartDateTime(firstSubOrder.getStartDateTime());
-                    drugOrderResDto.setRepeatIndicator(firstSubOrder.getRepeatIndicator());
-                    if(StringUtils.isNotBlank(firstSubOrder.getPerformSchedule())){
-                        String[] split = firstSubOrder.getPerformSchedule().split("-");
-                        if(split.length == 1){
-                            List<String> schedule = new ArrayList<>();
-                            schedule.add(split[0]);
-                            drugOrderResDto.setSchedule(schedule);
-                        }else{
-                            drugOrderResDto.setSchedule(Arrays.asList(split));
-                        }
-                    }
-                    drugOrderResDto.setStopDateTime(firstSubOrder.getStopDateTime());
-
-                    List<DrugSubOrderDto> subOrderDtoList = new ArrayList<>();
-                    ordersMS.forEach(ordersM -> {
-                        DrugSubOrderDto drugSubOrderDto = new DrugSubOrderDto();
-                        drugSubOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
-                        drugSubOrderDto.setOrderText(ordersM.getOrderText());
-                        drugSubOrderDto.setAdministation(ordersM.getAdministration());
-                        drugSubOrderDto.setDosage(ordersM.getDosage()+ordersM.getDosageUnits());
-                        drugSubOrderDto.setFreqDetail(ordersM.getFreqDetail());
-
-                        subOrderDtoList.add(drugSubOrderDto);
-                    });
-                    drugOrderResDto.setSubOrderDtoList(subOrderDtoList);
-
-                    List<OrderExcuteLog> checkedLog = new ArrayList<>();
-                    if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
-                        orderExcuteLogs.forEach(orderExcuteLog -> {
-                            if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo() && firstSubOrder.getVisitId() == orderExcuteLog.getVisitId()){
-                                checkedLog.add(orderExcuteLog);
-                            }
-                        });
-                    }
-                    drugOrderResDto.setOrderExcuteLogs(checkedLog);
-                    resOrders.add(drugOrderResDto);
-                }
-            }
-            Collections.sort(resOrders);
-        }
     }
 
     @Transactional(transactionManager = "ds2TransactionManager",rollbackFor = Exception.class)
@@ -240,11 +144,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
         // 插入核查日志
-        List<OrderExcuteLog> addLog = initAddLog(drugCheckReqDtoList, currentUser, now,type);
-        // 插入
-        /*if(CollectionUtil.isNotEmpty(addLog)){
-            iOrderExcuteLogService.saveBatch(addLog);
-        }*/
+        initAddLog(drugCheckReqDtoList, currentUser, now,type);
     }
     /**
      * 配液核对统计
@@ -255,24 +155,24 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     public CheckCountResDto distributionCount(DrugDispensionReqDto dto) {
         // 1、结果
         CheckCountResDto result = new CheckCountResDto();
-        Date queryTime;
-        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        Date today = new Date();
-        //Date today = getTestTime();
-        if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getEndDateOfDay(today);
-        }else{
-            queryTime = DateUtil.getEndDateOfTomorrow(today);
-        }
-        Set<String> labels = getLiquidLabels();
+        // 拿到时间
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(dto.getTodayOrTomorrow());
 
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
-        handleOrder(dto, result, longOrders,CHANG,Constant.EXCUTE_TYPE_LIQUID,DateUtil.getShortDate(today),labels);
+        Set<String> labels = getLiquidLabels();
+        // 查询病人所有药
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        // 获取操作日志
+        LogQuery logQuery = LogQuery.create(dto,longOrders,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        handleOrderService.countOrder(dto,result,longOrders,Constant.CHANG,Constant.EXCUTE_TYPE_LIQUID,distinctLogs);
         // 处理临时医嘱
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay);
-        handleOrder(dto, result, shortOrders,LINSHI,Constant.EXCUTE_TYPE_LIQUID,DateUtil.getShortDate(today),labels);
+        // 处理临时医嘱
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        LogQuery logQueryShort = LogQuery.create(dto,shortOrders,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
+        handleOrderService.countOrder(dto,result,shortOrders,Constant.LINSHI,Constant.EXCUTE_TYPE_LIQUID,shortDistinctLogs);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
@@ -288,56 +188,53 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     }
 
     @Override
-    public Map<String,List<DrugOrderResDto>> distributionOrders(DrugDispensionReqDto dto) {
-        List<DrugOrderResDto> result = new ArrayList<>();
-        Date queryTime;
-        // TODO: 2022-08-03 联调通过 取消这行注释，删除下面的now 赋值
-        Date today = new Date();
-        //Date today = getTestTime();
-        if(Constant.TODAY.equals(dto.getTodayOrTomorrow())){
-            queryTime = DateUtil.getEndDateOfDay(today);
-        }else{
-            queryTime = DateUtil.getEndDateOfTomorrow(today);
-        }
+    public Map<String,List<BaseOrderDto>> distributionOrders(DrugDispensionReqDto dto) {
+        // 拿到时间
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(dto.getTodayOrTomorrow());
+        // 拿到配液用法
         Set<String> labels = getLiquidLabels();
-
-        List<DrugOrderResDto> longTimeOrder = new ArrayList<>();
         // 长期
-        List<OrdersM> orders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime);
-        handleOrderInfos(dto, queryTime, longTimeOrder, orders,Constant.EXCUTE_TYPE_LIQUID,DateUtil.getShortDate(today),labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        // 拿到所有核查日志
+        LogQuery logQuery = LogQuery.create(dto,longOrders,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
+        // 处理返回数据
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(dto,longOrders,Constant.EXCUTE_TYPE_LIQUID,longCheckedLogs);
         // 临时
         // 获取临时医嘱的时间范围
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        // 临时医嘱返回值
-        List<DrugOrderResDto> shortTimeOrder = new ArrayList<>();
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
         // 查询临时医嘱
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay);
-        handleOrderInfos(dto, today, shortTimeOrder, shortOrders,Constant.EXCUTE_TYPE_LIQUID,DateUtil.getShortDate(today),labels);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        // 拿到所有核查日志
+        LogQuery shortLogQuery = LogQuery.create(dto,longOrders,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
+        // 处理返回数据
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(dto,shortOrders,Constant.EXCUTE_TYPE_LIQUID,shortCheckedLogs);
         // 封装结果
-        Map<String,List<DrugOrderResDto>> resultMap = new HashMap<>();
-        List<DrugOrderResDto> noChecked = new ArrayList<>();
-        List<DrugOrderResDto> checked = new ArrayList<>();
-        if(CollectionUtil.isNotEmpty(shortTimeOrder)){
-            group(shortTimeOrder, noChecked, checked);
+        Map<String,List<BaseOrderDto>> resultMap = new HashMap<>();
+        List<BaseOrderDto> noChecked = new ArrayList<>();
+        List<BaseOrderDto> checked = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(longResOrders)){
+            group(longResOrders, noChecked, checked);
         }
-        if(CollectionUtil.isNotEmpty(longTimeOrder)){
-            group(longTimeOrder, noChecked, checked);
+        if(CollectionUtil.isNotEmpty(shortResOrders)){
+            group(shortResOrders, noChecked, checked);
         }
         resultMap.put("noChecked",noChecked);
         resultMap.put("checked",checked);
         return resultMap;
     }
 
-    private void group(List<DrugOrderResDto> longTimeOrder, List<DrugOrderResDto> noChecked, List<DrugOrderResDto> checked) {
-        List<DrugOrderResDto> noCheckedOrder = new ArrayList<>();
-        List<DrugOrderResDto> checkedOrder = new ArrayList<>();
+    private void group(List<BaseOrderDto> longTimeOrder, List<BaseOrderDto> noChecked, List<BaseOrderDto> checked) {
+        List<BaseOrderDto> noCheckedOrder = new ArrayList<>();
+        List<BaseOrderDto> checkedOrder = new ArrayList<>();
         groupList(longTimeOrder, noCheckedOrder, checkedOrder);
         noChecked.addAll(noCheckedOrder);
         checked.addAll(checkedOrder);
     }
 
-    private void groupList(List<DrugOrderResDto> orders, List<DrugOrderResDto> noCheckedOrder, List<DrugOrderResDto> checkedOrder) {
+    private void groupList(List<BaseOrderDto> orders, List<BaseOrderDto> noCheckedOrder, List<BaseOrderDto> checkedOrder) {
         orders.forEach(shortOrder -> {
             if (CollectionUtil.isNotEmpty(shortOrder.getOrderExcuteLogs())) {
                 checkedOrder.add(shortOrder);

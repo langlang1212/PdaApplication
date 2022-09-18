@@ -1,5 +1,6 @@
 package com.pda.api.dto;
 
+import com.pda.api.dto.base.BaseCountDto;
 import lombok.Data;
 
 
@@ -10,6 +11,6 @@ import lombok.Data;
  * @Created by AlanZhang
  */
 @Data
-public class CheckCountResDto extends BaseCountDto{
+public class CheckCountResDto extends BaseCountDto {
 
 }

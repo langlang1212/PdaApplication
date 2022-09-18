@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pda.api.domain.entity.OrderTypeDict;
+import com.pda.api.domain.enums.ModuleTypeEnum;
 import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.mapper.slave.OrderTypeDictMapper;
 import com.pda.utils.StringUtil;
@@ -27,6 +28,10 @@ public class OrderTypeDictServiceImpl extends ServiceImpl<OrderTypeDictMapper, O
 
     @Override
     public Set<String> findLabelsByType(List<String> types) {
+        // 如果传过来的type是空，则默认全部
+        if(CollectionUtil.isEmpty(types)){
+            types = ModuleTypeEnum.getAllCodes();
+        }
         Set<String> labels = new HashSet<>();
         LambdaQueryWrapper<OrderTypeDict> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.in(OrderTypeDict::getCode,types);

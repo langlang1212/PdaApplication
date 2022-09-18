@@ -1,5 +1,7 @@
 package com.pda.utils;
 
+import cn.hutool.core.util.ObjectUtil;
+
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -1200,9 +1202,14 @@ public class DateUtil {
      * @param day 要转换的日期
      * @return 日开始时间
      */
+
+    public static Date getStartDateOfDay(){
+        return getStartDateOfDay(null);
+    }
+
     public static Date getStartDateOfDay(Date day) {
-        if (day == null) {
-            return null;
+        if (ObjectUtil.isEmpty(day)) {
+            day = new Date();
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(day);
@@ -1213,9 +1220,13 @@ public class DateUtil {
         return cal.getTime();
     }
 
+    public static Date getStartDateOfTomorrow() {
+        return getStartDateOfTomorrow(null);
+    }
+
     public static Date getStartDateOfTomorrow(Date day) {
-        if (day == null) {
-            return null;
+        if (ObjectUtil.isEmpty(day)) {
+            day = new Date();
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(day);
@@ -1233,9 +1244,14 @@ public class DateUtil {
      * @param day 要转换的日期
      * @return 日结束时间
      */
+
+    public static Date getEndDateOfDay(){
+        return getEndDateOfDay(null);
+    }
+
     public static Date getEndDateOfDay(Date day) {
-        if (day == null) {
-            return null;
+        if (ObjectUtil.isEmpty(day)) {
+            day = new Date();
         }
 
         Calendar cal = Calendar.getInstance();

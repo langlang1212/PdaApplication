@@ -25,6 +25,13 @@
         where patient_id = #{patientId} and visit_id = #{visitId}
         and repeat_indicator = 0
         and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
+        <if test='labels != null and labels.size()>0'>
+            and administration in
+            <foreach collection="labels" index="index"  item="item"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         order by order_no
     </select>
 
@@ -33,6 +40,13 @@
         from orders_m
         where patient_id = #{patientId} and visit_id = #{visitId}
         and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
+        <if test='labels != null and labels.size()>0'>
+            and administration in
+            <foreach collection="labels" index="index"  item="item"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         order by order_no
     </select>
 
