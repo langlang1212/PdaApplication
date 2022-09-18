@@ -8,9 +8,15 @@ import com.pda.api.domain.constant.DomainConstant;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.enums.ModuleTypeEnum;
+import com.pda.api.domain.handler.HandleOrderService;
+import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.domain.service.IOrderLabelParamService;
 import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.dto.*;
+import com.pda.api.dto.base.BaseExcuteResDto;
+import com.pda.api.dto.base.BaseOrderDto;
+import com.pda.api.dto.base.BaseReqDto;
+import com.pda.api.dto.query.LogQuery;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.ExcuteService;
@@ -19,6 +25,7 @@ import com.pda.common.ExcuteStatusEnum;
 import com.pda.exception.BusinessException;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
+import com.pda.utils.PdaTimeUtil;
 import com.pda.utils.SecurityUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +47,9 @@ import java.util.stream.Collectors;
 @Service
 public class ExcuteServiceImpl implements ExcuteService {
 
-    private static final List<String> TYPES = Arrays.asList("1","2","3");
+    public static final List<String> TYPES = Arrays.asList(Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID,Constant.EXCUTE_TYPE_ORDER);
+
+    private static final List<String> EXCUTE_ORDER_TYPE = Arrays.asList(Constant.EXCUTE_TYPE_ORDER);
 
     @Autowired
     private OrdersMMapper ordersMMapper;
@@ -48,26 +57,56 @@ public class ExcuteServiceImpl implements ExcuteService {
     private OrderExcuteLogMapper orderExcuteLogMapper;
     @Autowired
     private IOrderTypeDictService iOrderTypeDictService;
+    @Autowired
+    private HandleOrderService handleOrderService;
+    @Autowired
+    private IOrderExcuteLogService iOrderExcuteLogService;
 
     @Override
-    public List<OralResDto> oralList(String patientId,Integer visitId) {
-        List<OralResDto> result = new ArrayList<>();
-        Date today = new Date();
-        Date queryTime = DateUtil.getEndDateOfDay(today);
-        // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+    public List<? extends  BaseOrderDto> oralList(String patientId,Integer visitId) {
+        List<BaseOrderDto> result = getResList(patientId, visitId);
+        return result;
+    }
+
+    private List<BaseOrderDto> getResList(String patientId, Integer visitId) {
+        List<BaseOrderDto> result = getBaseOrderDtos(patientId, visitId, ModuleTypeEnum.TYPE2);
+        return result;
+    }
+
+    private List<BaseOrderDto> getBaseOrderDtos(String patientId, Integer visitId, ModuleTypeEnum type2) {
+        List<BaseOrderDto> result = new ArrayList<>();
+        // 查询时间
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
         // 口服
         List<String> types = new ArrayList<>();
-        types.add(ModuleTypeEnum.TYPE2.code());
+        types.add(type2.code());
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
-
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
-        addOral(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId,queryTime);
-        addOral(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
-
+        // 长期
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, visitId, queryTime, labels);
+        // 拿到所有核查日志
+        BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
+        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        // 处理返回数据
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        // 获取临时医嘱的时间范围
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
+        baseReqDto.setRepeatIndicator(0);
+        // 查询临时医嘱
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels);
+        // 拿到所有核查日志
+        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
+        // 处理返回数据
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        if (CollectionUtil.isNotEmpty(longCheckedLogs)) {
+            result.addAll(longResOrders);
+        }
+        if (CollectionUtil.isNotEmpty(shortResOrders)) {
+            result.addAll(shortResOrders);
+        }
         return result;
     }
 
@@ -145,22 +184,8 @@ public class ExcuteServiceImpl implements ExcuteService {
     }
 
     @Override
-    public List<SkinResDto> skinList(String patientId,Integer visitId) {
-        List<SkinResDto> result = new ArrayList<>();
-        Date today = new Date();
-        Date queryTime = DateUtil.getStartDateOfDay(today);
-        // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-        // 皮试用法
-        Set<String> labels = DomainConstant.skinSet;
-
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
-        addSkin(result,visitId, queryTime, shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
-        // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime);
-        addSkin(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
-
+    public List<? extends BaseOrderDto> skinList(String patientId,Integer visitId) {
+        List<BaseOrderDto> result = getBaseOrderDtos(patientId, visitId, ModuleTypeEnum.TYPE7);
         return result;
     }
 
@@ -187,25 +212,34 @@ public class ExcuteServiceImpl implements ExcuteService {
     public OrderCountResDto orderCount(String patientId,Integer visitId,String drugType) {
         // 最后结果
         OrderCountResDto result = new OrderCountResDto();
-        Date today = new Date();
-        Date queryTime = DateUtil.getStartDateOfDay(today);
-        // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-
-        List<String> types = new ArrayList<>();
-        if("0".equals(drugType)){  // 为空就是全部
-            types = ModuleTypeEnum.getAllCodes();
+        // 拿到时间
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
+        // 拿到所有用法
+        Set<String> labels = null;
+        if("0".equals(drugType)){  // 为0就是全部
+            labels = iOrderTypeDictService.findLabelsByType(null);
         }else{
-            types.add(drugType);
+            labels = iOrderTypeDictService.findLabelsByType(Arrays.asList(drugType));
         }
-        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
 
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
-        handleOrder(patientId,visitId,result,shortOrders,0,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today),labels);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime);
-        handleOrder(patientId,visitId,result,longOrders,1,Constant.EXCUTE_TYPE_ORDER,DateUtil.getShortDate(today),labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels);
+        // 获取操作日志
+        BaseReqDto baseReqDto = BaseReqDto.create(patientId,visitId);
+        LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,EXCUTE_ORDER_TYPE,queryTime);
+        List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        // 处理医嘱
+        handleOrderService.countOrder(baseReqDto,result,longOrders,Constant.CHANG,distinctLogs);
+        // 临时
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
+        baseReqDto.setRepeatIndicator(0);
+
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,labels);
+        LogQuery logQueryShort = LogQuery.create(baseReqDto,shortOrders,EXCUTE_ORDER_TYPE,queryTime);
+        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
+        handleOrderService.countOrder(baseReqDto,result,shortOrders,Constant.LINSHI,shortDistinctLogs);
+
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
@@ -218,7 +252,7 @@ public class ExcuteServiceImpl implements ExcuteService {
      * @return
      */
     @Override
-    public List<OrderResDto> orderExcuteList(String patientId,Integer visitId,String drugType) {
+    public List<BaseOrderDto> orderExcuteList(String patientId,Integer visitId,String drugType) {
         List<OrderResDto> result = new ArrayList<>();
 
         Date today = new Date();
@@ -323,80 +357,6 @@ public class ExcuteServiceImpl implements ExcuteService {
             }
             Collections.sort(result);
         }
-    }
-
-    private void addSkin(List<SkinResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type,Set<String> labels) {
-        if(CollectionUtil.isNotEmpty(orders)){
-            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, TYPES,DateUtil.getShortDate(queryTime));
-            orders.forEach(ordersM -> {
-                if(labels.contains(ordersM.getAdministration())){
-                    SkinResDto skinResDto = new SkinResDto();
-                    skinResDto.setPatientId(ordersM.getPatientId());
-                    skinResDto.setOrderNo(ordersM.getOrderNo());
-                    skinResDto.setOrderSubNo(ordersM.getOrderSubNo());
-                    skinResDto.setOrderText(ordersM.getOrderText());
-                    skinResDto.setRepeatIndicator(ordersM.getRepeatIndicator());
-                    skinResDto.setDosAge(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
-                    skinResDto.setFrequency(String.format("%s/%s",ordersM.getFreqCounter(),ordersM.getFreqIntervalUnit()));
-                    skinResDto.setAdministration(ordersM.getAdministration());
-                    skinResDto.setStartDateTime(ordersM.getStartDateTime());
-                    skinResDto.setStopDateTime(ordersM.getStopDateTime());
-                    skinResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
-                    if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
-                        setExcuteStatus(skinResDto,orderExcuteLogs);
-                    }
-                    result.add(skinResDto);
-                }
-            });
-        }
-    }
-
-    private void addOral(List<OralResDto> result,Integer visitId ,Date queryTime, List<OrdersM> shortOrders,String patientId,String type,Set<String> labels) {
-        if(CollectionUtil.isNotEmpty(shortOrders)){
-            List<Integer> orderNos = shortOrders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, TYPES,DateUtil.getShortDate(queryTime));
-            shortOrders.forEach(ordersM -> {
-                if(labels.contains(ordersM.getAdministration())){
-                    OralResDto oralResDto = new OralResDto();
-                    oralResDto.setPatientId(ordersM.getPatientId());
-                    oralResDto.setOrderNo(ordersM.getOrderNo());
-                    oralResDto.setOrderSubNo(ordersM.getOrderSubNo());
-                    oralResDto.setOrderText(ordersM.getOrderText());
-                    oralResDto.setRepeatIndicator(ordersM.getRepeatIndicator());
-                    oralResDto.setDosAge(String.format("%s%s",ordersM.getDosage(),ordersM.getDosageUnits()));
-                    oralResDto.setFrequency(String.format("%s/%s",ordersM.getFreqCounter(),ordersM.getFreqIntervalUnit()));
-                    oralResDto.setAdministration(ordersM.getAdministration());
-                    oralResDto.setStartDateTime(ordersM.getStartDateTime());
-                    oralResDto.setStopDateTime(ordersM.getStopDateTime());
-                    oralResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
-                    if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
-                        setExcuteStatus(oralResDto,orderExcuteLogs);
-                    }
-                    result.add(oralResDto);
-                }
-            });
-        }
-    }
-
-    private void setExcuteStatus(OralResDto oralResDto,List<OrderExcuteLog> orderExcuteLogs){
-        for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
-            if("3".equals(orderExcuteLog.getType()) && oralResDto.getPatientId().equals(orderExcuteLog.getPatientId())
-                    && oralResDto.getOrderNo() == orderExcuteLog.getOrderNo() && oralResDto.getVisitId() == orderExcuteLog.getVisitId()){
-                oralResDto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
-            }
-        }
-    }
-
-    private Date getTestTime(){
-        String str = "2022-07-29 12:32:54";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            return sdf.parse(str);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private void handleOrder(String patientId,Integer visitId ,CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate,Set<String> labels) {

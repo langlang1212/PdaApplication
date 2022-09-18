@@ -7,10 +7,7 @@ import com.pda.api.domain.handler.HandleOrderService;
 import com.pda.api.dto.CheckCountResDto;
 import com.pda.api.dto.DrugOrderResDto;
 import com.pda.api.dto.DrugSubOrderDto;
-import com.pda.api.dto.base.BaseCountDto;
-import com.pda.api.dto.base.BaseOrderDto;
-import com.pda.api.dto.base.BaseReqDto;
-import com.pda.api.dto.base.BaseSubOrderDto;
+import com.pda.api.dto.base.*;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
@@ -30,7 +27,7 @@ import java.util.stream.Collectors;
 public class HandleOrderServiceImpl implements HandleOrderService {
 
     @Override
-    public void countOrder(BaseReqDto baseReqDto, BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator, String type, List<OrderExcuteLog> logs) {
+    public void countOrder(BaseReqDto baseReqDto, BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs) {
         if(CollectionUtil.isNotEmpty(orders)){
             Map<Integer,List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             if(CollectionUtil.isNotEmpty(orderGroup)){
@@ -43,14 +40,19 @@ public class HandleOrderServiceImpl implements HandleOrderService {
     }
 
     @Override
-    public List<BaseOrderDto> handleOrder(BaseReqDto baseReqDto, List<OrdersM> orders, String type, List<OrderExcuteLog> logs) {
+    public List<BaseOrderDto> handleOrder(BaseReqDto baseReqDto, List<OrdersM> orders, List<OrderExcuteLog> logs,String type) {
         List<BaseOrderDto> result = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(orders)){
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
                 OrdersM firstSubOrder = ordersMS.get(0);
-                BaseOrderDto baseOrderDto = new BaseOrderDto();
+                BaseOrderDto baseOrderDto;
+                if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
+                    baseOrderDto = new BaseExcuteResDto();
+                }else{
+                    baseOrderDto = new BaseOrderDto();
+                }
                 baseOrderDto.setPatientId(firstSubOrder.getPatientId());
                 baseOrderDto.setVisitId(firstSubOrder.getVisitId());
                 baseOrderDto.setOrderNo(orderNo);
@@ -85,11 +87,15 @@ public class HandleOrderServiceImpl implements HandleOrderService {
 
                 List<OrderExcuteLog> checkedLog = new ArrayList<>();
                 if(CollectionUtil.isNotEmpty(logs)){
-                    logs.forEach(orderExcuteLog -> {
-                        if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo() && firstSubOrder.getVisitId() == orderExcuteLog.getVisitId()){
-                            checkedLog.add(orderExcuteLog);
-                        }
-                    });
+                    if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
+                        setExcuteStatus((BaseExcuteResDto) baseOrderDto,logs,checkedLog);
+                    }else{
+                        logs.forEach(orderExcuteLog -> {
+                            if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo() && firstSubOrder.getVisitId() == orderExcuteLog.getVisitId()){
+                                checkedLog.add(orderExcuteLog);
+                            }
+                        });
+                    }
                 }
                 baseOrderDto.setOrderExcuteLogs(checkedLog);
                 result.add(baseOrderDto);
@@ -97,6 +103,18 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             Collections.sort(result);
         }
         return null;
+    }
+
+    private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){
+        for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
+            if(dto.getPatientId().equals(orderExcuteLog.getPatientId())
+                    && dto.getOrderNo() == orderExcuteLog.getOrderNo() && dto.getVisitId() == orderExcuteLog.getVisitId()){
+                checkedLog.add(orderExcuteLog);
+                if("3".equals(orderExcuteLog.getType())){
+                    dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
+                }
+            }
+        }
     }
 
     private void setCount(BaseCountDto result, Integer repeatRedicator, List<OrderExcuteLog> logs, OrdersM order) {

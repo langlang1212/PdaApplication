@@ -23,4 +23,11 @@ public class BaseReqDto {
      * 临时或者长期  0  1
      */
     private Integer repeatIndicator = 1;
+
+    public static BaseReqDto create(String patientId, Integer visitId) {
+        BaseReqDto dto = new BaseReqDto();
+        dto.setPatientId(patientId);
+        dto.setVisitId(visitId);
+        return dto;
+    }
 }

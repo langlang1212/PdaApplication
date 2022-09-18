@@ -1,6 +1,7 @@
 package com.pda.api.service;
 
 import com.pda.api.dto.*;
+import com.pda.api.dto.base.BaseOrderDto;
 
 import java.util.List;
 
@@ -11,17 +12,17 @@ import java.util.List;
  * @Created by AlanZhang
  */
 public interface ExcuteService {
-    List<OralResDto> oralList(String patientId,Integer visitId);
+    List<? extends BaseOrderDto> oralList(String patientId, Integer visitId);
 
     void oralExcute(List<ExcuteReq> oralExcuteReq);
 
-    List<SkinResDto> skinList(String patientId,Integer visitId);
+    List<? extends BaseOrderDto> skinList(String patientId,Integer visitId);
 
     void skinExcute(List<ExcuteReq> skinExcuteReqs);
 
     OrderCountResDto orderCount(String patientId,Integer visitId,String drugType);
 
-    List<OrderResDto> orderExcuteList(String patientId,Integer visitId,String drugType);
+    List<? extends BaseOrderDto> orderExcuteList(String patientId,Integer visitId,String drugType);
 
     void excute(List<ExcuteReq> excuteReqs);
 }

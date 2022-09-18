@@ -6,7 +6,12 @@
         select *
         from order_excute_log
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and type = #{type}
+        <if test='types != null and types.size() > 0'>
+            and type in
+            <foreach collection="types" index="index" item="type" separator="," close=")" open="(">
+                #{type}
+            </foreach>
+        </if>
         and check_status = '1' and excute_date = #{excuteDate}
         <if test='orderNos != null and orderNos.size() > 0'>
             and order_no in
@@ -21,7 +26,12 @@
         select distinct patient_id,visit_id,order_no
         from order_excute_log
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and type = #{type}
+        <if test='types != null and types.size() > 0'>
+            and type in
+            <foreach collection="types" index="index" item="type" separator="," close=")" open="(">
+                #{type}
+            </foreach>
+        </if>
         and check_status = '1' and excute_date = #{excuteDate}
         <if test='orderNos != null and orderNos.size() > 0'>
             and order_no in

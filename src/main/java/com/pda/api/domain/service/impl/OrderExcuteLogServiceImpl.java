@@ -27,13 +27,13 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
 
     @Override
     public List<OrderExcuteLog> findDistinctLog(LogQuery logQuery) {
-        List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedLatestLog(logQuery.getPatientId(), logQuery.getVisitId(), logQuery.getOrderNos(), logQuery.getType(), logQuery.getExcuteDate());
+        List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedLatestLog(logQuery.getPatientId(), logQuery.getVisitId(), logQuery.getOrderNos(), logQuery.getTypes(), logQuery.getExcuteDate());
         return orderExcuteLogs;
     }
 
     @Override
     public List<OrderExcuteLog> findOperLog(LogQuery logQuery) {
-        List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(logQuery.getPatientId(), logQuery.getVisitId(), logQuery.getOrderNos(), logQuery.getType(), logQuery.getExcuteDate());
+        List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(logQuery.getPatientId(), logQuery.getVisitId(), logQuery.getOrderNos(), logQuery.getTypes(), logQuery.getExcuteDate());
         return orderExcuteLogs;
     }
 }

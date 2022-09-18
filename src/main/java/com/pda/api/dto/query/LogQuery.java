@@ -28,19 +28,19 @@ public class LogQuery {
 
     private String excuteDate;
 
-    private String type;
+    private List<String> types;
 
-    public static LogQuery create(BaseReqDto reqDto, List<OrdersM> ordersMS, String type, Date queryTime){
+    public static LogQuery create(BaseReqDto reqDto, List<OrdersM> ordersMS, List<String> types, Date queryTime){
         LogQuery logQuery = new LogQuery();
-        logQuery.init(reqDto,ordersMS,type,queryTime);
+        logQuery.init(reqDto,ordersMS,types,queryTime);
         return logQuery;
     }
 
-    public void init(BaseReqDto reqDto,List<OrdersM> ordersMS,String type, Date queryTime){
+    public void init(BaseReqDto reqDto,List<OrdersM> ordersMS,List<String> types, Date queryTime){
         LogQuery logQuery = new LogQuery();
         BeanUtils.copyProperties(reqDto,logQuery);
         logQuery.setExcuteDate(DateUtil.getShortDate(queryTime));
-        logQuery.setType(type);
+        logQuery.setTypes(types);
         // orderNos
         if(CollectionUtil.isNotEmpty(ordersMS)){
             List<Integer> orderNos = ordersMS.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());

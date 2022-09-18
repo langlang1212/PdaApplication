@@ -4,6 +4,7 @@ import com.pda.api.dto.CheckReqDto;
 import com.pda.api.dto.CheckCountResDto;
 import com.pda.api.dto.DrugDispensionReqDto;
 import com.pda.api.dto.DrugOrderResDto;
+import com.pda.api.dto.base.BaseCountDto;
 import com.pda.api.dto.base.BaseOrderDto;
 
 import java.util.List;
@@ -16,11 +17,11 @@ import java.util.Map;
  * @Created by AlanZhang
  */
 public interface DrugCheckService {
-    CheckCountResDto drugDispensionCount(DrugDispensionReqDto dto);
+    BaseCountDto drugDispensionCount(DrugDispensionReqDto dto);
 
     Map<String,List<BaseOrderDto>> drugOrders(DrugDispensionReqDto dto);
 
-    CheckCountResDto distributionCount(DrugDispensionReqDto dto);
+    BaseCountDto distributionCount(DrugDispensionReqDto dto);
 
     Map<String,List<BaseOrderDto>>  distributionOrders(DrugDispensionReqDto dto);
 
