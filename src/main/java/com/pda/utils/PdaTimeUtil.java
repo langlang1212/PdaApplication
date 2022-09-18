@@ -84,8 +84,8 @@ public class PdaTimeUtil {
     public static Integer getDurationDays(Date startDate,Date endDate) {
         Long result = null;
         try {
-            Long starTime=startDate.getTime();
-            Long endTime=endDate.getTime();
+            Long starTime=DateUtil.getStartDateOfDay(startDate).getTime();
+            Long endTime=DateUtil.getStartDateOfTomorrow(endDate).getTime();
             Long num=endTime-starTime;//时间戳相差的毫秒数
             result = num/24/60/60/1000;
         } catch (Exception e) {
@@ -97,12 +97,11 @@ public class PdaTimeUtil {
 
     public static void main(String[] args) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String str = "1992-01-15 01:00:00";
+        String str = "2022-09-13 16:00:37";
         Date date = sdf.parse(str);
         System.out.println(getAgeStr(date));
 
-        String startStr = "2022-07-29 14:16:38";
-        System.out.println(getDurationDays(sdf.parse(startStr),new Date()));
+        System.out.println(getDurationDays(date,new Date()));
     }
 
 }
