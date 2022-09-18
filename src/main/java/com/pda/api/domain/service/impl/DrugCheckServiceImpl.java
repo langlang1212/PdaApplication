@@ -141,10 +141,8 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         }
         // 登陆人
         UserResDto currentUser = SecurityUtil.getCurrentUser();
-        // 当前时间
-        LocalDateTime now = LocalDateTime.now();
         // 插入核查日志
-        initAddLog(drugCheckReqDtoList, currentUser, now,type);
+        initAddLog(drugCheckReqDtoList, currentUser,type);
     }
     /**
      * 配液核对统计
@@ -244,8 +242,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         });
     }
 
-    private List<OrderExcuteLog> initAddLog(List<CheckReqDto> drugCheckReqDtoList, UserResDto currentUser, LocalDateTime now,String type) {
+    private List<OrderExcuteLog> initAddLog(List<CheckReqDto> drugCheckReqDtoList, UserResDto currentUser,String type) {
         List<OrderExcuteLog> addLog = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
         drugCheckReqDtoList.forEach(drugCheckReqDto -> {
             OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
             BeanUtils.copyProperties(drugCheckReqDto,orderExcuteLog);
