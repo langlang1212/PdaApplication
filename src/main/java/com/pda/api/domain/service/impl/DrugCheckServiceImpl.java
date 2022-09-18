@@ -156,7 +156,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 1、结果
         CheckCountResDto result = new CheckCountResDto();
         // 拿到时间
-        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(dto.getTodayOrTomorrow());
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
 
         Set<String> labels = getLiquidLabels();
         // 查询病人所有药
@@ -190,7 +190,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     @Override
     public Map<String,List<BaseOrderDto>> distributionOrders(DrugDispensionReqDto dto) {
         // 拿到时间
-        Date queryTime = PdaTimeUtil.getTodayOrTomorrow(dto.getTodayOrTomorrow());
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
         // 拿到配液用法
         Set<String> labels = getLiquidLabels();
         // 长期
@@ -262,17 +262,5 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             iOrderExcuteLogService.getBaseMapper().insert(orderExcuteLog);
         });
         return addLog;
-    }
-
-
-    private Date getTestTime(){
-        String str = "2022-07-29 12:32:54";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            return sdf.parse(str);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

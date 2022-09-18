@@ -86,6 +86,10 @@ public class PdaTimeUtil {
         return result.intValue();
     }
 
+    public static Date getTodayOrTomorrow(){
+        return getTodayOrTomorrow(null);
+    }
+
     public static Date getTodayOrTomorrow(String todayOrTomorrow){
         return getTodayOrTomorrow(null,todayOrTomorrow);
     }
@@ -103,10 +107,8 @@ public class PdaTimeUtil {
 
 
     public static void main(String[] args) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String str = "1951-12-01 16:00:37";
-        Date date = sdf.parse(str);
-        System.out.println(getAgeStr(date));
+        Date todayOrTomorrow = getTodayOrTomorrow();
+        System.out.println(todayOrTomorrow);
     }
 
 }
