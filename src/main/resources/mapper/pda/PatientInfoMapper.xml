@@ -6,7 +6,7 @@
         select patient_id "patientId",visit_id "visitId",name,sex,inp_no "inpNo",bed_no "bedNo",ward_code "wardCode",
                ward_name "wardName",doctor_in_charge "doctorCode",date_of_birth "birthDay",admission_date_time "admissionDate",diagnosis
         from patient_info
-        where ward_code = #{wardCode,jdbcType=VARCHAR} and doctor_in_charge = #{userName}
+        where ward_code = #{wardCode,jdbcType=VARCHAR}
         <if test='keyword != null and keyword != ""'>
             and (name like concat('%',#{keyword},'%') or bed_no = #{keyword} or inp_no like concat('%',#{keyword},'%'))
         </if>

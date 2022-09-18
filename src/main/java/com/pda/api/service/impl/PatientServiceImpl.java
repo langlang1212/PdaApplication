@@ -139,30 +139,18 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         List<PatientInfoDto> result = new ArrayList<>();
         // 1、拿到当前用户
         UserResDto currentUser = SecurityUtil.getCurrentUser();
-        if(Constant.DOCTOR.equals(currentUser.getJob())){  // 医生
-            result = patientInfoMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
-            if(CollectionUtil.isNotEmpty(result)){
-                result.forEach(patientInfo -> {
-                    patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
-                    patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
-                    patientInfo.setDoctorName(currentUser.getName());
-                    patientInfo.setBedDesc(patientInfo.getBedNo()+"床");
-                });
-            }
-        }else if(Constant.NURSE.equals(currentUser.getJob())){
-            List<UserInfo> list = iUserInfoService.list();
-            Map<String, String> userMap = list.stream().collect(Collectors.toMap(UserInfo::getUserName, UserInfo::getName));
-            result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
-            if(CollectionUtil.isNotEmpty(result)){
-                result.forEach(patientInfo -> {
-                    patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
-                    patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
-                    patientInfo.setDoctorName(userMap.get(patientInfo.getDoctorCode()));
-                    patientInfo.setNurseCode(currentUser.getUserName());
-                    patientInfo.setNurseName(currentUser.getName());
-                    patientInfo.setBedDesc(patientInfo.getBedNo()+"床");
-                });
-            }
+        List<UserInfo> list = iUserInfoService.list();
+        Map<String, String> userMap = list.stream().collect(Collectors.toMap(UserInfo::getUserName, UserInfo::getName));
+        result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
+        if(CollectionUtil.isNotEmpty(result)){
+            result.forEach(patientInfo -> {
+                patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
+                patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
+                patientInfo.setDoctorName(userMap.get(patientInfo.getDoctorCode()));
+                patientInfo.setNurseCode(currentUser.getUserName());
+                patientInfo.setNurseName(currentUser.getName());
+                patientInfo.setBedDesc(patientInfo.getBedNo()+"床");
+            });
         }
         return result;
     }
