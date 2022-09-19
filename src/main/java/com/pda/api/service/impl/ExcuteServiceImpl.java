@@ -253,14 +253,10 @@ public class ExcuteServiceImpl implements ExcuteService {
      */
     @Override
     public List<BaseOrderDto> orderExcuteList(String patientId,Integer visitId,String drugType) {
-        List<OrderResDto> result = new ArrayList<>();
+        List<BaseOrderDto> result = new ArrayList<>();
 
         Date today = new Date();
         Date queryTime = DateUtil.getStartDateOfDay(today);
-        // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
-
         List<String> types = new ArrayList<>();
         if("0".equals(drugType)){
             types = ModuleTypeEnum.getAllCodes();
@@ -268,14 +264,30 @@ public class ExcuteServiceImpl implements ExcuteService {
             types.add(drugType);
         }
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
-
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay);
-        addOrder(result,visitId,queryTime,shortOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
-        // 处理短期医嘱
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime);
-        addOrder(result,visitId,queryTime,longOrders,patientId,Constant.EXCUTE_TYPE_ORDER,labels);
-        // 处理长期医嘱
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels);
+        // 拿到所有核查日志
+        BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
+        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        // 处理返回数据
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        // 临时
+        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
+        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+        baseReqDto.setRepeatIndicator(0);
+        // 查询临时医嘱
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels);
+        // 拿到所有核查日志
+        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        if(CollectionUtil.isNotEmpty(longResOrders)){
+            result.addAll(longResOrders);
+        }
+        if(CollectionUtil.isNotEmpty(shortResOrders)){
+            result.addAll(shortResOrders);
+        }
         return result;
     }
 
@@ -299,64 +311,6 @@ public class ExcuteServiceImpl implements ExcuteService {
         types.add(ModuleTypeEnum.TYPE5.code());
         types.add(ModuleTypeEnum.TYPE6.code());
         return iOrderTypeDictService.findLabelsByType(types);
-    }
-
-    private void addOrder(List<OrderResDto> result,Integer visitId, Date queryTime, List<OrdersM> orders,String patientId,String type,Set<String> labels) {
-        if(CollectionUtil.isNotEmpty(orders)){
-            Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
-            List<Integer> orderNos = orders.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
-            List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectExcuteLog(patientId,visitId,orderNos, TYPES,DateUtil.getShortDate(queryTime));
-            for(Integer orderNo : orderGroup.keySet()){
-                List<OrdersM> ordersMS = orderGroup.get(orderNo);
-                OrdersM firstSubOrder = ordersMS.get(0);
-                if(CollectionUtil.isNotEmpty(labels) && labels.contains(firstSubOrder.getAdministration())){
-                    OrderResDto orderResDto = new OrderResDto();
-                    orderResDto.setPatientId(firstSubOrder.getPatientId());
-                    orderResDto.setVisitId(firstSubOrder.getVisitId());
-                    orderResDto.setOrderNo(orderNo);
-                    orderResDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
-                    orderResDto.setExcuteDate(DateUtil.getShortDate(queryTime));
-                    orderResDto.setStartDateTime(firstSubOrder.getStartDateTime());
-                    orderResDto.setRepeatIndicator(firstSubOrder.getRepeatIndicator());
-                    if(StringUtils.isNotBlank(firstSubOrder.getPerformSchedule())){
-                        String[] split = firstSubOrder.getPerformSchedule().split("-");
-                        if(split.length == 1){
-                            List<String> schedule = new ArrayList<>();
-                            schedule.add(split[0]);
-                            orderResDto.setSchedule(schedule);
-                        }else{
-                            orderResDto.setSchedule(Arrays.asList(split));
-                        }
-                    }
-                    orderResDto.setStopDateTime(firstSubOrder.getStopDateTime());
-                    List<SubOrderDto> subOrderDtos = new ArrayList<>();
-                    ordersMS.forEach(ordersM -> {
-                        SubOrderDto subOrderDto = new SubOrderDto();
-                        subOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
-                        subOrderDto.setOrderText(ordersM.getOrderText());
-                        subOrderDto.setAdministation(ordersM.getAdministration());
-                        subOrderDto.setDosage(ordersM.getDosage()+ordersM.getDosageUnits());
-                        subOrderDto.setFreqDetail(ordersM.getFreqDetail());
-
-                        subOrderDtos.add(subOrderDto);
-                    });
-                    orderResDto.setSubOrderDtoList(subOrderDtos);
-
-                    List<OrderExcuteLog> checkedLog = new ArrayList<>();
-                    if(CollectionUtil.isNotEmpty(orderExcuteLogs)){
-                        orderExcuteLogs.forEach(orderExcuteLog -> {
-                            if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo() && firstSubOrder.getVisitId() == orderExcuteLog.getVisitId()){
-                                checkedLog.add(orderExcuteLog);
-                            }
-                        });
-                    }
-
-                    orderResDto.setOrderExcuteLogs(checkedLog);
-                    result.add(orderResDto);
-                }
-            }
-            Collections.sort(result);
-        }
     }
 
     private void handleOrder(String patientId,Integer visitId ,CheckCountResDto result, List<OrdersM> orders, Integer repeatRedicator,String type,String excuteDate,Set<String> labels) {
