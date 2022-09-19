@@ -87,7 +87,7 @@ public class PdaTimeUtil {
     }
 
     public static Date getTodayOrTomorrow(){
-        return getTodayOrTomorrow(null);
+        return getTodayOrTomorrow("0");
     }
 
     public static Date getTodayOrTomorrow(String todayOrTomorrow){

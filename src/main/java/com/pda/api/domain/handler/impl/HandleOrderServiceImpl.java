@@ -4,9 +4,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.handler.HandleOrderService;
-import com.pda.api.dto.CheckCountResDto;
-import com.pda.api.dto.DrugOrderResDto;
-import com.pda.api.dto.DrugSubOrderDto;
 import com.pda.api.dto.base.*;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
@@ -40,7 +37,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
     }
 
     @Override
-    public List<BaseOrderDto> handleOrder(BaseReqDto baseReqDto, List<OrdersM> orders, List<OrderExcuteLog> logs,String type) {
+    public List<BaseOrderDto> handleOrder(BaseReqDto baseReqDto, List<OrdersM> orders, List<OrderExcuteLog> logs,String type,Date queryTime) {
         List<BaseOrderDto> result = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(orders)){
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
@@ -57,7 +54,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 baseOrderDto.setVisitId(firstSubOrder.getVisitId());
                 baseOrderDto.setOrderNo(orderNo);
                 baseOrderDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
-                baseOrderDto.setExcuteDate(DateUtil.getShortDate(LocalDateUtils.localDate2Date(logs.get(0).getExcuteDate())));
+                baseOrderDto.setExcuteDate(DateUtil.getShortDate(queryTime));
                 baseOrderDto.setStartDateTime(firstSubOrder.getStartDateTime());
                 baseOrderDto.setRepeatIndicator(firstSubOrder.getRepeatIndicator());
                 if(StringUtils.isNotBlank(firstSubOrder.getPerformSchedule())){
@@ -102,7 +99,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             }
             Collections.sort(result);
         }
-        return null;
+        return result;
     }
 
     private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){

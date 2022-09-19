@@ -89,7 +89,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
         // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 获取临时医嘱的时间范围
         Date startDateOfDay = DateUtil.getStartDateOfDay();
         Date endDateOfDay = DateUtil.getEndDateOfDay();
@@ -100,7 +100,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         if (CollectionUtil.isNotEmpty(longCheckedLogs)) {
             result.addAll(longResOrders);
         }
@@ -255,8 +255,7 @@ public class ExcuteServiceImpl implements ExcuteService {
     public List<BaseOrderDto> orderExcuteList(String patientId,Integer visitId,String drugType) {
         List<BaseOrderDto> result = new ArrayList<>();
 
-        Date today = new Date();
-        Date queryTime = DateUtil.getStartDateOfDay(today);
+        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
         List<String> types = new ArrayList<>();
         if("0".equals(drugType)){
             types = ModuleTypeEnum.getAllCodes();
@@ -271,17 +270,17 @@ public class ExcuteServiceImpl implements ExcuteService {
         LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
         // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay(today);
-        Date endDateOfDay = DateUtil.getEndDateOfDay(today);
+        Date startDateOfDay = DateUtil.getStartDateOfDay();
+        Date endDateOfDay = DateUtil.getEndDateOfDay();
         baseReqDto.setRepeatIndicator(0);
         // 查询临时医嘱
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels);
         // 拿到所有核查日志
         LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER);
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         if(CollectionUtil.isNotEmpty(longResOrders)){
             result.addAll(longResOrders);
         }
