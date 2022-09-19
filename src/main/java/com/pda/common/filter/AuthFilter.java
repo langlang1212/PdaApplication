@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * @Classname AuthFilter
@@ -37,7 +38,8 @@ public class AuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         logger.info("鉴权拦截器!");
         String servletPath = request.getServletPath();
-        if(!ignoreWhiteProperties.getWhites().contains(servletPath)){
+        logger.info("请求路径:"+servletPath);
+        if(!checkUrl(ignoreWhiteProperties.getWhites(),servletPath)){
             String accessToken = request.getHeader("accessToken");
             JSONObject jsonObject = new JSONObject();
             if(StringUtils.isBlank(accessToken)){
@@ -61,5 +63,17 @@ public class AuthFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request,response);
+    }
+
+    private boolean checkUrl(List<String> patterns, String servletPath){
+        if(patterns.contains(servletPath)){
+            return true;
+        }
+        for(String pattern : patterns){
+            if(servletPath.startsWith(pattern)){
+                return true;
+            }
+        }
+        return false;
     }
 }

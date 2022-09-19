@@ -22,7 +22,8 @@ spring:
       matching-strategy: ant_path_matcher
 mybatis-plus:
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+     log-impl : org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 logging:
   level:
@@ -33,6 +34,9 @@ security :
     whites :
       - /login
       - /doc.html
+      - /webjars/
+      - /swagger-resources
+      - /v2/api-docs
 
 # 防止XSS攻击
 xss:
