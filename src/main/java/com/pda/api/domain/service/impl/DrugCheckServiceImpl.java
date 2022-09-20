@@ -66,7 +66,8 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 拿到所有用法
         Set<String> labels = iOrderTypeDictService.findLabelsByType(null);
         // 查询病人所有药
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        List<Integer> statusList = Arrays.asList(2,3);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels,statusList);
         // 获取操作日志
         LogQuery logQuery = LogQuery.create(dto,longOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
@@ -75,7 +76,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 处理临时医嘱
         Date startDateOfDay = DateUtil.getStartDateOfDay();
         Date endDateOfDay = DateUtil.getEndDateOfDay();
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,statusList);
         LogQuery logQueryShort = LogQuery.create(dto,shortOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
         handleOrderService.countOrder(dto,result,shortOrders,Constant.LINSHI,shortDistinctLogs);
@@ -97,8 +98,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 拿到所有用法
         Set<String> labels = iOrderTypeDictService.findLabelsByType(null);
 
+        List<Integer> statusList = Arrays.asList(2,3);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels,statusList);
         // 拿到所有核查日志
         LogQuery logQuery = LogQuery.create(dto,longOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
@@ -109,7 +111,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date startDateOfDay = DateUtil.getStartDateOfDay();
         Date endDateOfDay = DateUtil.getEndDateOfDay();
         // 查询临时医嘱
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,statusList);
         // 拿到所有核查日志
         LogQuery shortLogQuery = LogQuery.create(dto,longOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
@@ -150,8 +152,10 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
 
         Set<String> labels = getLiquidLabels();
+        //
+        List<Integer> statusList = Arrays.asList(2,3);
         // 查询病人所有药
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels,statusList);
         // 获取操作日志
         LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
@@ -160,7 +164,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 处理临时医嘱
         Date startDateOfDay = DateUtil.getStartDateOfDay();
         Date endDateOfDay = DateUtil.getEndDateOfDay();
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,statusList);
         LogQuery logQueryShort = LogQuery.create(dto,shortOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
         handleOrderService.countOrder(dto,result,shortOrders,Constant.LINSHI,shortDistinctLogs);
@@ -184,8 +188,10 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
         // 拿到配液用法
         Set<String> labels = getLiquidLabels();
+        //
+        List<Integer> statusList = Arrays.asList(2,3);
         // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels);
+        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels,statusList);
         // 拿到所有核查日志
         LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
@@ -196,7 +202,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         Date startDateOfDay = DateUtil.getStartDateOfDay();
         Date endDateOfDay = DateUtil.getEndDateOfDay();
         // 查询临时医嘱
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels);
+        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,statusList);
         // 拿到所有核查日志
         LogQuery shortLogQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);

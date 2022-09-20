@@ -50,6 +50,11 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 }else{
                     baseOrderDto = new BaseOrderDto();
                 }
+                if("3".equals(firstSubOrder.getOrderStatus())){
+                    baseOrderDto.setIsStop("1");
+                }else if("2".equals(firstSubOrder.getOrderStatus())){
+                    baseOrderDto.setIsStop("0");
+                }
                 baseOrderDto.setPatientId(firstSubOrder.getPatientId());
                 baseOrderDto.setVisitId(firstSubOrder.getVisitId());
                 baseOrderDto.setOrderNo(orderNo);

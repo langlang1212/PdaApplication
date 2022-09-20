@@ -36,6 +36,10 @@ public class BaseOrderDto implements Comparable<BaseOrderDto>{
     private String excuteDate;
 
     private List<String> schedule;
+    /**
+     * 0: 未停  1:停嘱
+     */
+    private String isStop;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
     private LocalDateTime startDateTime;

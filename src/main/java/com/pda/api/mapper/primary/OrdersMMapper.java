@@ -28,7 +28,7 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
     List<PatientInfoDto> findMyPatient(@Param("keyword") String keyword, @Param("wardCode") String wardCode, @Param("userName") String userName);
 
-    List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay,@Param("labels") Set<String> labels);
+    List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay,@Param("labels") Set<String> labels,@Param("status") List<Integer> status);
 
-    List<OrdersM> listLongOrderByPatientId(@Param("patientId") String patientId, @Param("visitId") Integer visitId, @Param("endTime") Date queryTime, @Param("labels") Set<String> labels);
+    List<OrdersM> listLongOrderByPatientId(@Param("patientId") String patientId, @Param("visitId") Integer visitId, @Param("endTime") Date queryTime, @Param("labels") Set<String> labels,@Param("status") List<Integer> status);
 }

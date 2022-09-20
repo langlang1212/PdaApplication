@@ -32,6 +32,13 @@
                 #{item}
             </foreach>
         </if>
+        <if test='statusList != null and statusList.size()>0'>
+            and order_status in
+            <foreach collection="statusList" index="status"  item="item"
+                     open="(" separator="," close=")">
+                #{status}
+            </foreach>
+        </if>
         order by order_no
     </select>
 
@@ -45,6 +52,13 @@
             <foreach collection="labels" index="index"  item="item"
                      open="(" separator="," close=")">
                 #{item}
+            </foreach>
+        </if>
+        <if test='statusList != null and statusList.size()>0'>
+            and order_status in
+            <foreach collection="statusList" index="status"  item="item"
+                     open="(" separator="," close=")">
+                #{status}
             </foreach>
         </if>
         order by order_no
