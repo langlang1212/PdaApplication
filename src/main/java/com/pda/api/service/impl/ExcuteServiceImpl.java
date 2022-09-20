@@ -51,7 +51,7 @@ public class ExcuteServiceImpl implements ExcuteService {
 
     private static final List<String> EXCUTE_ORDER_TYPE = Arrays.asList(Constant.EXCUTE_TYPE_ORDER);
 
-    private static final List<Integer> STATUS_LIST = Arrays.asList(2);
+    private static final List<String> STATUS_LIST = Arrays.asList("2");
 
     @Autowired
     private OrdersMMapper ordersMMapper;
@@ -75,7 +75,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         return result;
     }
 
-    private List<BaseOrderDto> getBaseOrderDtos(String patientId, Integer visitId, ModuleTypeEnum type2,List<Integer> statusList) {
+    private List<BaseOrderDto> getBaseOrderDtos(String patientId, Integer visitId, ModuleTypeEnum type2,List<String> statusList) {
         List<BaseOrderDto> result = new ArrayList<>();
         // 查询时间
         Date queryTime = PdaTimeUtil.getTodayOrTomorrow();

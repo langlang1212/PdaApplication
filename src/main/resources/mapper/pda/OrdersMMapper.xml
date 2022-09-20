@@ -34,7 +34,7 @@
         </if>
         <if test='statusList != null and statusList.size()>0'>
             and order_status in
-            <foreach collection="statusList" index="status"  item="item"
+            <foreach collection="statusList" index="index"  item="status"
                      open="(" separator="," close=")">
                 #{status}
             </foreach>
@@ -56,7 +56,7 @@
         </if>
         <if test='statusList != null and statusList.size()>0'>
             and order_status in
-            <foreach collection="statusList" index="status"  item="item"
+            <foreach collection="statusList" index="index"  item="status"
                      open="(" separator="," close=")">
                 #{status}
             </foreach>

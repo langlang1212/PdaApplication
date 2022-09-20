@@ -16,7 +16,7 @@ public class BaseReqDto {
     @NotBlank(message = "病人id不能为空")
     private String patientId;
 
-    @NotBlank(message = "visitId不能为空")
+    /*@NotBlank(message = "visitId不能为空")*/
     private Integer visitId;
 
     /**
