@@ -5,7 +5,9 @@ import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.dto.base.BaseReqDto;
 import com.pda.utils.DateUtil;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
  * @Created by AlanZhang
  */
 @Data
+@Slf4j
 public class LogQuery {
 
     private String patientId;
@@ -32,12 +35,11 @@ public class LogQuery {
 
     public static LogQuery create(BaseReqDto reqDto, List<OrdersM> ordersMS, List<String> types, Date queryTime){
         LogQuery logQuery = new LogQuery();
-        logQuery.init(reqDto,ordersMS,types,queryTime);
+        logQuery.init(logQuery,reqDto,ordersMS,types,queryTime);
         return logQuery;
     }
 
-    public void init(BaseReqDto reqDto,List<OrdersM> ordersMS,List<String> types, Date queryTime){
-        LogQuery logQuery = new LogQuery();
+    public void init(LogQuery logQuery,BaseReqDto reqDto,List<OrdersM> ordersMS,List<String> types, Date queryTime){
         BeanUtils.copyProperties(reqDto,logQuery);
         logQuery.setExcuteDate(DateUtil.getShortDate(queryTime));
         logQuery.setTypes(types);
@@ -46,5 +48,13 @@ public class LogQuery {
             List<Integer> orderNos = ordersMS.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList());
             logQuery.setOrderNos(orderNos);
         }
+    }
+
+    public static void main(String[] args) {
+        BaseReqDto dto = new BaseReqDto();
+        dto.setPatientId("1223333");
+        LogQuery logQuery = LogQuery.create(dto, null, null, new Date());
+        System.out.println(logQuery.getPatientId());
+
     }
 }

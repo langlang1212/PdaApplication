@@ -84,12 +84,11 @@ public class ExcuteServiceImpl implements ExcuteService {
         types.add(type2.code());
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
         // 长期
-        // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, visitId, queryTime, labels,statusList);
         // 拿到所有核查日志
         BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
         LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
-        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 获取临时医嘱的时间范围
@@ -271,7 +270,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 拿到所有核查日志
         BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
         LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
-        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 临时
