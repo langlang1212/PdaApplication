@@ -1,6 +1,7 @@
 package com.pda.api.domain.handler.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.handler.HandleOrderService;
@@ -58,7 +59,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 baseOrderDto.setPatientId(firstSubOrder.getPatientId());
                 baseOrderDto.setVisitId(firstSubOrder.getVisitId());
                 baseOrderDto.setOrderNo(orderNo);
-                baseOrderDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
+                if(ObjectUtil.isNotEmpty(firstSubOrder.getFreqCounter())){
+                    baseOrderDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
+                }
                 baseOrderDto.setExcuteDate(DateUtil.getShortDate(queryTime));
                 baseOrderDto.setStartDateTime(firstSubOrder.getStartDateTime());
                 baseOrderDto.setRepeatIndicator(firstSubOrder.getRepeatIndicator());

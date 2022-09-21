@@ -159,6 +159,7 @@ public class ExcuteServiceImpl implements ExcuteService {
                 orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
                 orderExcuteLog.setExcuteUserName(currentUser.getName());
                 orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+                orderExcuteLog.setCheckStatus("1");
                 orderExcuteLog.setExcuteTime(now);
                 orderExcuteLog.setType(type);
                 // 插入
