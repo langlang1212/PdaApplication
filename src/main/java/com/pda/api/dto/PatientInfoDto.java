@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Classname PatientInfoDto
@@ -59,4 +60,6 @@ public class PatientInfoDto {
     private String nurseName;
 
     private String diagnosis;
+
+    private String notice;
 }

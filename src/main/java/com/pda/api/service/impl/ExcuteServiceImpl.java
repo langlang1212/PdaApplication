@@ -51,7 +51,7 @@ public class ExcuteServiceImpl implements ExcuteService {
 
     private static final List<String> EXCUTE_ORDER_TYPE = Arrays.asList(Constant.EXCUTE_TYPE_ORDER);
 
-    private static final List<String> STATUS_LIST = Arrays.asList("2");
+    private static final List<String> STATUS_LIST = Arrays.asList("1","2","3");
 
     @Autowired
     private OrdersMMapper ordersMMapper;
@@ -87,7 +87,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, visitId, queryTime, labels,statusList);
         // 拿到所有核查日志
         BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
-        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
@@ -98,7 +98,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 查询临时医嘱
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels,statusList);
         // 拿到所有核查日志
-        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
@@ -269,7 +269,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels,STATUS_LIST);
         // 拿到所有核查日志
         BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
-        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
@@ -280,7 +280,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 查询临时医嘱
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels,STATUS_LIST);
         // 拿到所有核查日志
-        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, EXCUTE_ORDER_TYPE, queryTime);
+        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         if(CollectionUtil.isNotEmpty(longResOrders)){

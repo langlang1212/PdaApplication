@@ -19,7 +19,7 @@
                 #{orderNo}
             </foreach>
         </if>
-        order by check_time
+        order by type asc,check_time asc
     </select>
 
     <select id="selectCheckedLatestLog" resultType="com.pda.api.domain.entity.OrderExcuteLog">

@@ -3,6 +3,7 @@ package com.pda.api.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.pda.api.domain.entity.UserInfo;
 import com.pda.api.domain.service.IUserInfoService;
+import com.pda.api.dto.FoodNoticeDto;
 import com.pda.api.dto.PatientInfoDto;
 import com.pda.api.dto.PatientReqDto;
 import com.pda.api.dto.UserResDto;
@@ -10,7 +11,6 @@ import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.primary.PatientInfoMapper;
 import com.pda.api.service.PatientService;
 import com.pda.api.service.PdaService;
-import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
@@ -142,8 +142,18 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         List<UserInfo> list = iUserInfoService.list();
         Map<String, String> userMap = list.stream().collect(Collectors.toMap(UserInfo::getUserName, UserInfo::getName));
         result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
+        // 2、拿到饮食提醒
+        List<FoodNoticeDto> noticeDtos = ordersMMapper.selectNotice();
+        Map<String, List<FoodNoticeDto>> noticeMap = noticeDtos.stream().collect(Collectors.groupingBy(FoodNoticeDto::getPatientId));
         if(CollectionUtil.isNotEmpty(result)){
             result.forEach(patientInfo -> {
+                List<FoodNoticeDto> notices = noticeMap.get(patientInfo.getPatientId());
+                if(CollectionUtil.isNotEmpty(notices)){
+                    log.info(patientInfo.getPatientId() + "============================长度:"+notices.size()+"==================================");
+                    String notice = notices.stream().map(FoodNoticeDto::getOrderText).collect(Collectors.joining(";"));
+                    log.info("============================"+notice+"==================================");
+                    patientInfo.setNotice(notice);
+                }
                 patientInfo.setAge(PdaTimeUtil.getAgeStr(patientInfo.getBirthDay()));
                 patientInfo.setInpDays(PdaTimeUtil.getDurationDays(patientInfo.getAdmissionDate(),new Date()));
                 patientInfo.setDoctorName(userMap.get(patientInfo.getDoctorCode()));
