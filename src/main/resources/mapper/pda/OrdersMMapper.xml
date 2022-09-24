@@ -23,7 +23,7 @@
         select *
         from orders_m
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and repeat_indicator = 0
+        and repeat_indicator = 0 and order_status in ('2','3')
         and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
         order by order_no
     </select>
@@ -32,7 +32,7 @@
         select *
         from orders_m
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
+        and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and order_status in ('2','3')
         order by order_no
     </select>
 
