@@ -46,7 +46,7 @@
         select *
         from orders_m
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1 and stop_date_time is null
+        and start_date_time <![CDATA[<=]]> #{endTime} and repeat_indicator = 1
         <if test='labels != null and labels.size()>0'>
             and administration in
             <foreach collection="labels" index="index"  item="item"
