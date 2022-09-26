@@ -115,7 +115,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 查询临时医嘱
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,STATUS_LIST);
         // 拿到所有核查日志
-        LogQuery shortLogQuery = LogQuery.create(dto,longOrders,DRUG_TYPES,queryTime);
+        LogQuery shortLogQuery = LogQuery.create(dto,shortOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(dto,shortOrders,shortCheckedLogs,Constant.EXCUTE_TYPE_DRUG,queryTime);
