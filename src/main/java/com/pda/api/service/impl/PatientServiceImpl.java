@@ -11,6 +11,7 @@ import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.primary.PatientInfoMapper;
 import com.pda.api.service.PatientService;
 import com.pda.api.service.PdaService;
+import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
@@ -36,11 +37,7 @@ import java.util.stream.Collectors;
 public class PatientServiceImpl extends PdaBaseService implements PatientService {
 
     @Autowired
-    private PatientInfoMapper patientInfoMapper;
-    @Autowired
     private OrdersMMapper ordersMMapper;
-    @Autowired
-    private PdaService pdaService;
     @Autowired
     private IUserInfoService iUserInfoService;
 
@@ -141,7 +138,11 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         List<UserInfo> list = iUserInfoService.list();
         Map<String, String> userMap = list.stream().collect(Collectors.toMap(UserInfo::getUserName, UserInfo::getName));
-        result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
+        if(Constant.DOCTOR.equals(currentUser.getJob())){ //医生
+            result = ordersMMapper.findMyPatient(keyword,wardCode,null,currentUser.getUserName());
+        }else if(Constant.NURSE.equals(currentUser.getJob())){ // 护士
+            result = ordersMMapper.findMyPatient(keyword,null,wardCode,currentUser.getUserName());
+        }
         // 2、拿到饮食提醒
         List<FoodNoticeDto> noticeDtos = ordersMMapper.selectNotice();
         Map<String, List<FoodNoticeDto>> noticeMap = noticeDtos.stream().collect(Collectors.groupingBy(FoodNoticeDto::getPatientId));

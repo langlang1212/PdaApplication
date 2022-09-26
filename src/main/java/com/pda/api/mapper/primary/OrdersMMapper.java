@@ -22,9 +22,7 @@ import java.util.Set;
  */
 public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
-    List<DictDto> selectWardByOrder(String userName);
-
-    List<PatientInfoDto> findMyPatient(@Param("keyword") String keyword, @Param("wardCode") String wardCode, @Param("userName") String userName);
+    List<PatientInfoDto> findMyPatient(@Param("keyword") String keyword, @Param("deptCode") String deptCode,@Param("wardCode") String wardCode, @Param("userName") String userName);
 
     List<OrdersM> listShortOrderByPatientId(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay,@Param("labels") Set<String> labels,@Param("statusList") List<String> status);
 

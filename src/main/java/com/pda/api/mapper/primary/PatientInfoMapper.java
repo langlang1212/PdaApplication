@@ -19,11 +19,6 @@ import java.util.List;
  */
 public interface PatientInfoMapper extends BaseMapper<PatientInfo> {
 
-    @Select("select distinct ward_code 'key',ward_name 'value' from patient_info where doctor_in_charge = #{userName}")
-    List<DictDto> selectWardByPatient(String userName);
-
-    List<PatientInfoDto> findMyPatient(@Param("keyword") String keyword, @Param("wardCode") String wardCode, @Param("userName") String userName);
-
     @Select("select distinct bed_no from patient_info where ward_code = #{wardCode}")
     List<Integer> findAlreadyBed(String wardCode);
 }

@@ -9,13 +9,19 @@
     </select>
 
     <select id="findMyPatient" resultType="com.pda.api.dto.PatientInfoDto">
-        select pi.patient_id "patientId",visit_id "visitId",pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.dept_code "wardCode",
-        pi.dept_name "wardName",pi.doctor_in_charge "doctorCode",pi.date_of_birth "birthDay",pi.admission_date_time "admissionDate",
+        select pi.patient_id "patientId",visit_id "visitId",pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
+        pi.ward_name "wardName",pi.doctor_in_charge "doctorCode",pi.date_of_birth "birthDay",pi.admission_date_time "admissionDate",
         pi.diagnosis
         from patient_info pi
-        where ward_code = #{wardCode}
+        where 1=1
+        <if test='deptCode != null and deptCode != ""'>
+            and pi.dept_code = #{deptCode}
+        </if>
+        <if test='wardCode != null and wardCode != ""'>
+            and pi.ward_code = #{wardCode}
+        </if>
         <if test='keyword != null and keyword != ""'>
-            and pi.name like concat('%',#{keyword},'%') or pi.bed_no = #{keyword} or pi.inp_no like concat('%',#{keyword},'%')
+            and (pi.name like concat(concat('%',#{keyword}),'%') or to_char(pi.bed_no) like concat(concat('%',#{keyword}),'%') or pi.inp_no like concat(concat('%',#{keyword}),'%'))
         </if>
     </select>
 
