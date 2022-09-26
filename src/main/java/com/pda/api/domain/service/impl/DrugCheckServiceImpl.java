@@ -1,6 +1,8 @@
 package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.enums.ModuleTypeEnum;
@@ -241,6 +243,9 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         List<OrderExcuteLog> addLog = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         drugCheckReqDtoList.forEach(drugCheckReqDto -> {
+            // 查询已有的核查
+            checkedLog(drugCheckReqDto);
+            // 继续
             OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
             BeanUtils.copyProperties(drugCheckReqDto,orderExcuteLog);
             orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(drugCheckReqDto.getShouldExcuteDate()));
@@ -256,5 +261,12 @@ public class DrugCheckServiceImpl implements DrugCheckService {
             iOrderExcuteLogService.getBaseMapper().insert(orderExcuteLog);
         });
         return addLog;
+    }
+
+    private void checkedLog(CheckReqDto checkReqDto){
+        List<OrderExcuteLog> logs = iOrderExcuteLogService.getCheckedLogs(checkReqDto.getPatientId(),checkReqDto.getVisitId());
+        if(CollectionUtil.isNotEmpty(logs) && logs.size() == 2){
+            throw new BusinessException("当前医嘱已经核查过两次!");
+        }
     }
 }

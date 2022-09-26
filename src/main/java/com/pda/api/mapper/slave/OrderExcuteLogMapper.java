@@ -3,6 +3,7 @@ package com.pda.api.mapper.slave;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.Date;
@@ -29,4 +30,7 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
     @Update("update order_excute_log set excute_user_code = #{excuteUserCode},excute_user_name = #{excuteUserName},excute_status = #{excuteStatus},excute_time=#{excuteTime} " +
             "where patient_id = #{patientId} and visit_id = #{visitId} and order_no = #{orderNo} and type = #{type}")
     void updateLog(OrderExcuteLog existLog);
+
+    @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and check_status = '1' and type = '1'")
+    List<OrderExcuteLog> selectCheckedLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
 }

@@ -1,22 +1,13 @@
 package com.pda.api.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.pda.api.domain.entity.OrdersM;
-import com.pda.api.dto.UserResDto;
-import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.service.UserService;
 import com.pda.common.PdaBaseService;
-import com.pda.common.config.WsProperties;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
-import com.pda.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @Classname UserServiceImpl

@@ -36,4 +36,9 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
         List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectCheckedExcuteLog(logQuery.getPatientId(), logQuery.getVisitId(), logQuery.getOrderNos(), logQuery.getTypes(), logQuery.getExcuteDate());
         return orderExcuteLogs;
     }
+
+    @Override
+    public List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId) {
+        return orderExcuteLogMapper.selectCheckedLog(patientId,visitId);
+    }
 }

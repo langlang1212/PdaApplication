@@ -134,19 +134,24 @@ public class ExcuteServiceImpl implements ExcuteService {
             if(ObjectUtil.isNotNull(existLog) && ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
+            List<OrderExcuteLog> orderCheckedLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_DRUG);
+            if(CollectionUtil.isEmpty(orderCheckedLog)){
+                throw new BusinessException("当前医嘱没有核查,请先核查医嘱单!");
+            }
+            // 校验配液类的是否核对
+            if(labels.contains(oralExcuteReq.getAdministration())){
+                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
+                if(CollectionUtil.isEmpty(orderCheckLog)){
+                    throw new BusinessException("当前医嘱没有核对,请先核对医嘱单!");
+                }
+            }
             if(ObjectUtil.isNotNull(existLog)){
                 existLog.setExcuteUserCode(currentUser.getUserName());
                 existLog.setExcuteUserName(currentUser.getName());
                 existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
                 existLog.setExcuteTime(now);
                 if("5".equals(oralExcuteReq.getExcuteStatus())){
-                    // 校验配液类的是否核对
-                    if(labels.contains(oralExcuteReq.getAdministration())){
-                        List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
-                        if(CollectionUtil.isNotEmpty(orderCheckLog)){
-                            throw new BusinessException("当前医嘱没有核对,请先核对医嘱单!");
-                        }
-                    }
+
                 }
                 orderExcuteLogMapper.updateLog(existLog);
             }else{

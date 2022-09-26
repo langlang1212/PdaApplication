@@ -19,4 +19,6 @@ public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
     List<OrderExcuteLog> findDistinctLog(LogQuery logQuery);
 
     List<OrderExcuteLog> findOperLog(LogQuery logQuery);
+
+    List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId);
 }
