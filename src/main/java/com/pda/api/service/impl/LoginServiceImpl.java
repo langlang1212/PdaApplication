@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.ViewPassword;
 import com.pda.api.domain.service.IViewPasswordService;
 import com.pda.api.dto.UserResDto;
+import com.pda.api.mapper.primary.MobileCommonMapper;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.primary.PatientInfoMapper;
 import com.pda.api.mapper.primary.ViewPasswordMapper;
@@ -42,7 +43,7 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     @Autowired
     private PatientInfoMapper patientInfoMapper;
     @Autowired
-    private PdaService pdaService;
+    private MobileCommonMapper mobileCommonMapper;
     @Autowired
     private RedisService redisService;
 
@@ -54,7 +55,7 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
         if(ObjectUtils.isEmpty(checkUser(account,password))){
             throw new BusinessException("用户名或密码错误，请检查用户名或密码!");
         }
-        List userList = pdaService.getUsers();
+        /*List userList = pdaService.getUsers();
         for(Object obj : userList){
             UserResDto userResDto = JSONObject.parseObject(JSON.toJSONString(obj)).toJavaObject(UserResDto.class);
             if(account.equals(userResDto.getUserName())){
@@ -77,8 +78,19 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
                 redisService.setCacheObject(key,userResDto,invalidDuration, TimeUnit.DAYS);
                 return map;
             }
-        }
-        return null;
+        }*/
+        // 1、查询用户信息
+        UserResDto userResDto = mobileCommonMapper.checkUser(account);
+        // 2、设置病区
+        setWards(userResDto);
+        // 存储当前用户
+        Map<String,Object> map = new HashMap<>();
+        String key = DigestUtil.md5Hex(userResDto.getUserName()+":"+ DateUtil.getShortDate(new Date()), "utf-8");
+        map.put("accessToken",key);
+        map.put("user",userResDto);
+        // 放入redis 有效期1天
+        redisService.setCacheObject(key,userResDto,invalidDuration, TimeUnit.DAYS);
+        return map;
     }
 
     @Override
@@ -89,9 +101,9 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     private void setWards(UserResDto userResDto) {
         List<DictDto> wards = new ArrayList<>();
         if(Constant.DOCTOR.equals(userResDto.getJob())){ //医生
-            wards = patientInfoMapper.selectWardByPatient(userResDto.getUserName());
+            wards = mobileCommonMapper.selectDoctorWard(userResDto.getUserName());
         }else if(Constant.NURSE.equals(userResDto.getJob())){ //护士
-            wards = ordersMMapper.selectWardByOrder(userResDto.getUserName());
+            wards = mobileCommonMapper.selectNurseWard(userResDto.getUserName());
         }
         userResDto.setWards(wards);
     }

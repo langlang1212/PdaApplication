@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pda.api.mapper.primary.MobileCommonMapper">
+
+    <select id="checkUser" resultType="com.pda.api.dto.UserResDto">
+        select sd.user_name userName,
+               sd.name,sd.dept_code deptCode,
+               dd.dept_name deptName,
+               sd.job
+        from
+        (select user_name,name,dept_code,job from staff_dict where user_name = #{account}) sd
+        inner join dept_dict dd on sd.dept_code = dd.dept_code
+    </select>
+</mapper>
