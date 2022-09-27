@@ -64,7 +64,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     @Override
     public List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId) {
         // 1、查询用户所有标本送检
-        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
+        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId,DateUtil.getStartDateOfDay(),DateUtil.getEndDateOfDay());
         if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
                 List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,result.getTestNo());
@@ -80,7 +80,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     @Override
     public SpecimenCheckCountDto specimenCheckCount(String patientId, Integer visitId) {
         SpecimenCheckCountDto result = new SpecimenCheckCountDto();
-        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
+        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId,DateUtil.getStartDateOfDay(),DateUtil.getEndDateOfDay());
         if(CollectionUtil.isNotEmpty(results)){
             result.setTotal(results.size());
             results.forEach(resDto -> {

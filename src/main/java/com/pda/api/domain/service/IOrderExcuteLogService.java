@@ -21,7 +21,9 @@ public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
 
     List<OrderExcuteLog> findOperLog(LogQuery logQuery);
 
-    List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId);
+    List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId,Integer orderNo);
+
+    List<OrderExcuteLog> getJiaoduiLogs(String patientId, Integer visitId,Integer orderNo);
 
     List<OrderExcuteLog> findSpecimenLog(String patientId, Integer visitId,String testNo);
 }

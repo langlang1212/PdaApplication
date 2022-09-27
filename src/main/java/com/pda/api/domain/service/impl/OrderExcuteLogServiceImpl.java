@@ -38,8 +38,13 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
     }
 
     @Override
-    public List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId) {
-        return orderExcuteLogMapper.selectCheckedLog(patientId,visitId);
+    public List<OrderExcuteLog> getJiaoduiLogs(String patientId, Integer visitId,Integer orderNo) {
+        return orderExcuteLogMapper.selectJiaoduiLog(patientId,visitId,orderNo);
+    }
+
+    @Override
+    public List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId,Integer orderNo) {
+        return orderExcuteLogMapper.selectCheckedLog(patientId,visitId,orderNo);
     }
 
     @Override

@@ -31,8 +31,11 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
             "where patient_id = #{patientId} and visit_id = #{visitId} and order_no = #{orderNo} and type = #{type}")
     void updateLog(OrderExcuteLog existLog);
 
-    @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and check_status = '1' and type = '1'")
-    List<OrderExcuteLog> selectCheckedLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
+    @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and order_no = #{orderNo} and check_status = '1' and type = '1'")
+    List<OrderExcuteLog> selectCheckedLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("orderNo") Integer orderNo);
+
+    @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and order_no = #{orderNo} and check_status = '1' and type = '2'")
+    List<OrderExcuteLog> selectJiaoduiLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("orderNo") Integer orderNo);
 
     @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and test_no = #{testNo} and type in ('6','7') and check_status = '1' order by type,check_time")
     List<OrderExcuteLog> selectSpecimenLog(String patientId, Integer visitId,String testNo);
