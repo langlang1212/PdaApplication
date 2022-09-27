@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pda.api.dto.query.LogQuery;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,9 +22,9 @@ public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
 
     List<OrderExcuteLog> findOperLog(LogQuery logQuery);
 
-    List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId,Integer orderNo);
+    List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId, Integer orderNo, String excuteDate);
 
-    List<OrderExcuteLog> getJiaoduiLogs(String patientId, Integer visitId,Integer orderNo);
+    List<OrderExcuteLog> getJiaoduiLogs(String patientId, Integer visitId,Integer orderNo, String excuteDate);
 
     List<OrderExcuteLog> findSpecimenLog(String patientId, Integer visitId,String testNo);
 }
