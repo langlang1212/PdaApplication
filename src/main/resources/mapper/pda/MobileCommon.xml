@@ -11,4 +11,20 @@
         (select user_name,name,dept_code,job from staff_dict where user_name = #{account}) sd
         inner join dept_dict dd on sd.dept_code = dd.dept_code
     </select>
+
+    <select id="selectSubjectCheck" resultType="com.pda.api.dto.SpecimenCheckResDto">
+        select a.patient_id as patientId,
+               a.visit_id as visitId,
+               a.test_no as testNo,
+               a.specimen as specimen,
+               a.subject as subject,
+               a.Requested_Date_Time as requestedDateTime,
+               b.item_name as itemName,
+               nvl((select t.dept_name from dept_dict t where t.dept_code = a.Performed_By),a.Performed_By) as performedBy
+        from LAB_TEST_MASTER a ,LAB_TEST_ITEMS b
+        where  a.visit_id>0
+        and a.test_no = b.Test_No
+        and a.Requested_Date_Time>add_months(sysdate,-3)
+        and a.patient_id = #{patientId} and a.visit_id = #{visitId}
+    </select>
 </mapper>

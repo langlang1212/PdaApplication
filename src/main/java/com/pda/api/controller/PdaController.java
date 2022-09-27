@@ -154,34 +154,4 @@ public class PdaController {
         Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(drugService.findDistributionInfo(pageNum));
         return Result.success(stringObjectMap);
     }
-
-    /**
-     * 入参不能为空
-     * @param pageNum
-     * @return
-     */
-    @GetMapping("/checkout/{pageNum}")
-    public Result checkoutInfo(@PathVariable("pageNum") Integer pageNum ){
-        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(checkService.findCheckoutInfo(pageNum));
-        return Result.success(stringObjectMap);
-    }
-
-    @GetMapping("/check/{pageNum}")
-    public Result checkInfo(@PathVariable("pageNum") Integer pageNum ){
-        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(checkService.findCheckInfo(pageNum));
-        return Result.success(stringObjectMap);
-    }
-
-    /**
-     * 入参不能为空
-     * @param pageNum
-     * @return
-     */
-    @GetMapping("/check/applyinfo/{pageNum}")
-    public Result checkApplyInfo(@PathVariable("pageNum") Integer pageNum ){
-        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(checkService.findCheckApplyInfo(pageNum));
-        return Result.success(stringObjectMap);
-    }
-
-
 }

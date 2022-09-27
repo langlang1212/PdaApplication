@@ -48,6 +48,16 @@ public class OrderExcuteLog implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" , timezone = "GMT+8")
     private LocalDateTime excuteTime;
 
+    private String testNo;
+
+    public String getTestNo() {
+        return testNo;
+    }
+
+    public void setTestNo(String testNo) {
+        this.testNo = testNo;
+    }
+
     public Integer getVisitId() {
         return visitId;
     }

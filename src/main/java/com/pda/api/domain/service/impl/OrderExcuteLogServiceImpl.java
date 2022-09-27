@@ -41,4 +41,9 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
     public List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId) {
         return orderExcuteLogMapper.selectCheckedLog(patientId,visitId);
     }
+
+    @Override
+    public List<OrderExcuteLog> findSpecimenLog(String patientId, Integer visitId,String testNo) {
+        return orderExcuteLogMapper.selectSpecimenLog(patientId,visitId,testNo);
+    }
 }

@@ -13,11 +13,6 @@ import java.util.List;
  * @Created by AlanZhang
  */
 public interface CheckService {
-    String findCheckoutInfo(Integer pageNum);
-
-    String findCheckInfo(Integer pageNum);
-
-    String findCheckApplyInfo(Integer pageNum);
 
     List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId);
 

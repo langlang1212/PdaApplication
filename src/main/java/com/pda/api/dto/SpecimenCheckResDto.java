@@ -1,9 +1,11 @@
 package com.pda.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pda.api.domain.entity.OrderExcuteLog;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Classname SpecimenCheckResDto
@@ -14,11 +16,14 @@ import java.util.Date;
 @Data
 public class SpecimenCheckResDto {
 
-    private String testNo;
-
     private String patientId;
 
     private Integer visitId;
+
+    private String testNo;
+
+    private String itemName;
+
     /**
      * 检查名称
      */
@@ -35,23 +40,14 @@ public class SpecimenCheckResDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date requestedDateTime;
     /**
-     * 核对人
+     * 申请人
      */
-    private String collartor;
+    private String requester;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date collarDate;
-    /**
-     * 送检人
-     */
-    private String sendUser;
-    /**
-     *
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date sendTime;
     /**
      * 1:已核对 2:已送检
      */
     private String status;
+
+    private List<OrderExcuteLog> orderExcuteLogList;
 }

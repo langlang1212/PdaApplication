@@ -1,5 +1,6 @@
 package com.pda.api.mapper.primary;
 
+import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.dto.UserResDto;
 import com.pda.common.dto.DictDto;
 import org.apache.ibatis.annotations.Param;
@@ -23,4 +24,6 @@ public interface MobileCommonMapper {
     List<DictDto> selectDoctorWard(String userName);
     @Select("select dept_code key,dept_name value from orders_czy where user_name = #{userName} and group_class = '病区护士'")
     List<DictDto> selectNurseWard(String userName);
+
+    List<SpecimenCheckResDto> selectSubjectCheck(String patientId, Integer visitId);
 }

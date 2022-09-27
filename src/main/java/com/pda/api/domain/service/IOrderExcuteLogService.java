@@ -3,6 +3,7 @@ package com.pda.api.domain.service;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pda.api.dto.query.LogQuery;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -21,4 +22,6 @@ public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
     List<OrderExcuteLog> findOperLog(LogQuery logQuery);
 
     List<OrderExcuteLog> getCheckedLogs(String patientId, Integer visitId);
+
+    List<OrderExcuteLog> findSpecimenLog(String patientId, Integer visitId,String testNo);
 }
