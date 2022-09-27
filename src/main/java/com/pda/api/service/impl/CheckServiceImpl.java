@@ -105,8 +105,9 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         //
         UserResDto currentUser = SecurityUtil.getCurrentUser();
 
-        OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
+        List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getVisitId(),specimenCheckOperDto.getTestNo());
 
+        OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
         LocalDateTime now = LocalDateTime.now();
         orderExcuteLog.setPatientId(specimenCheckOperDto.getPatientId());
         orderExcuteLog.setVisitId(specimenCheckOperDto.getVisitId());
@@ -118,8 +119,18 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         orderExcuteLog.setExcuteStatus("1");
         orderExcuteLog.setExcuteTime(now);
         if("1".equals(specimenCheckOperDto.getStatus())){
+            logs.forEach(log -> {
+                if("6".equals(log.getType())){
+                    throw new BusinessException("请勿重复核对!");
+                }
+            });
             orderExcuteLog.setType("6");
         }else{
+            logs.forEach(log -> {
+                if("7".equals(log.getType())){
+                    throw new BusinessException("已送检!");
+                }
+            });
             orderExcuteLog.setType("7");
         }
         // 插入
