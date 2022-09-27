@@ -121,14 +121,14 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         if("1".equals(specimenCheckOperDto.getStatus())){
             logs.forEach(log -> {
                 if("6".equals(log.getType())){
-                    throw new BusinessException("请勿重复核对!");
+                    throw new BusinessException("该标本已核对!");
                 }
             });
             orderExcuteLog.setType("6");
         }else{
             logs.forEach(log -> {
                 if("7".equals(log.getType())){
-                    throw new BusinessException("已送检,请勿重复送检!");
+                    throw new BusinessException("该标本已送检!");
                 }
             });
             orderExcuteLog.setType("7");
