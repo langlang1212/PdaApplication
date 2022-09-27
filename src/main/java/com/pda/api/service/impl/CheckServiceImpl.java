@@ -65,7 +65,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     public List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId) {
         // 1、查询用户所有标本送检
         List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
-        if(CollectionUtil.isEmpty(results)){
+        if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
                 List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,result.getTestNo());
                 if(CollectionUtil.isNotEmpty(logs)){
@@ -128,7 +128,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         }else{
             logs.forEach(log -> {
                 if("7".equals(log.getType())){
-                    throw new BusinessException("已送检!");
+                    throw new BusinessException("已送检,请勿重复送检!");
                 }
             });
             orderExcuteLog.setType("7");
