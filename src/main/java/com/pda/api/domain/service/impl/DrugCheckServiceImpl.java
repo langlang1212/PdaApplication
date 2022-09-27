@@ -264,14 +264,15 @@ public class DrugCheckServiceImpl implements DrugCheckService {
     }
 
     private void checkedLog(CheckReqDto checkReqDto,String type){
+
         List<OrderExcuteLog> logs = new ArrayList<>();
         if(Constant.EXCUTE_TYPE_DRUG.equals(type)){
-            logs = iOrderExcuteLogService.getCheckedLogs(checkReqDto.getPatientId(),checkReqDto.getVisitId(),checkReqDto.getOrderNo(),DateUtil.getShortDate(new Date()));
+            logs = iOrderExcuteLogService.getCheckedLogs(checkReqDto.getPatientId(),checkReqDto.getVisitId(),checkReqDto.getOrderNo(),checkReqDto.getShouldExcuteDate());
             if(CollectionUtil.isNotEmpty(logs) && logs.size() == 2){
                 throw new BusinessException("当前医嘱已经核查过两次!");
             }
         }else if(Constant.EXCUTE_TYPE_LIQUID.equals(type)){
-            logs = iOrderExcuteLogService.getJiaoduiLogs(checkReqDto.getPatientId(),checkReqDto.getVisitId(),checkReqDto.getOrderNo(),DateUtil.getShortDate(new Date()));
+            logs = iOrderExcuteLogService.getJiaoduiLogs(checkReqDto.getPatientId(),checkReqDto.getVisitId(),checkReqDto.getOrderNo(),checkReqDto.getShouldExcuteDate());
             if(CollectionUtil.isNotEmpty(logs) && logs.size() == 2){
                 throw new BusinessException("当前医嘱已经校对过两次!");
             }
