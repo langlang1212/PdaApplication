@@ -98,6 +98,22 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
         redisService.deleteObject(accessToken);
     }
 
+    @Override
+    public Map<String, Object> loginByQrcode(String account) {
+        // 1、查询用户信息
+        UserResDto userResDto = mobileCommonMapper.checkUser(account);
+        // 2、设置病区
+        setWards(userResDto);
+        // 存储当前用户
+        Map<String,Object> map = new HashMap<>();
+        String key = DigestUtil.md5Hex(userResDto.getUserName()+":"+ DateUtil.getShortDate(new Date()), "utf-8");
+        map.put("accessToken",key);
+        map.put("user",userResDto);
+        // 放入redis 有效期1天
+        redisService.setCacheObject(key,userResDto,invalidDuration, TimeUnit.DAYS);
+        return map;
+    }
+
     private void setWards(UserResDto userResDto) {
         List<DictDto> wards = new ArrayList<>();
         if(Constant.DOCTOR.equals(userResDto.getJob())){ //医生

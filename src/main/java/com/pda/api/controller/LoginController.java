@@ -38,6 +38,13 @@ public class LoginController {
         return Result.success(result);
     }
 
+    @ApiOperation(value = "扫码登陆")
+    @PostMapping("/loginByQrcode")
+    public Result loginByQrcode(@RequestBody LoginDto loginDto){
+        Map<String,Object> result = loginService.loginByQrcode(loginDto.getAccount());
+        return Result.success(result);
+    }
+
     @GetMapping("/logout")
     public Result logout(@RequestHeader String accessToken){
         loginService.logout(accessToken);

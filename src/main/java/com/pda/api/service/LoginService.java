@@ -14,4 +14,6 @@ public interface LoginService {
     Map<String,Object> login(String account, String password);
 
     void logout(String accessToken);
+
+    Map<String, Object> loginByQrcode(String account);
 }
