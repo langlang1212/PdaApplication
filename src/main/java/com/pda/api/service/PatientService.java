@@ -1,8 +1,6 @@
 package com.pda.api.service;
 
-import com.pda.api.dto.PatientAllergyReqDto;
-import com.pda.api.dto.PatientInfoDto;
-import com.pda.api.dto.PatientReqDto;
+import com.pda.api.dto.*;
 
 import java.util.List;
 
@@ -22,4 +20,8 @@ public interface PatientService {
     String findPatientInfo(PatientReqDto patientReqDto);
 
     List<PatientInfoDto> findMyPatient(String keyword,String wardCode);
+
+    PatrolDto findPatrol(String patientId, Integer visitId);
+
+    void oper(PatrolOperDto patrolOperDto);
 }

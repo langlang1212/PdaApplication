@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pda.api.mapper.slave.PatrolMapper">
+
+    <insert id="inserPatientPatrol">
+        insert into patient_patrol (patient_id,visit_id,patrol_id,patrol_name,oper_user_code,oper_user_name,oper_time,type)
+        values (#{patientId},#{visitId},#{patrolId},#{patrolName},#{operUserCode},#{operUserName},#{operTime},#{type})
+    </insert>
+</mapper>

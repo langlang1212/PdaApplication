@@ -1,24 +1,25 @@
 package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.google.common.base.Joiner;
 import com.pda.api.domain.entity.UserInfo;
 import com.pda.api.domain.service.IUserInfoService;
-import com.pda.api.dto.FoodNoticeDto;
-import com.pda.api.dto.PatientInfoDto;
-import com.pda.api.dto.PatientReqDto;
-import com.pda.api.dto.UserResDto;
+import com.pda.api.dto.*;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.primary.PatientInfoMapper;
+import com.pda.api.mapper.slave.PatrolMapper;
 import com.pda.api.service.PatientService;
 import com.pda.api.service.PdaService;
 import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
+import com.pda.exception.BusinessException;
 import com.pda.utils.CxfClient;
 import com.pda.utils.PdaTimeUtil;
 import com.pda.utils.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +41,8 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     private OrdersMMapper ordersMMapper;
     @Autowired
     private IUserInfoService iUserInfoService;
+    @Autowired
+    private PatrolMapper patrolMapper;
 
     @Override
     public String fintPatientInhInfo(PatientReqDto patientReqDto) {
@@ -164,5 +167,47 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
             });
         }
         return result;
+    }
+
+    @Override
+    public PatrolDto findPatrol(String patientId, Integer visitId) {
+        // 返回结果
+        PatrolDto result = new PatrolDto();
+        result.setLabels(patrolMapper.selectPatrolLabel());
+
+        List<PatientPatrolDto> patientPatrolDtos = patrolMapper.selectPatientPatrol(patientId,visitId);
+        if(CollectionUtil.isNotEmpty(patientPatrolDtos)){
+            result.setPatientPatrolDtos(patientPatrolDtos);
+        }
+        return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void oper(PatrolOperDto patrolOperDto) {
+        // 获取当前用户
+        UserResDto currentUser = SecurityUtil.getCurrentUser();
+        List<PatrolLabelDto> patrolLabelList = patrolOperDto.getPatrolLabelDtos();
+        if(CollectionUtil.isEmpty(patrolLabelList)){
+            throw new BusinessException("请填入巡视选项!");
+        }
+        PatientPatrolDto patientPatrolDto = new PatientPatrolDto();
+        patientPatrolDto.setPatientId(patrolOperDto.getPatientId());
+        patientPatrolDto.setVisitId(patrolOperDto.getVisitId());
+        patientPatrolDto.setOperUserCode(currentUser.getUserName());
+        patientPatrolDto.setOperUserName(currentUser.getName());
+        patientPatrolDto.setType(patrolOperDto.getType());
+        //
+        List<Integer> ids = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        patrolLabelList.forEach(vo -> {
+            ids.add(vo.getPatrolId());
+            names.add(vo.getPatrolName());
+        });
+
+        patientPatrolDto.setPatrolId(Joiner.on("/").join(ids));
+        patientPatrolDto.setPatrolName(Joiner.on("/").join(names));
+
+        patrolMapper.inserPatientPatrol(patientPatrolDto);
     }
 }
