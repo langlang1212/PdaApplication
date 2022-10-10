@@ -6,7 +6,6 @@ import com.pda.common.dto.DictDto;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,5 +25,5 @@ public interface MobileCommonMapper {
     @Select("select dept_code key,dept_name value from orders_czy where user_name = #{userName} and group_class = '病区护士'")
     List<DictDto> selectNurseWard(String userName);
 
-    List<SpecimenCheckResDto> selectSubjectCheck(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startTime") Date startTime,@Param("endTime") Date endTime);
+    List<SpecimenCheckResDto> selectSubjectCheck(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
 }

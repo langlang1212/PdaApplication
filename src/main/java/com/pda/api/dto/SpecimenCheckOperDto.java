@@ -30,4 +30,6 @@ public class SpecimenCheckOperDto {
     @ApiModelProperty("1:核对 2:送检")
     @NotEmpty(message = "状态不能为空")
     private String status;
+    @ApiModelProperty("设备号")
+    private String deviceNo;
 }

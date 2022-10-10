@@ -64,7 +64,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     @Override
     public List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId) {
         // 1、查询用户所有标本送检
-        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId,DateUtil.getStartDateOfDay(),DateUtil.getEndDateOfDay());
+        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
         if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
                 List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,result.getTestNo());
@@ -80,7 +80,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     @Override
     public SpecimenCheckCountDto specimenCheckCount(String patientId, Integer visitId) {
         SpecimenCheckCountDto result = new SpecimenCheckCountDto();
-        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId,DateUtil.getStartDateOfDay(),DateUtil.getEndDateOfDay());
+        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
         if(CollectionUtil.isNotEmpty(results)){
             result.setTotal(results.size());
             results.forEach(resDto -> {
@@ -112,6 +112,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         orderExcuteLog.setPatientId(specimenCheckOperDto.getPatientId());
         orderExcuteLog.setVisitId(specimenCheckOperDto.getVisitId());
         orderExcuteLog.setTestNo(specimenCheckOperDto.getTestNo());
+        orderExcuteLog.setDeviceNo(specimenCheckOperDto.getDeviceNo());
         orderExcuteLog.setCheckTime(now);
         orderExcuteLog.setCheckStatus("1");
         orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
@@ -129,6 +130,9 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             logs.forEach(log -> {
                 if("7".equals(log.getType())){
                     throw new BusinessException("该标本已送检!");
+                }
+                if("6".equals(log.getType()) && !log.getDeviceNo().equals(specimenCheckOperDto.getDeviceNo())){
+                    throw new BusinessException("当前操作使用设备需和之前操作的设备相同!");
                 }
             });
             orderExcuteLog.setType("7");

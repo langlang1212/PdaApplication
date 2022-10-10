@@ -50,6 +50,16 @@ public class OrderExcuteLog implements Serializable {
 
     private String testNo;
 
+    private String deviceNo;
+
+    public String getDeviceNo() {
+        return deviceNo;
+    }
+
+    public void setDeviceNo(String deviceNo) {
+        this.deviceNo = deviceNo;
+    }
+
     public String getTestNo() {
         return testNo;
     }
