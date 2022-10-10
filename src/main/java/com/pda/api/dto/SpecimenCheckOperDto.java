@@ -27,6 +27,9 @@ public class SpecimenCheckOperDto {
     @ApiModelProperty("检验单号")
     @NotEmpty(message = "测试号不能为空")
     private String testNo;
+    @ApiModelProperty("标本")
+    @NotBlank(message = "标本不能为空")
+    private String specimen;
     @ApiModelProperty("1:核对 2:送检")
     @NotEmpty(message = "状态不能为空")
     private String status;
