@@ -23,8 +23,6 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
 
     List<OrderExcuteLog> selectCheckedLatestLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("types") List<String> types,@Param("excuteDate") String excuteDate);
 
-    List<OrderExcuteLog> selectExcuteLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("types") List<String> types,@Param("excuteDate") String excuteDate);
-
     List<OrderExcuteLog> selectExcuteLatestLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId, @Param("orderNos") List<Integer> orderNos, @Param("type") String type,@Param("excuteDate") String excuteDate);
 
     @Update("update order_excute_log set excute_user_code = #{excuteUserCode},excute_user_name = #{excuteUserName},excute_status = #{excuteStatus},excute_time=#{excuteTime} " +
@@ -39,4 +37,7 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
 
     @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and test_no = #{testNo} and type in ('6','7') and check_status = '1' order by type,check_time")
     List<OrderExcuteLog> selectSpecimenLog(String patientId, Integer visitId,String testNo);
+
+    @Select("select * from order_excute_log where type = #{type} and excute_date = #{shortDate}")
+    List<OrderExcuteLog> selectAllExcuteLog(@Param("shortDate") String shortDate,@Param("type") String type);
 }

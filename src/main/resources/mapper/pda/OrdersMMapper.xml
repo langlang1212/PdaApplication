@@ -70,4 +70,17 @@
         order by order_no
     </select>
 
+    <select id="selectAllTodoOrders" resultType="com.pda.api.domain.entity.OrdersM">
+        select distinct patient_id,visit_id,order_no
+        from orders_m
+        where order_status in ('2','3')
+        <if test='labels != null and labels.size()>0'>
+            and administration not in
+            <foreach collection="labels" index="index"  item="item"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
 </mapper>

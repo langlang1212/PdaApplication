@@ -9,6 +9,7 @@ import com.pda.common.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,5 +51,15 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
     @Override
     public List<OrderExcuteLog> findSpecimenLog(String patientId, Integer visitId,String testNo) {
         return orderExcuteLogMapper.selectSpecimenLog(patientId,visitId,testNo);
+    }
+
+    @Override
+    public List<OrderExcuteLog> findExcuteLog(String patientId, Integer visitId, Integer orderNo, String shouldExcuteDate,String type) {
+        return orderExcuteLogMapper.selectExcuteLatestLog(patientId,visitId, Arrays.asList(orderNo),type,shouldExcuteDate);
+    }
+
+    @Override
+    public List<OrderExcuteLog> getAllExcuteLog(String shortDate) {
+        return orderExcuteLogMapper.selectAllExcuteLog(shortDate,Constant.EXCUTE_TYPE_ORDER);
     }
 }

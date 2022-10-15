@@ -78,4 +78,10 @@ public class ExcuteController {
         excuteService.excute(excuteReqs);
         return Result.success();
     }
+
+    @GetMapping("/refresh")
+    public Result refreshOrder(){
+        excuteService.refresh();
+        return Result.success();
+    }
 }

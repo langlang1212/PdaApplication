@@ -20,9 +20,11 @@ import com.pda.api.dto.query.LogQuery;
 import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.ExcuteService;
+import com.pda.api.service.MobileCommonService;
 import com.pda.common.Constant;
 import com.pda.common.ExcuteStatusEnum;
 import com.pda.exception.BusinessException;
+import com.pda.job.ExcuteLogJob;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
 import com.pda.utils.PdaTimeUtil;
@@ -63,6 +65,10 @@ public class ExcuteServiceImpl implements ExcuteService {
     private HandleOrderService handleOrderService;
     @Autowired
     private IOrderExcuteLogService iOrderExcuteLogService;
+    @Autowired
+    private MobileCommonService mobileCommonService;
+    @Autowired
+    private ExcuteLogJob excuteLogJob;
 
     @Override
     public List<? extends  BaseOrderDto> oralList(String patientId,Integer visitId) {
@@ -85,6 +91,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId, visitId, queryTime, labels,statusList);
+        longOrders = mobileCommonService.handleStopOrder(longOrders, queryTime);
         // 拿到所有核查日志
         BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
         LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
@@ -92,11 +99,12 @@ public class ExcuteServiceImpl implements ExcuteService {
         // 处理返回数据
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 获取临时医嘱的时间范围
-        Date startDateOfDay = DateUtil.getStartDateOfDay();
-        Date endDateOfDay = DateUtil.getEndDateOfDay();
+        Date startDateOfDay = DateUtil.getTimeOfYestoday();
+        Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
         baseReqDto.setRepeatIndicator(0);
         // 查询临时医嘱
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels,statusList);
+        shortOrders = mobileCommonService.handleStopOrder(shortOrders, queryTime);
         // 拿到所有核查日志
         LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
@@ -126,7 +134,7 @@ public class ExcuteServiceImpl implements ExcuteService {
 
     }
 
-    private void excute(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
+    public void excute(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
         Set<String> labels = getLiquidLabels();
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
@@ -309,6 +317,11 @@ public class ExcuteServiceImpl implements ExcuteService {
         LocalDateTime now = LocalDateTime.now();
 
         excute(excuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+    }
+
+    @Override
+    public void refresh() {
+        excuteLogJob.excute();
     }
 
     private Set<String> getLiquidLabels() {

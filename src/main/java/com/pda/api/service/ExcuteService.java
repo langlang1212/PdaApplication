@@ -25,4 +25,6 @@ public interface ExcuteService {
     List<? extends BaseOrderDto> orderExcuteList(String patientId,Integer visitId,String drugType);
 
     void excute(List<ExcuteReq> excuteReqs);
+
+    void refresh();
 }
