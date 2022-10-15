@@ -81,7 +81,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         LogQuery logQuery = LogQuery.create(dto,longOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
         // 处理医嘱
-        handleOrderService.countOrder(dto,result,longOrders,Constant.CHANG,distinctLogs);
+        handleOrderService.countOrder(result,longOrders,Constant.CHANG,distinctLogs);
         // 处理临时医嘱
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
         Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
@@ -89,7 +89,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         shortOrders = mobileCommonService.handleStopOrder(shortOrders,queryTime);
         LogQuery logQueryShort = LogQuery.create(dto,shortOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-        handleOrderService.countOrder(dto,result,shortOrders,Constant.LINSHI,shortDistinctLogs);
+        handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortDistinctLogs);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
@@ -114,7 +114,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         LogQuery logQuery = LogQuery.create(dto,longOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(dto,longOrders,longCheckedLogs,Constant.EXCUTE_TYPE_DRUG,queryTime);
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders,longCheckedLogs,Constant.EXCUTE_TYPE_DRUG,queryTime);
         // 临时
         // 获取临时医嘱的时间范围
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
@@ -126,7 +126,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         LogQuery shortLogQuery = LogQuery.create(dto,shortOrders,DRUG_TYPES,queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(dto,shortOrders,shortCheckedLogs,Constant.EXCUTE_TYPE_DRUG,queryTime);
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders,shortCheckedLogs,Constant.EXCUTE_TYPE_DRUG,queryTime);
         Map<String,List<BaseOrderDto>> map = new HashMap<>();
         if(CollectionUtil.isNotEmpty(longResOrders)){
             map.put("longOrder",longResOrders);
@@ -199,7 +199,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 获取操作日志
         LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
-        handleOrderService.countOrder(dto,result,longOrders,Constant.CHANG,distinctLogs);
+        handleOrderService.countOrder(result,longOrders,Constant.CHANG,distinctLogs);
         // 处理临时医嘱
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
         Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
@@ -208,7 +208,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
 
         LogQuery logQueryShort = LogQuery.create(dto,shortOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-        handleOrderService.countOrder(dto,result,shortOrders,Constant.LINSHI,shortDistinctLogs);
+        handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortDistinctLogs);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
@@ -237,7 +237,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(dto,longOrders,longCheckedLogs,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders,longCheckedLogs,Constant.EXCUTE_TYPE_LIQUID,queryTime);
         // 临时
         // 获取临时医嘱的时间范围
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
@@ -249,7 +249,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         LogQuery shortLogQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(dto,shortOrders,shortCheckedLogs,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders,shortCheckedLogs,Constant.EXCUTE_TYPE_LIQUID,queryTime);
         // 封装结果
         Map<String,List<BaseOrderDto>> resultMap = new HashMap<>();
         List<BaseOrderDto> noChecked = new ArrayList<>();

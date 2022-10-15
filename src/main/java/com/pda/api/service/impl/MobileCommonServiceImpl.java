@@ -16,6 +16,7 @@ import com.pda.api.service.MobileCommonService;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  * @Created by AlanZhang
  */
 @Service
+@Slf4j
 public class MobileCommonServiceImpl implements MobileCommonService {
 
     @Autowired
@@ -112,13 +114,14 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         // 1.2、处理日志
         LogQuery logQueryShort = LogQuery.create(patientId,visitId,shortOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(logQueryShort);
+        log.info("处理其他临时医嘱");
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 2、长期
         List<OrdersM> longOrders = ordersMMapper.listLongOtherOrderByPatient(patientId,visitId, queryTime);
         LogQuery logQuerylong = LogQuery.create(patientId,visitId,longOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuerylong);
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-        if (CollectionUtil.isNotEmpty(longCheckedLogs)) {
+        if (CollectionUtil.isNotEmpty(longResOrders)) {
             result.addAll(longResOrders);
         }
         if (CollectionUtil.isNotEmpty(shortResOrders)) {

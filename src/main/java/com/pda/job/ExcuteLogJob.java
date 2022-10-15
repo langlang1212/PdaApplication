@@ -46,7 +46,7 @@ public class ExcuteLogJob {
     private IOrderExcuteLogService iOrderExcuteLogService;
 
     //添加定时任务
-    @Scheduled(cron = "* * 0-3 * * ? ")
+    @Scheduled(cron = "0 0 0/3 * * ? ")
     //@PostConstruct
     @Transactional(rollbackFor = Exception.class,transactionManager = "ds2TransactionManager")
     public void excute() {
@@ -84,7 +84,7 @@ public class ExcuteLogJob {
         ordersMs.forEach(o ->{
             String key = o.getPatientId() + "_" + o.getVisitId() + "_"+o.getOrderNo();
             if(!group.containsKey(key)){
-                log.info("刷新不用校对医嘱:"+key);
+                log.info("刷新的key:"+key);
                 OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
                 orderExcuteLog.setPatientId(o.getPatientId());
                 orderExcuteLog.setVisitId(o.getVisitId());

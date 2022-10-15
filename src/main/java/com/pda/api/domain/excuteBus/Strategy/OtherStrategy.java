@@ -32,6 +32,7 @@ public class OtherStrategy implements ExcuteStrategy {
 
     @Override
     public void list(List<BaseOrderDto> result, Date queryTime, String patientId, Integer visitId) {
+
         this.mobileCommonService.listOtherOrder(result,queryTime,patientId,visitId);
     }
 }

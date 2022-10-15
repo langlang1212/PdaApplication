@@ -93,7 +93,7 @@
         and order_class_name = '其他'
     </select>
 
-    <select id="listShortOtherOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
+    <select id="listLongOtherOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
         select *
         from orders_n
         where patient_id = #{patientId} and visit_id = #{visitId}

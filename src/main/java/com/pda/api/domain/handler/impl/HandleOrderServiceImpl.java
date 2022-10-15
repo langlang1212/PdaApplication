@@ -9,6 +9,8 @@ import com.pda.api.dto.base.*;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
+import com.pda.utils.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
  * @Created by AlanZhang
  */
 @Component
+@Slf4j
 public class HandleOrderServiceImpl implements HandleOrderService {
 
     @Override
@@ -76,14 +79,16 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                     }
                 }
                 baseOrderDto.setStopDateTime(firstSubOrder.getStopDateTime());
-
+                log.info("=======================orderNo:{}=================",baseOrderDto.getOrderNo());
                 List<BaseSubOrderDto> subOrderDtoList = new ArrayList<>();
                 ordersMS.forEach(ordersM -> {
                     BaseSubOrderDto baseSubOrderDto = new BaseSubOrderDto();
                     baseSubOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
                     baseSubOrderDto.setOrderText(ordersM.getOrderText());
                     baseSubOrderDto.setAdministation(ordersM.getAdministration());
-                    baseSubOrderDto.setDosage(ordersM.getDosage()+ordersM.getDosageUnits());
+                    if(StringUtils.isNotBlank(ordersM.getDosage())){
+                        baseSubOrderDto.setDosage(ordersM.getDosage()+ordersM.getDosageUnits());
+                    }
                     baseSubOrderDto.setFreqDetail(ordersM.getFreqDetail());
 
                     subOrderDtoList.add(baseSubOrderDto);
@@ -93,6 +98,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 List<OrderExcuteLog> checkedLog = new ArrayList<>();
                 if(CollectionUtil.isNotEmpty(logs)){
                     if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
+                        log.info("处理执行状态");
                         setExcuteStatus((BaseExcuteResDto) baseOrderDto,logs,checkedLog);
                     }else{
                         logs.forEach(orderExcuteLog -> {
@@ -102,6 +108,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                         });
                     }
                 }
+                //log.info("=============step 2 医嘱编号:{},orderNo:{},状态:{}===============",checkedLog.get(0).getPatientId(),checkedLog.get(0).getOrderNo(),checkedLog.get(0).getExcuteStatus());
                 baseOrderDto.setOrderExcuteLogs(checkedLog);
                 result.add(baseOrderDto);
             }
@@ -112,12 +119,13 @@ public class HandleOrderServiceImpl implements HandleOrderService {
 
     private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){
         for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
+            log.info("=============step 1 医嘱编号:{},orderNo:{},状态:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
+            log.info("=============step 2 医嘱编号:{},orderNo:{},visitId:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getVisitId(),orderExcuteLog.getExcuteStatus());
             if(dto.getPatientId().equals(orderExcuteLog.getPatientId())
-                    && dto.getOrderNo() == orderExcuteLog.getOrderNo() && dto.getVisitId() == orderExcuteLog.getVisitId()){
+                    && dto.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && dto.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
+                log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
                 checkedLog.add(orderExcuteLog);
-                if("3".equals(orderExcuteLog.getType())){
-                    dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
-                }
+                dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
             }
         }
     }
