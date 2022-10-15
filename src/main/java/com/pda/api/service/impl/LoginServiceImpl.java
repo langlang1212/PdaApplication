@@ -118,7 +118,7 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
         List<DictDto> wards = new ArrayList<>();
         if(Constant.DOCTOR.equals(userResDto.getJob())){ //医生
             wards = mobileCommonMapper.selectDoctorWard(userResDto.getUserName());
-        }else if(Constant.NURSE.equals(userResDto.getJob())){ //护士
+        }else{ //护士
             wards = mobileCommonMapper.selectNurseWard(userResDto.getUserName());
         }
         userResDto.setWards(wards);

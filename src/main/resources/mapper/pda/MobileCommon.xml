@@ -21,7 +21,6 @@
                a.Requested_Date_Time as requestedDateTime,
                nvl((select t.dept_name from dept_dict t where t.dept_code = a.Performed_By),a.Performed_By) as performedBy
         from LAB_TEST_MASTER a
-        where /*a.Requested_Date_Time<![CDATA[>=]]> #{startTime} and a.Requested_Date_Time<![CDATA[<=]]> #{endTime}
-        and */a.patient_id = #{patientId} and a.visit_id = #{visitId}
+        where a.patient_id = #{patientId} and a.visit_id = #{visitId}
     </select>
 </mapper>

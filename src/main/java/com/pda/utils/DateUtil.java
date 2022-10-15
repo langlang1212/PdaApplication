@@ -1202,6 +1202,37 @@ public class DateUtil {
      * @param day 要转换的日期
      * @return 日开始时间
      */
+    public static Date getTimeOfYestoday(){
+        return getTimeOfYestoday(null);
+    }
+
+    public static Date getTimeOfYestoday(Date day) {
+        if (ObjectUtil.isEmpty(day)) {
+            day = new Date();
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(day);
+        cal.add(Calendar.DAY_OF_MONTH,-1);
+        return cal.getTime();
+    }
+    public static Date getStartDateOfYestoday(){
+        return getStartDateOfYestoday(null);
+    }
+
+    public static Date getStartDateOfYestoday(Date day) {
+        if (ObjectUtil.isEmpty(day)) {
+            day = new Date();
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(day);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.add(Calendar.DAY_OF_MONTH,-1);
+        return cal.getTime();
+    }
+
 
     public static Date getStartDateOfDay(){
         return getStartDateOfDay(null);
