@@ -83,4 +83,23 @@
         </if>
     </select>
 
+    <select id="listShortOtherOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
+        select *
+        from orders_n
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        and order_status = '2'
+        and repeat_indicator = 0
+        and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
+        and order_class_name = '其他'
+    </select>
+
+    <select id="listShortOtherOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
+        select *
+        from orders_n
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        and order_status = '2'
+        and repeat_indicator = 1
+        and start_date_time <![CDATA[<=]]> #{endTime}
+        and order_class_name = '其他'
+    </select>
 </mapper>

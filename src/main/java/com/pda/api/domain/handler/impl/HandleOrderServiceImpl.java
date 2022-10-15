@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class HandleOrderServiceImpl implements HandleOrderService {
 
     @Override
-    public void countOrder(BaseReqDto baseReqDto, BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs) {
+    public void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs) {
         if(CollectionUtil.isNotEmpty(orders)){
             Map<Integer,List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             if(CollectionUtil.isNotEmpty(orderGroup)){
@@ -38,7 +38,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
     }
 
     @Override
-    public List<BaseOrderDto> handleOrder(BaseReqDto baseReqDto, List<OrdersM> orders, List<OrderExcuteLog> logs,String type,Date queryTime) {
+    public List<BaseOrderDto> handleOrder(List<OrdersM> orders, List<OrderExcuteLog> logs,String type,Date queryTime) {
         List<BaseOrderDto> result = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(orders)){
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));

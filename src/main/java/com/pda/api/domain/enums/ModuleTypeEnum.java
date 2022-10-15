@@ -36,4 +36,15 @@ public enum ModuleTypeEnum {
         }
         return types;
     }
+
+    public static List<String> getHisTypeCodes(){
+        List<String> types = new ArrayList<>();
+        types.add(TYPE1.code());
+        types.add(TYPE2.code());
+        types.add(TYPE3.code());
+        types.add(TYPE4.code());
+        types.add(TYPE5.code());
+        types.add(TYPE6.code());
+        return types;
+    }
 }

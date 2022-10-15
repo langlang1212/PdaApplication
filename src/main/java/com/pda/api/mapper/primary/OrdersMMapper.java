@@ -37,4 +37,8 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
 
     @Select("select distinct patient_id,visit_id,order_no from orders_n where order_status = '2'")
     List<OrdersN> selectAllTodoOrderN(Set<String> labels);
+
+    List<OrdersM> listShortOtherOrderByPatient(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay);
+
+    List<OrdersM> listLongOtherOrderByPatient(@Param("patientId") String patientId, @Param("visitId") Integer visitId, @Param("endTime") Date queryTime);
 }

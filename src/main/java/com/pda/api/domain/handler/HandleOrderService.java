@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface HandleOrderService {
 
-    void countOrder(BaseReqDto baseReqDto, BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs);
+    void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs);
 
-    List<BaseOrderDto> handleOrder(BaseReqDto baseReqDto, List<OrdersM> orders, List<OrderExcuteLog> logs, String type, Date queryTime);
+    List<BaseOrderDto> handleOrder(List<OrdersM> orders, List<OrderExcuteLog> logs, String type, Date queryTime);
 }

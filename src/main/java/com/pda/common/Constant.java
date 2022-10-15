@@ -1,5 +1,8 @@
 package com.pda.common;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @Classname Constant
  * @Description TODO
@@ -37,4 +40,6 @@ public class Constant {
     public static final Integer CHANG = 1;
 
     public static final Integer LINSHI = 0;
+
+    public static final List<String> STATUS_LIST = Arrays.asList("1","2","3");
 }

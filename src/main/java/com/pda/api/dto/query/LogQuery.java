@@ -33,6 +33,16 @@ public class LogQuery {
 
     private List<String> types;
 
+    public static LogQuery create(String patientId,Integer visitId,List<OrdersM> ordersMS,List<String> types, Date queryTime){
+        LogQuery logQuery = new LogQuery();
+        logQuery.setPatientId(patientId);
+        logQuery.setOrderNos(ordersMS.stream().map(OrdersM::getOrderNo).distinct().collect(Collectors.toList()));
+        logQuery.setVisitId(visitId);
+        logQuery.setExcuteDate(DateUtil.getShortDate(queryTime));
+        logQuery.setTypes(types);
+        return logQuery;
+    }
+
     public static LogQuery create(BaseReqDto reqDto, List<OrdersM> ordersMS, List<String> types, Date queryTime){
         LogQuery logQuery = new LogQuery();
         logQuery.init(logQuery,reqDto,ordersMS,types,queryTime);

@@ -8,6 +8,10 @@ import com.pda.api.domain.constant.DomainConstant;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.enums.ModuleTypeEnum;
+import com.pda.api.domain.excuteBus.ExcuteStrategy;
+import com.pda.api.domain.excuteBus.Strategy.AllStrategy;
+import com.pda.api.domain.excuteBus.Strategy.OtherStrategy;
+import com.pda.api.domain.excuteBus.Strategy.SingleStrategy;
 import com.pda.api.domain.handler.HandleOrderService;
 import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.domain.service.IOrderLabelParamService;
@@ -48,10 +52,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ExcuteServiceImpl implements ExcuteService {
-
-    public static final List<String> TYPES = Arrays.asList(Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID,Constant.EXCUTE_TYPE_ORDER);
-
-    private static final List<String> EXCUTE_ORDER_TYPE = Arrays.asList(Constant.EXCUTE_TYPE_ORDER);
 
     private static final List<String> STATUS_LIST = Arrays.asList("1","2","3");
 
@@ -97,7 +97,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
+        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 获取临时医嘱的时间范围
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
         Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
@@ -109,7 +109,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
+        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         if (CollectionUtil.isNotEmpty(longCheckedLogs)) {
             result.addAll(longResOrders);
         }
@@ -229,32 +229,21 @@ public class ExcuteServiceImpl implements ExcuteService {
         OrderCountResDto result = new OrderCountResDto();
         // 拿到时间
         Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
-        // 拿到所有用法
+        ExcuteStrategy excuteStrategy = null;
         Set<String> labels = null;
         if("0".equals(drugType)){  // 为0就是全部
-            labels = iOrderTypeDictService.findLabelsByType(null);
+            // 用法
+            List<String> hisTypeCodes = ModuleTypeEnum.getHisTypeCodes();
+            labels = iOrderTypeDictService.findLabelsByType(hisTypeCodes);
+            // 统计
+            excuteStrategy = new AllStrategy(mobileCommonService,labels);
+        }else if(ModuleTypeEnum.TYPE9.code().equals(drugType)){ // 1009其他
+            excuteStrategy = new OtherStrategy(mobileCommonService,labels);
         }else{
             labels = iOrderTypeDictService.findLabelsByType(Arrays.asList(drugType));
+            excuteStrategy = new SingleStrategy(mobileCommonService,labels);
         }
-
-        // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels,STATUS_LIST);
-        // 获取操作日志
-        BaseReqDto baseReqDto = BaseReqDto.create(patientId,visitId);
-        LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,EXCUTE_ORDER_TYPE,queryTime);
-        List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
-        // 处理医嘱
-        handleOrderService.countOrder(baseReqDto,result,longOrders,Constant.CHANG,distinctLogs);
-        // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay();
-        Date endDateOfDay = DateUtil.getEndDateOfDay();
-        baseReqDto.setRepeatIndicator(0);
-
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,labels,STATUS_LIST);
-        LogQuery logQueryShort = LogQuery.create(baseReqDto,shortOrders,EXCUTE_ORDER_TYPE,queryTime);
-        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-        handleOrderService.countOrder(baseReqDto,result,shortOrders,Constant.LINSHI,shortDistinctLogs);
-
+        excuteStrategy.count(result,queryTime,patientId,visitId);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
         result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
@@ -268,40 +257,25 @@ public class ExcuteServiceImpl implements ExcuteService {
      */
     @Override
     public List<BaseOrderDto> orderExcuteList(String patientId,Integer visitId,String drugType) {
+        // 结果
         List<BaseOrderDto> result = new ArrayList<>();
-
+        // 查询时间
         Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
-        List<String> types = new ArrayList<>();
-        if("0".equals(drugType)){
-            types = ModuleTypeEnum.getAllCodes();
+        ExcuteStrategy excuteStrategy = null;
+        Set<String> labels = null;
+        if("0".equals(drugType)){  // 为0就是全部
+            // 用法
+            List<String> hisTypeCodes = ModuleTypeEnum.getHisTypeCodes();
+            labels = iOrderTypeDictService.findLabelsByType(hisTypeCodes);
+            // 统计
+            excuteStrategy = new AllStrategy(mobileCommonService,labels);
+        }else if(ModuleTypeEnum.TYPE9.code().equals(drugType)){ // 1009其他
+            excuteStrategy = new OtherStrategy(mobileCommonService,labels);
         }else{
-            types.add(drugType);
+            labels = iOrderTypeDictService.findLabelsByType(Arrays.asList(drugType));
+            excuteStrategy = new SingleStrategy(mobileCommonService,labels);
         }
-        Set<String> labels = iOrderTypeDictService.findLabelsByType(types);
-        // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels,STATUS_LIST);
-        // 拿到所有核查日志
-        BaseReqDto baseReqDto = BaseReqDto.create(patientId, visitId);
-        LogQuery logQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
-        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
-        // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(baseReqDto, longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-        // 临时
-        Date startDateOfDay = DateUtil.getStartDateOfDay();
-        Date endDateOfDay = DateUtil.getEndDateOfDay();
-        baseReqDto.setRepeatIndicator(0);
-        // 查询临时医嘱
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels,STATUS_LIST);
-        // 拿到所有核查日志
-        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
-        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(baseReqDto, shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-        if(CollectionUtil.isNotEmpty(longResOrders)){
-            result.addAll(longResOrders);
-        }
-        if(CollectionUtil.isNotEmpty(shortResOrders)){
-            result.addAll(shortResOrders);
-        }
+        excuteStrategy.list(result,queryTime,patientId,visitId);
         return result;
     }
 
