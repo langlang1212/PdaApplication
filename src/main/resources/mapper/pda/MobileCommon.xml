@@ -16,11 +16,38 @@
         select a.patient_id as patientId,
                a.visit_id as visitId,
                a.test_no as testNo,
+               LISTAGG(a.item_name, ',') WITHIN GROUP(ORDER BY a.item_name) AS subject,
                a.specimen as specimen,
-               a.subject as subject,
                a.Requested_Date_Time as requestedDateTime,
                nvl((select t.dept_name from dept_dict t where t.dept_code = a.Performed_By),a.Performed_By) as performedBy
-        from LAB_TEST_MASTER a
-        where a.patient_id = #{patientId} and a.visit_id = #{visitId}
+        from (
+            select a.patient_id,
+       a.visit_id,
+       a.test_no,
+       b.item_name,
+       b.item_no,
+       a.Requested_Date_Time as Requested_Date_Time,
+      nvl( (select t.dept_name from dept_dict t where t.dept_code = a.Ordering_Dept),a.Ordering_Dept) as applyDept,
+       nvl((SELECT TT.NAME FROM STAFF_DICT TT WHERE TT.USER_NAME= a.Ordering_Provider),Ordering_Provider) as applyDoctor,
+       nvl((select t.dept_name from dept_dict t where t.dept_code = a.Performed_By),a.Performed_By) as Performed_By,
+       A.SPECIMEN AS specimen,
+       a.subject,
+       a.spcm_received_date_time,
+       a.Spcm_Sample_Date_Time,
+        nvl((SELECT TT.NAME FROM STAFF_DICT TT WHERE TT.USER_NAME= a.transcriptionist),a.transcriptionist)   aS transcriptionist,
+        a.result_status,
+       (select y.exam_result_status_name
+          from EXAM_RESULT_STATUS_DICT y
+         where y.exam_result_status_code = a.result_status) as result_status, a.billing_indicator
+    from LAB_TEST_MASTER a ,LAB_TEST_ITEMS b
+    where a.patient_id = #{patientId} and a.visit_id = #{visitId}
+    and a.test_no = b.Test_No
+        ) a
+    group by a.patient_id,
+               a.visit_id,
+               a.test_no,
+               a.specimen,
+               a.requested_Date_Time,
+                a.performed_By
     </select>
 </mapper>

@@ -22,6 +22,10 @@ public class SpecimenCheckResDto {
 
     private String testNo;
 
+    private Integer itemNo;
+
+    private String itemName;
+
     /**
      * 检查名称
      */
