@@ -95,4 +95,8 @@ public class LocalDateUtils {
         return localTime;
     }
 
+    public static void main(String[] args) {
+        System.out.println(LocalDateUtils.date2LocalDateTime(DateUtil.getTimeOfYestoday(new Date())));
+    }
+
 }

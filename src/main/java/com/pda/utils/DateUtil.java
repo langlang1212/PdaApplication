@@ -1202,6 +1202,21 @@ public class DateUtil {
      * @param day 要转换的日期
      * @return 日开始时间
      */
+
+    public static Date getDurationTime(Integer duration){
+        return getDurationTime(null,duration);
+    }
+
+    public static Date getDurationTime(Date day,Integer duration){
+        if (ObjectUtil.isEmpty(day)) {
+            day = new Date();
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(day);
+        cal.add(Calendar.DAY_OF_MONTH,duration);
+        return cal.getTime();
+    }
+
     public static Date getTimeOfYestoday(){
         return getTimeOfYestoday(null);
     }

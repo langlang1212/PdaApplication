@@ -85,21 +85,99 @@
 
     <select id="listShortOtherOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
         select *
-        from orders_n
+        from (
+            SELECT PATS_IN_HOSPITAL.WARD_CODE,
+       ORDERS.PATIENT_ID,
+       ORDERS.VISIT_ID,
+       ORDERS.ORDER_NO,
+       ORDERS.ORDER_SUB_NO,
+       ORDERS.REPEAT_INDICATOR,
+       ORDERS.ORDER_CLASS,
+       (SELECT CLASS_NAME
+          FROM CLINIC_ITEM_CLASS_DICT
+         WHERE CLASS_CODE = ORDERS.ORDER_CLASS) ORDER_CLASS_NAME,
+       ORDERS.ORDER_STATUS,
+       (SELECT ORDER_STATUS_NAME
+          FROM ORDER_STATUS_DICT
+         WHERE ORDER_STATUS_CODE = ORDERS.ORDER_STATUS) ORDER_STATUS_NAME,
+       '其他' ORDER_TEXT,
+       ORDERS.ORDER_CODE,
+       ORDERS.DOSAGE,
+       ORDERS.DOSAGE_UNITS,
+       substr(ORDERS.administration,1,decode(instr(replace(ORDERS.administration,'{000}','('),'('),0,length(ORDERS.administration),
+instr(replace(ORDERS.administration,'{000}','('),'(')-1)) ADMINISTRATION,
+       ORDERS.DURATION,
+       ORDERS.DURATION_UNITS,
+       ORDERS.START_DATE_TIME,
+       ORDERS.STOP_DATE_TIME,
+       ORDERS.FREQUENCY,
+       ORDERS.FREQ_COUNTER,
+       ORDERS.FREQ_INTERVAL,
+       ORDERS.FREQ_INTERVAL_UNIT,
+       ORDERS.FREQ_DETAIL,
+       ORDERS.PERFORM_SCHEDULE,
+       ORDERS.PERFORM_RESULT,
+       ORDERS.ORDERING_DEPT,
+       ORDERS.DOCTOR,
+       ORDERS.STOP_DOCTOR,
+       ORDERS.NURSE,
+       ORDERS.STOP_NURSE
+    FROM ORDERS, PATS_IN_HOSPITAL
+    WHERE ORDERS.PATIENT_ID = PATS_IN_HOSPITAL.PATIENT_ID
+             and (ORDERS.ORDER_CLASS  NOT IN('B','A')) and (ORDERS.ORDER_TEXT NOT LIKE'%饮食%' )
+        ) orders_n
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and order_status = '2'
+        and order_status in ('2','3')
         and repeat_indicator = 0
         and start_date_time <![CDATA[>=]]> #{startDateOfDay} and start_date_time <![CDATA[<=]]> #{endDateOfDay}
-        and order_class_name = '其他'
     </select>
 
     <select id="listLongOtherOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
         select *
-        from orders_n
+        from (
+            SELECT PATS_IN_HOSPITAL.WARD_CODE,
+       ORDERS.PATIENT_ID,
+       ORDERS.VISIT_ID,
+       ORDERS.ORDER_NO,
+       ORDERS.ORDER_SUB_NO,
+       ORDERS.REPEAT_INDICATOR,
+       ORDERS.ORDER_CLASS,
+       (SELECT CLASS_NAME
+          FROM CLINIC_ITEM_CLASS_DICT
+         WHERE CLASS_CODE = ORDERS.ORDER_CLASS) ORDER_CLASS_NAME,
+       ORDERS.ORDER_STATUS,
+       (SELECT ORDER_STATUS_NAME
+          FROM ORDER_STATUS_DICT
+         WHERE ORDER_STATUS_CODE = ORDERS.ORDER_STATUS) ORDER_STATUS_NAME,
+       '其他' ORDER_TEXT,
+       ORDERS.ORDER_CODE,
+       ORDERS.DOSAGE,
+       ORDERS.DOSAGE_UNITS,
+       substr(ORDERS.administration,1,decode(instr(replace(ORDERS.administration,'{000}','('),'('),0,length(ORDERS.administration),
+instr(replace(ORDERS.administration,'{000}','('),'(')-1)) ADMINISTRATION,
+       ORDERS.DURATION,
+       ORDERS.DURATION_UNITS,
+       ORDERS.START_DATE_TIME,
+       ORDERS.STOP_DATE_TIME,
+       ORDERS.FREQUENCY,
+       ORDERS.FREQ_COUNTER,
+       ORDERS.FREQ_INTERVAL,
+       ORDERS.FREQ_INTERVAL_UNIT,
+       ORDERS.FREQ_DETAIL,
+       ORDERS.PERFORM_SCHEDULE,
+       ORDERS.PERFORM_RESULT,
+       ORDERS.ORDERING_DEPT,
+       ORDERS.DOCTOR,
+       ORDERS.STOP_DOCTOR,
+       ORDERS.NURSE,
+       ORDERS.STOP_NURSE
+    FROM ORDERS, PATS_IN_HOSPITAL
+    WHERE ORDERS.PATIENT_ID = PATS_IN_HOSPITAL.PATIENT_ID
+             and (ORDERS.ORDER_CLASS  NOT IN('B','A')) and (ORDERS.ORDER_TEXT NOT LIKE'%饮食%' )
+        ) orders_n
         where patient_id = #{patientId} and visit_id = #{visitId}
-        and order_status = '2'
+        and order_status in ('2','3')
         and repeat_indicator = 1
         and start_date_time <![CDATA[<=]]> #{endTime}
-        and order_class_name = '其他'
     </select>
 </mapper>

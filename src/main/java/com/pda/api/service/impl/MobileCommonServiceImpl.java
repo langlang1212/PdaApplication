@@ -47,12 +47,14 @@ public class MobileCommonServiceImpl implements MobileCommonService {
 
     @Override
     public List<OrdersM> handleStopOrder(List<OrdersM> longOrders, Date queryTime) {
+        Date now = new Date();
         longOrders = longOrders.stream().filter(o -> {
             if("2".equals(o.getOrderStatus())){
                 return true;
             }else{
+                log.info("====stopTime:{},time1:{},time2:{}=====",o.getStopDateTime(),LocalDateUtils.date2LocalDateTime(DateUtil.getTimeOfYestoday(now)),LocalDateUtils.date2LocalDateTime(queryTime));
                 if("3".equals(o.getOrderStatus()) && ObjectUtil.isNotEmpty(o.getStopDateTime())
-                        && o.getStopDateTime().isAfter(LocalDateUtils.date2LocalDateTime(DateUtil.getTimeOfYestoday(queryTime)))
+                        && o.getStopDateTime().isAfter(LocalDateUtils.date2LocalDateTime(DateUtil.getTimeOfYestoday(now)))
                         && o.getStopDateTime().isBefore(LocalDateUtils.date2LocalDateTime(queryTime))){
                     return true;
                 }else{
@@ -111,6 +113,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
         Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
         List<OrdersM> shortOrders = ordersMMapper.listShortOtherOrderByPatient(patientId,visitId,startDateOfDay,endDateOfDay);
+        shortOrders = handleStopOrder(shortOrders,queryTime);
         // 1.2、处理日志
         LogQuery logQueryShort = LogQuery.create(patientId,visitId,shortOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(logQueryShort);
@@ -118,6 +121,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
         // 2、长期
         List<OrdersM> longOrders = ordersMMapper.listLongOtherOrderByPatient(patientId,visitId, queryTime);
+        longOrders = handleStopOrder(longOrders,queryTime);
         LogQuery logQuerylong = LogQuery.create(patientId,visitId,longOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuerylong);
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
