@@ -64,7 +64,7 @@ public class ExcuteController {
         return Result.success(excuteService.orderCount(patientId,visitId,drugType));
     }
 
-    @GetMapping("/-/{patientId}/{visitId}/{drugType}")
+    @GetMapping("/order/{patientId}/{visitId}/{drugType}")
     @ApiOperation("医嘱执行列表")
     public Result orderExcute(@PathVariable("patientId") String patientId,
                               @PathVariable("visitId") Integer visitId,
