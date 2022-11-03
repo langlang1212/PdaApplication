@@ -50,5 +50,18 @@ public class DataSourceConfig {
         return dataSourceProperties.initializeDataSourceBuilder().build();
     }
 
+    //第三个ds3数据源配置
+    @Bean(name = "ds3DataSourceProperties")
+    @ConfigurationProperties(prefix = "spring.datasource.ds3")
+    public DataSourceProperties ds3DataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    //第三个ds3数据源
+    @Bean("ds3DataSource")
+    public DataSource ds3DataSource(@Qualifier("ds3DataSourceProperties") DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties.initializeDataSourceBuilder().build();
+    }
+
 }
 

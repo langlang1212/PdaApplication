@@ -35,5 +35,10 @@ public class JdbcTemplateDataSourceConfig {
     public JdbcTemplate ds2JdbcTemplate(@Qualifier("ds2DataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
+
+    @Bean(name = "ds3JdbcTemplate")
+    public JdbcTemplate ds3JdbcTemplate(@Qualifier("ds3DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
 }
 

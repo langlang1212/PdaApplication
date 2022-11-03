@@ -15,6 +15,7 @@ import com.pda.api.dto.SpecimenCheckCountDto;
 import com.pda.api.dto.SpecimenCheckOperDto;
 import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.dto.UserResDto;
+import com.pda.api.mapper.lis.SpecimenApplyMapper;
 import com.pda.api.mapper.primary.MobileCommonMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.CheckService;
@@ -53,6 +54,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
 
     @Autowired
     private OrderExcuteLogMapper orderExcuteLogMapper;
+    @Autowired
+    private SpecimenApplyMapper specimenApplyMapper;
 
 
     /**
@@ -64,7 +67,9 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     @Override
     public List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId) {
         // 1、查询用户所有标本送检
-        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
+        String patId = String.format("%s%s",patientId,visitId);
+        List<SpecimenCheckResDto> results = specimenApplyMapper.selectSubjectCheck(patId);
+        /*List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);*/
         if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
                 List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,result.getTestNo());

@@ -1,0 +1,18 @@
+package com.pda.api.mapper.lis;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.pda.api.domain.entity.SpecimenCheck;
+import com.pda.api.dto.SpecimenCheckResDto;
+
+import java.util.List;
+
+/**
+ * @Classname SpecimenApplyMapper
+ * @Description TODO
+ * @Date 2022-11-03 20:43
+ * @Created by AlanZhang
+ */
+public interface SpecimenApplyMapper extends BaseMapper<SpecimenCheck> {
+
+    List<SpecimenCheckResDto> selectSubjectCheck(String patId);
+}
