@@ -15,10 +15,12 @@ import com.pda.api.dto.SpecimenCheckCountDto;
 import com.pda.api.dto.SpecimenCheckOperDto;
 import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.dto.UserResDto;
+import com.pda.api.dto.base.BaseKeyValueDto;
 import com.pda.api.mapper.lis.SpecimenApplyMapper;
 import com.pda.api.mapper.primary.MobileCommonMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.CheckService;
+import com.pda.api.service.DeptService;
 import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
 import com.pda.exception.BusinessException;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Classname CheckServiceImpl
@@ -56,6 +59,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     private OrderExcuteLogMapper orderExcuteLogMapper;
     @Autowired
     private SpecimenApplyMapper specimenApplyMapper;
+    @Autowired
+    private DeptService deptService;
 
 
     /**
@@ -70,8 +75,19 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         String patId = String.format("%s%s",patientId,visitId);
         List<SpecimenCheckResDto> results = specimenApplyMapper.selectSubjectCheck(patId);
         /*List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);*/
+        List<BaseKeyValueDto> depts = deptService.findAll();
+        Map<Object, List<BaseKeyValueDto>> deptMap = depts.stream().collect(Collectors.groupingBy(BaseKeyValueDto::getKey));
+        // 拿到所有科室的信息
         if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
+                result.setPatientId(patientId);
+                result.setVisitId(visitId);
+                // 执行科室
+                if(CollectionUtil.isNotEmpty(deptMap) && CollectionUtil.isNotEmpty(deptMap.get(result.getPerformedBy()))){
+                    BaseKeyValueDto dept = deptMap.get(result.getPerformedBy()).get(0);
+                    result.setPerformedDeptName(String.valueOf(dept.getValue()));
+                }
+                // 状态
                 List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,result.getTestNo());
                 if(CollectionUtil.isNotEmpty(logs)){
                     setSpecimenStatus(result,logs);

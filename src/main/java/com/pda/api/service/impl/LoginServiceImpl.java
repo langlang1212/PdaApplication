@@ -39,10 +39,6 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     @Autowired
     private IViewPasswordService iViewPasswordService;
     @Autowired
-    private OrdersMMapper ordersMMapper;
-    @Autowired
-    private PatientInfoMapper patientInfoMapper;
-    @Autowired
     private MobileCommonMapper mobileCommonMapper;
     @Autowired
     private RedisService redisService;

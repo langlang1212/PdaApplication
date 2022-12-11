@@ -14,7 +14,8 @@
                     ),1,1,''
                ) as subject,
                a.specimen as specimen,
-               a.req_dt as requestedDateTime
+               a.req_dt as requestedDateTime,
+               a.perform_dept
         from (
             select *
             from (select * from req_master where pat_id = #{patId}) rm
