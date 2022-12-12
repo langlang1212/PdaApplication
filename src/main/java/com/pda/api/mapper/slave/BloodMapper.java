@@ -1,0 +1,20 @@
+package com.pda.api.mapper.slave;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.pda.api.domain.entity.BloodInfo;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
+
+/**
+ * @Classname BloodMapper
+ * @Description TODO
+ * @Date 2022-12-12 21:11
+ * @Created by AlanZhang
+ */
+public interface BloodMapper extends BaseMapper<BloodInfo> {
+
+    @Select("select patient_id as patientId,visit_id as visitId,blood_id as bloodId,status from blood_excute where patient_id = #{patientId} and visit_id = #{visitId}")
+    List<BloodInfo> selectBloodStatus(@Param("patientId") String patientId, @Param("visitId") Integer visitId);
+}

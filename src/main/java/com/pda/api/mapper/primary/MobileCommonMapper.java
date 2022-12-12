@@ -1,5 +1,6 @@
 package com.pda.api.mapper.primary;
 
+import com.pda.api.domain.entity.BloodInfo;
 import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.dto.UserResDto;
 import com.pda.common.dto.DictDto;
@@ -26,4 +27,6 @@ public interface MobileCommonMapper {
     List<DictDto> selectNurseWard(String userName);
 
     List<SpecimenCheckResDto> selectSubjectCheck(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
+
+    List<BloodInfo> selectBlood(@Param("patientId") String patientId, @Param("visitId") Integer visitId);
 }

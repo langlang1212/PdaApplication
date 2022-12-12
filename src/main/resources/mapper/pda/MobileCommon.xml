@@ -50,4 +50,30 @@
                a.requested_Date_Time,
                 a.performed_By
     </select>
+
+    <select id="selectBlood" resultType="com.pda.api.domain.entity.BloodInfo">
+        select a.patient_id as patientId, a.visit_id as visitId,
+               c.blood_id as bloodId,
+               b.trans_capacity ||'/'|| b.unit as transCapacity,
+               a.blood_diagnose  as bloodDiagnose,
+               a.sxmd as sxmd,
+               a.sxmd1 as sxmd1,
+               a.apply_date as applyDate,
+               a.is_fanying as isFanying,
+               a.is_renchen as isRenshen,
+               c.audit_man as auditMan,
+               c.match_operator as matchOperator,
+               c.match_date as matchDate,
+               a.js_operator as jsOperator,
+               a.jssj as jssj,
+               a.sqabo as sqabo ,
+              (select d.blood_type_name  from BLOOD_COMPONENT d
+                         where d.blood_type = b.blood_type) as bloodTypeName
+        from BLOOD_APPLY a,
+             BLOOD_CAPACITY b, blood_match c
+        where a.apply_num = b.apply_num
+        and b.apply_num = c.apply_num
+        and b.match_sub_num = c.match_sub_num
+        and a.patient_id = #{patientId} and a.visit_id = #{visitId}
+    </select>
 </mapper>
