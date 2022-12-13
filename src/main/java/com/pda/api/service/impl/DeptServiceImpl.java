@@ -1,5 +1,7 @@
 package com.pda.api.service.impl;
 
+import com.pda.api.dto.base.BaseKeyValueDto;
+import com.pda.api.mapper.primary.MobileCommonMapper;
 import com.pda.api.service.DeptService;
 import com.pda.common.PdaBaseService;
 import com.pda.common.config.WsProperties;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Classname DeptServiceImpl
@@ -20,6 +23,9 @@ import java.util.Date;
 @Slf4j
 @Service
 public class DeptServiceImpl extends PdaBaseService implements DeptService {
+
+    @Autowired
+    private MobileCommonMapper mobileCommonMapper;
 
     @Override
     public String list(Integer pageNum) {
@@ -39,5 +45,10 @@ public class DeptServiceImpl extends PdaBaseService implements DeptService {
                 "</root>";
         String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
         return result;
+    }
+
+    @Override
+    public List<BaseKeyValueDto> findAll() {
+        return mobileCommonMapper.selectAll();
     }
 }

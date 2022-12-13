@@ -15,6 +15,5 @@ import java.util.Map;
 public interface DeptService {
     String list(Integer pageNum);
 
-    @Select("select distinct dept_code as key,dept_name value from dept_dict")
     List<BaseKeyValueDto> findAll();
 }

@@ -2,10 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.pda.api.mapper.slave.BloodMapper">
 
-
-
     <select id="selectBloodStatus" resultType="com.pda.api.domain.entity.BloodInfo">
-
+        select * from blood_excute
+        where patient_id = #{patientId}
+        and visit_id = #{visitId}
+        and blood_id in
+        <foreach collection="list" index="index"  item="id"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
-
 </mapper>

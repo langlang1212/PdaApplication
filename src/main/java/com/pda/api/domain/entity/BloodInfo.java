@@ -81,7 +81,7 @@ public class BloodInfo {
     /**
      * 0:未执行 1:执行中 2:暂停 3:执行完毕
      */
-    private String status;
+    private Integer status;
 
     private List<BloodOperLog> logs;
 }

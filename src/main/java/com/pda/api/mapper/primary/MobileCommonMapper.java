@@ -3,6 +3,7 @@ package com.pda.api.mapper.primary;
 import com.pda.api.domain.entity.BloodInfo;
 import com.pda.api.dto.SpecimenCheckResDto;
 import com.pda.api.dto.UserResDto;
+import com.pda.api.dto.base.BaseKeyValueDto;
 import com.pda.common.dto.DictDto;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -29,4 +30,7 @@ public interface MobileCommonMapper {
     List<SpecimenCheckResDto> selectSubjectCheck(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
 
     List<BloodInfo> selectBlood(@Param("patientId") String patientId, @Param("visitId") Integer visitId);
+
+    @Select("select distinct dept_code as key,dept_name value from dept_dict")
+    List<BaseKeyValueDto> selectAll();
 }

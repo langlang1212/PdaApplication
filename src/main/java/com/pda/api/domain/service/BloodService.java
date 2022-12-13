@@ -1,6 +1,7 @@
 package com.pda.api.domain.service;
 
 import com.pda.api.domain.entity.BloodInfo;
+import com.pda.api.dto.query.BloodExcuteReq;
 
 import java.util.List;
 
@@ -13,4 +14,6 @@ import java.util.List;
 public interface BloodService {
 
     List<BloodInfo> list(String patientId, Integer visitId);
+
+    void excute(BloodExcuteReq excuteReq);
 }
