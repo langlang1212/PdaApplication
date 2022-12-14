@@ -1,5 +1,6 @@
 package com.pda.api.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ import java.util.Date;
  * @Created by AlanZhang
  */
 @Data
+@TableName("blood_oper_log")
 public class BloodOperLog {
 
     private String patientId;
