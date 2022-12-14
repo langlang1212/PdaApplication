@@ -19,7 +19,9 @@ public class BloodExcute {
     private Integer visitId;
 
     private String bloodId;
-
+    /**
+     * 0:未执行 1:执行中 2:暂停 3:执行完毕
+     */
     private Integer status;
 
     private String excuteUserCode;

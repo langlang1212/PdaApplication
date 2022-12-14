@@ -8,7 +8,9 @@ import com.pda.api.domain.service.BloodService;
 import com.pda.api.dto.UserResDto;
 import com.pda.api.dto.query.BloodExcuteReq;
 import com.pda.api.mapper.primary.MobileCommonMapper;
+import com.pda.api.mapper.slave.BloodExcuteMapper;
 import com.pda.api.mapper.slave.BloodMapper;
+import com.pda.api.mapper.slave.BloodOperLogMapper;
 import com.pda.exception.BusinessException;
 import com.pda.utils.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +36,10 @@ public class BloodServiceImpl implements BloodService {
     private MobileCommonMapper mobileCommonMapper;
     @Autowired
     private BloodMapper bloodMapper;
+    @Autowired
+    private BloodExcuteMapper bloodExcuteMapper;
+    @Autowired
+    private BloodOperLogMapper bloodOperLogMapper;
 
     @Override
     public List<BloodInfo> list(String patientId, Integer visitId) {
@@ -70,9 +77,60 @@ public class BloodServiceImpl implements BloodService {
             throw new BusinessException("已执行过该步骤!");
         }
         // 4、
+        Date now = new Date();
+        // 操作步骤
+        if( 6 != excuteReq.getStatus()){
+            BloodOperLog bloodOperLog  = new BloodOperLog();
+            bloodOperLog.setPatientId(excuteReq.getPatientId());
+            bloodOperLog.setVisitId(excuteReq.getVisitId());
+            bloodOperLog.setBloodId(excuteReq.getBloodId());
+            bloodOperLog.setStatus(excuteReq.getStatus());
+            bloodOperLog.setOperUserCode(currentUser.getUserName());
+            bloodOperLog.setOperUserName(currentUser.getName());
+            bloodOperLog.setOperTime(now);
+            bloodOperLog.setCreateUserCode(currentUser.getUserName());
+            bloodOperLog.setCreateUserName(currentUser.getName());
+            bloodOperLog.setCreateTime(now);
+
+            bloodOperLogMapper.insert(bloodOperLog);
+        }
+
+        // 执行状态
+        List<BloodExcute> existExcutes = bloodMapper.selectBloodStatus(excuteReq.getPatientId(),excuteReq.getVisitId());
+        Map<String, List<BloodExcute>> excuteMap = existExcutes.stream().collect(Collectors.groupingBy(BloodExcute::getBloodId));
+        if(excuteMap.containsKey(excuteReq.getBloodId())){
+            BloodExcute excute = excuteMap.get(excuteReq.getBloodId()).get(0);
+            if(3 == excuteReq.getStatus()){
+                excute.setStatus(0);
+            }else if(4 == excuteReq.getStatus()){
+                excute.setStatus(1);
+            }else if(5 == excuteReq.getStatus()){
+                excute.setStatus(3);
+            }else if(6 == excuteReq.getStatus()){
+                excute.setStatus(2);
+            }
+            excute.setExcuteUserCode(currentUser.getUserName());
+            excute.setExcuteUserName(currentUser.getName());
+            excute.setExcuteTime(now);
+
+            bloodExcuteMapper.updateExcute(excute);
+        }else{
+            if(3 == excuteReq.getStatus()){
+                BloodExcute bloodExcute = new BloodExcute();
+                bloodExcute.setPatientId(excuteReq.getPatientId());
+                bloodExcute.setVisitId(excuteReq.getVisitId());
+                bloodExcute.setBloodId(excuteReq.getBloodId());
+                bloodExcute.setStatus(0);
+                bloodExcute.setExcuteUserCode(currentUser.getUserName());
+                bloodExcute.setExcuteUserName(currentUser.getName());
+                bloodExcute.setExcuteTime(now);
+
+                bloodExcuteMapper.insert(bloodExcute);
+            }
+        }
     }
 
-    private static boolean checkStatus(List<Integer> status, Integer param) {
+    private boolean checkStatus(List<Integer> status, Integer param) {
         for(Integer statu : status){
             if(statu.intValue() == param.intValue()){
                 return false;
@@ -82,7 +140,7 @@ public class BloodServiceImpl implements BloodService {
     }
 
     public static void main(String[] args) {
-        BloodExcuteReq req = new BloodExcuteReq();
+        /*BloodExcuteReq req = new BloodExcuteReq();
         req.setStatus(0);
         BloodOperLog e1 = new BloodOperLog();
         e1.setStatus(0);
@@ -101,6 +159,6 @@ public class BloodServiceImpl implements BloodService {
         if(!checkStatus(status,req.getStatus())){
             System.out.println("验证不通过");
         }
-        System.out.println(checkStatus(status,req.getStatus()));
+        System.out.println(checkStatus(status,req.getStatus()));*/
     }
 }
