@@ -4,22 +4,20 @@
 
     <select id="selectSubjectCheck" resultType="com.pda.api.dto.SpecimenCheckResDto">
         select
-               a.test_no as testNo,
+               a.barcode as testNo,
                stuff(
                     (
                         select ','+ T.req_itemname
                         from req_detail T
-                        where T.req_id = a.req_id and T.req_detailid = a.req_detailid
+                        where T.req_id = a.req_id
                         FOR XML PATH('')
                     ),1,1,''
                ) as subject,
-               a.specimen as specimen,
+               a.specimen_name as specimen,
                a.req_dt as requestedDateTime,
                a.perform_dept
         from (
-            select *
-            from (select * from req_master where pat_id = #{patId}) rm
-            inner join req_detail rd on rm.req_id = rd.req_id
+            select * from req_master where pat_id = #{patId}
         ) a
     </select>
 
