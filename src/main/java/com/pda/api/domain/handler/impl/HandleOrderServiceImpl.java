@@ -102,7 +102,8 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                         setExcuteStatus((BaseExcuteResDto) baseOrderDto,logs,checkedLog);
                     }else{
                         logs.forEach(orderExcuteLog -> {
-                            if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo() == orderExcuteLog.getOrderNo() && firstSubOrder.getVisitId() == orderExcuteLog.getVisitId()){
+                            if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue()
+                                    && firstSubOrder.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
                                 checkedLog.add(orderExcuteLog);
                             }
                         });
