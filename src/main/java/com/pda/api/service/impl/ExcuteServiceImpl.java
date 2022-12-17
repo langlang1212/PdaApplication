@@ -106,7 +106,7 @@ public class ExcuteServiceImpl implements ExcuteService {
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId, visitId, startDateOfDay, endDateOfDay, labels,statusList);
         shortOrders = mobileCommonService.handleStopOrder(shortOrders, queryTime);
         // 拿到所有核查日志
-        LogQuery shortLogQuery = LogQuery.create(baseReqDto, longOrders, STATUS_LIST, queryTime);
+        LogQuery shortLogQuery = LogQuery.create(baseReqDto, shortOrders, STATUS_LIST, queryTime);
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
