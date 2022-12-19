@@ -154,7 +154,7 @@ public class BloodServiceImpl implements BloodService {
         if(3 == cur.intValue() && 4 != next.intValue()){
             throw new BusinessException("请执行开始执行操作!");
         }
-        if(4 == cur.intValue() && (5 != next.intValue() || 6 != next.intValue())){
+        if(4 == cur.intValue() && (5 != next.intValue() && 6 != next.intValue())){
             throw new BusinessException("请执行下一步操作!");
         }
         if(5 == cur.intValue()){
