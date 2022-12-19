@@ -13,7 +13,7 @@
         from blood_oper_log
         where patient_id = #{patientId} and visit_id = #{visitId}
         <if test="bloodIds != null and bloodIds.size()>0">
-            and bloodId IN
+            and blood_id IN
             <foreach collection="bloodIds" item="bloodId" separator="," open="(" close=")">
                 #{bloodId}
             </foreach>
