@@ -17,10 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -46,12 +44,19 @@ public class BloodServiceImpl implements BloodService {
         // 查出所有输血送血
         List<BloodInfo> bloodInfos = mobileCommonMapper.selectBlood(patientId, visitId);
         if(CollectionUtil.isNotEmpty(bloodInfos)){
+            List<String> ids = bloodInfos.stream().map(BloodInfo::getBloodId).collect(Collectors.toList());
             // 查询状态
             List<BloodExcute> bloodStatus = bloodMapper.selectBloodStatus(patientId, visitId);
             Map<String, List<BloodExcute>> bloodStatusMap = bloodStatus.stream().collect(Collectors.groupingBy(b -> b.getPatientId() + "_" + b.getVisitId() + "_" + b.getBloodId()));
+            // 查询日志
+            List<BloodOperLog> bloodOperLogs = bloodMapper.selectLogs(patientId, visitId, ids);
+            Map<String,List<BloodOperLog>> operLogMap = new HashMap<>();
+            if(CollectionUtil.isNotEmpty(bloodOperLogs)){
+                operLogMap = bloodOperLogs.stream().collect(Collectors.groupingBy(BloodOperLog::getBloodId));
+            }
             // 袋数
             int size = bloodInfos.size();
-            bloodInfos.forEach(b -> {
+            for(BloodInfo b : bloodInfos){
                 b.setBloodQty(size);
                 // 设置状态
                 String key = b.getPatientId() + "_" + b.getVisitId() + "_" + b.getBloodId();
@@ -59,7 +64,14 @@ public class BloodServiceImpl implements BloodService {
                     BloodExcute status = bloodStatusMap.get(key).get(0);
                     b.setStatus(status.getStatus());
                 }
-            });
+                // 日志
+                if(operLogMap.containsKey(b.getBloodId())){
+                    List<BloodOperLog> logs = operLogMap.get(b.getBloodId());
+                    logs = logs.stream().sorted(Comparator.comparing(BloodOperLog::getCreateTime))
+                            .collect(Collectors.toList());
+                    b.setLogs(logs);
+                }
+            }
         }
         return bloodInfos;
     }
@@ -70,7 +82,7 @@ public class BloodServiceImpl implements BloodService {
         // 1、获取当前用户
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 2、执行逻辑
-        List<BloodOperLog> logs = bloodMapper.selectLogs(excuteReq.getPatientId(),excuteReq.getVisitId(),excuteReq.getBloodId());
+        List<BloodOperLog> logs = bloodMapper.selectLogs(excuteReq.getPatientId(),excuteReq.getVisitId(), Arrays.asList(excuteReq.getBloodId()));
         List<Integer> status = logs.stream().map(BloodOperLog::getStatus).collect(Collectors.toList());
         // 3、
         if(!checkStatus(status,excuteReq.getStatus())){

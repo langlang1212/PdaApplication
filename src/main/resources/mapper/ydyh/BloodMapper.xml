@@ -7,4 +7,17 @@
         where patient_id = #{patientId}
         and visit_id = #{visitId}
     </select>
+
+    <select id="selectLogs" resultType="com.pda.api.domain.entity.BloodInfo">
+        select *
+        from blood_oper_log
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        <if test="bloodIds != null and bloodIds.size()>0">
+            bloodId IN
+            <foreach collection="bloodIds" item="bloodId" separator="," open="(" close=")">
+                #{bloodId}
+            </foreach>
+        </if>
+        order by create_time asc
+    </select>
 </mapper>

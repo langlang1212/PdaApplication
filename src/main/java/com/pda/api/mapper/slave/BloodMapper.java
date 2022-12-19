@@ -20,6 +20,5 @@ public interface BloodMapper extends BaseMapper<BloodInfo> {
     @Select("select patient_id as patientId,visit_id as visitId,blood_id as bloodId,status from blood_excute where patient_id = #{patientId} and visit_id = #{visitId}")
     List<BloodExcute> selectBloodStatus(@Param("patientId") String patientId, @Param("visitId") Integer visitId);
 
-    @Select("select * from blood_oper_log where patient_id = #{patientId} and visit_id = #{visitId} and blood_id = #{bloodId} order by create_time asc")
-    List<BloodOperLog> selectLogs(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("bloodId") String bloodId);
+    List<BloodOperLog> selectLogs(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("bloodIds") List<String> bloodIds);
 }
