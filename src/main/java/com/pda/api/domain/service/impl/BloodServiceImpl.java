@@ -67,7 +67,7 @@ public class BloodServiceImpl implements BloodService {
                 // 日志
                 if(operLogMap.containsKey(b.getBloodId())){
                     List<BloodOperLog> logs = operLogMap.get(b.getBloodId());
-                    logs = logs.stream().sorted(Comparator.comparing(BloodOperLog::getCreateTime))
+                    logs = logs.stream().filter(l -> 6 != l.getStatus()).sorted(Comparator.comparing(BloodOperLog::getCreateTime))
                             .collect(Collectors.toList());
                     b.setLogs(logs);
                 }
@@ -90,21 +90,19 @@ public class BloodServiceImpl implements BloodService {
         // 4、
         Date now = new Date();
         // 操作步骤
-        if( 6 != excuteReq.getStatus()){
-            BloodOperLog bloodOperLog  = new BloodOperLog();
-            bloodOperLog.setPatientId(excuteReq.getPatientId());
-            bloodOperLog.setVisitId(excuteReq.getVisitId());
-            bloodOperLog.setBloodId(excuteReq.getBloodId());
-            bloodOperLog.setStatus(excuteReq.getStatus());
-            bloodOperLog.setOperUserCode(currentUser.getUserName());
-            bloodOperLog.setOperUserName(currentUser.getName());
-            bloodOperLog.setOperTime(now);
-            bloodOperLog.setCreateUserCode(currentUser.getUserName());
-            bloodOperLog.setCreateUserName(currentUser.getName());
-            bloodOperLog.setCreateTime(now);
+        BloodOperLog bloodOperLog  = new BloodOperLog();
+        bloodOperLog.setPatientId(excuteReq.getPatientId());
+        bloodOperLog.setVisitId(excuteReq.getVisitId());
+        bloodOperLog.setBloodId(excuteReq.getBloodId());
+        bloodOperLog.setStatus(excuteReq.getStatus());
+        bloodOperLog.setOperUserCode(currentUser.getUserName());
+        bloodOperLog.setOperUserName(currentUser.getName());
+        bloodOperLog.setOperTime(now);
+        bloodOperLog.setCreateUserCode(currentUser.getUserName());
+        bloodOperLog.setCreateUserName(currentUser.getName());
+        bloodOperLog.setCreateTime(now);
 
-            bloodOperLogMapper.insert(bloodOperLog);
-        }
+        bloodOperLogMapper.insert(bloodOperLog);
 
         // 执行状态
         List<BloodExcute> existExcutes = bloodExcuteMapper.selectBloodStatus(excuteReq.getPatientId(),excuteReq.getVisitId());
@@ -163,7 +161,7 @@ public class BloodServiceImpl implements BloodService {
         if(6 == cur.intValue() && 4 != next.intValue()){
             throw new BusinessException("请传入执行中状态!");
         }
-        if(cur.intValue() >= next.intValue()){
+        if(6 != cur.intValue() && cur.intValue() >= next.intValue()){
             throw new BusinessException("已经执行过该步骤!");
         }
     }
