@@ -46,7 +46,7 @@ public class BloodServiceImpl implements BloodService {
         if(CollectionUtil.isNotEmpty(bloodInfos)){
             List<String> ids = bloodInfos.stream().map(BloodInfo::getBloodId).collect(Collectors.toList());
             // 查询状态
-            List<BloodExcute> bloodStatus = bloodMapper.selectBloodStatus(patientId, visitId);
+            List<BloodExcute> bloodStatus = bloodExcuteMapper.selectBloodStatus(patientId, visitId);
             Map<String, List<BloodExcute>> bloodStatusMap = bloodStatus.stream().collect(Collectors.groupingBy(b -> b.getPatientId() + "_" + b.getVisitId() + "_" + b.getBloodId()));
             // 查询日志
             List<BloodOperLog> bloodOperLogs = bloodMapper.selectLogs(patientId, visitId, ids);
@@ -108,7 +108,7 @@ public class BloodServiceImpl implements BloodService {
         }
 
         // 执行状态
-        List<BloodExcute> existExcutes = bloodMapper.selectBloodStatus(excuteReq.getPatientId(),excuteReq.getVisitId());
+        List<BloodExcute> existExcutes = bloodExcuteMapper.selectBloodStatus(excuteReq.getPatientId(),excuteReq.getVisitId());
         Map<String, List<BloodExcute>> excuteMap = existExcutes.stream().collect(Collectors.groupingBy(BloodExcute::getBloodId));
         if(excuteMap.containsKey(excuteReq.getBloodId())){
             BloodExcute excute = excuteMap.get(excuteReq.getBloodId()).get(0);

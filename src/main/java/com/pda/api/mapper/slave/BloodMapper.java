@@ -17,8 +17,5 @@ import java.util.List;
  */
 public interface BloodMapper extends BaseMapper<BloodInfo> {
 
-    @Select("select patient_id as patientId,visit_id as visitId,blood_id as bloodId,status from blood_excute where patient_id = #{patientId} and visit_id = #{visitId}")
-    List<BloodExcute> selectBloodStatus(@Param("patientId") String patientId, @Param("visitId") Integer visitId);
-
     List<BloodOperLog> selectLogs(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("bloodIds") List<String> bloodIds);
 }

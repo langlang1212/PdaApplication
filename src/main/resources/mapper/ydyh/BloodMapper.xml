@@ -8,7 +8,7 @@
         and visit_id = #{visitId}
     </select>
 
-    <select id="selectLogs" resultType="com.pda.api.domain.entity.BloodInfo">
+    <select id="selectLogs" resultType="com.pda.api.domain.entity.BloodOperLog">
         select *
         from blood_oper_log
         where patient_id = #{patientId} and visit_id = #{visitId}
