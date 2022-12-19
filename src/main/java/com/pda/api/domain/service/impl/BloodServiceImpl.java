@@ -83,10 +83,9 @@ public class BloodServiceImpl implements BloodService {
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 2、执行逻辑
         List<BloodOperLog> logs = bloodMapper.selectLogs(excuteReq.getPatientId(),excuteReq.getVisitId(), Arrays.asList(excuteReq.getBloodId()));
-        List<Integer> status = logs.stream().map(BloodOperLog::getStatus).collect(Collectors.toList());
-        // 3、
-        if(!checkStatus(status,excuteReq.getStatus())){
-            throw new BusinessException("已执行过该步骤!");
+        if(CollectionUtil.isNotEmpty(logs)){
+            BloodOperLog curLog = logs.get(logs.size() - 1);
+            checkNextStep(curLog.getStatus(),excuteReq.getStatus());
         }
         // 4、
         Date now = new Date();
@@ -142,13 +141,31 @@ public class BloodServiceImpl implements BloodService {
         }
     }
 
-    private boolean checkStatus(List<Integer> status, Integer param) {
-        for(Integer statu : status){
-            if(statu.intValue() == param.intValue()){
-                return false;
-            }
+    private void checkNextStep(Integer cur, Integer next) {
+        if(0 == cur.intValue() && 1 != next.intValue()){
+            throw new BusinessException("请执行接血!");
         }
-        return true;
+        if(1 == cur.intValue() && 2 != next.intValue()){
+            throw new BusinessException("请执行核对!");
+        }
+        if(2 == cur.intValue() && 3 != next.intValue()){
+            throw new BusinessException("请执行复核!");
+        }
+        if(3 == cur.intValue() && 4 != next.intValue()){
+            throw new BusinessException("请执行开始执行操作!");
+        }
+        if(4 == cur.intValue() && (5 != next.intValue() || 6 != next.intValue())){
+            throw new BusinessException("请执行下一步操作!");
+        }
+        if(5 == cur.intValue()){
+            throw new BusinessException("已经执行完毕!");
+        }
+        if(6 == cur.intValue() && 4 != next.intValue()){
+            throw new BusinessException("请传入执行中状态!");
+        }
+        if(cur.intValue() >= next.intValue()){
+            throw new BusinessException("已经执行过该步骤!");
+        }
     }
 
     public static void main(String[] args) {
