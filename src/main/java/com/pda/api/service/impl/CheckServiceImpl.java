@@ -101,7 +101,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     @Override
     public SpecimenCheckCountDto specimenCheckCount(String patientId, Integer visitId) {
         SpecimenCheckCountDto result = new SpecimenCheckCountDto();
-        List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);
+        String patId = String.format("%s%s",patientId,visitId);
+        List<SpecimenCheckResDto> results = specimenApplyMapper.selectSubjectCheck(patId);
         if(CollectionUtil.isNotEmpty(results)){
             result.setTotal(results.size());
             results.forEach(resDto -> {
