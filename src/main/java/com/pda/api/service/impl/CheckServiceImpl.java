@@ -153,11 +153,11 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 if("7".equals(log.getType())){
                     throw new BusinessException("该标本已送检!");
                 }
-                if(specimenCheckOperDto.getSpecimen().contains("血")){
+                /*if(specimenCheckOperDto.getSpecimen().contains("血")){
                     if("6".equals(log.getType()) && !log.getDeviceNo().equals(specimenCheckOperDto.getDeviceNo())){
                         throw new BusinessException("当前操作使用设备需和之前操作的设备相同!");
                     }
-                }
+                }*/
 
             });
             orderExcuteLog.setType("7");
