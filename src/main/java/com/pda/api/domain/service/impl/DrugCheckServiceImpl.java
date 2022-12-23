@@ -166,6 +166,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                 orderExcuteLog.setExcuteStatus(ExcuteStatusEnum.NO_EXCUTE.code());
                 orderExcuteLog.setCheckStatus("1");
                 orderExcuteLog.setCheckTime(now);
+                orderExcuteLog.setExcuteTime(now);
                 orderExcuteLog.setType(type);
                 iOrderExcuteLogService.getBaseMapper().insert(orderExcuteLog);
             }
