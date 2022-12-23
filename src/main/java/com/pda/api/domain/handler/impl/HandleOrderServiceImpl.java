@@ -134,7 +134,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
 
     private void setCount(BaseCountDto result, Integer repeatRedicator, List<OrderExcuteLog> logs, OrdersM order) {
         if (Constant.CHANG == repeatRedicator) {
+            log.info("=========step 1 ：长期医嘱条数:{}，orderNo：{}========",result.getTotalBottles(),order.getOrderNo());
             result.setTotalBottles(result.getTotalBottles() + 1);
+            log.info("=========step 2 ：长期医嘱条数:{}，orderNo：{}========",result.getTotalBottles(),order.getOrderNo());
         } else {
             result.setTempTotalBottles(result.getTempTotalBottles() + 1);
         }
