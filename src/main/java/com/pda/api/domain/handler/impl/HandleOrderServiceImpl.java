@@ -7,6 +7,7 @@ import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.handler.HandleOrderService;
 import com.pda.api.dto.base.*;
 import com.pda.common.Constant;
+import com.pda.common.ExcuteStatusEnum;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
 import com.pda.utils.StringUtil;
@@ -140,7 +141,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
         if (CollectionUtil.isNotEmpty(logs)) {
             logs.forEach(orderExcuteLog -> {
                 if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
-                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId()) {
+                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId() && ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())) {
                     if (Constant.CHANG == repeatRedicator) {
                         result.setCheckedBottles(result.getCheckedBottles() + 1);
                     } else {
