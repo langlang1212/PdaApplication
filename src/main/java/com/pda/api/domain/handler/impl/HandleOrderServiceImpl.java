@@ -121,7 +121,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
 
     private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){
         for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
-            log.info("=============step 1 医嘱编号:{},orderNo:{},状态:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
+            log.info("=============step 1 医嘱编号:{},orderNo:{},visitId:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
             log.info("=============step 2 医嘱编号:{},orderNo:{},visitId:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getVisitId(),orderExcuteLog.getExcuteStatus());
             if(dto.getPatientId().equals(orderExcuteLog.getPatientId())
                     && dto.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && dto.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
