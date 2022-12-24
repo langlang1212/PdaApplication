@@ -47,6 +47,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
 
     @Override
     public List<OrdersM> handleStopOrder(List<OrdersM> longOrders, Date queryTime) {
+        log.info("===过滤停止的医嘱，start=====");
         Date now = new Date();
         longOrders = longOrders.stream().filter(o -> {
             if("2".equals(o.getOrderStatus())){
@@ -58,6 +59,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
                         && o.getStopDateTime().isBefore(LocalDateUtils.date2LocalDateTime(queryTime))){
                     return true;
                 }else{
+                    log.info("=====过滤的orderNo：{}====",o.getOrderNo());
                     return false;
                 }
             }
@@ -71,12 +73,14 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         Date startDateOfDay = DateUtil.getTimeOfYestoday();
         Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
         List<OrdersM> shortOrders = ordersMMapper.listShortOtherOrderByPatient(patientId,visitId,startDateOfDay,endDateOfDay);
+        shortOrders = handleStopOrder(shortOrders,queryTime);
         // 1.2、处理日志
         LogQuery logQueryShort = LogQuery.create(patientId,visitId,shortOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER),queryTime);
         List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
         handleOrderService.countOrder(result,shortOrders, Constant.LINSHI,shortDistinctLogs);
         //2、拿到其他长期医嘱
         List<OrdersM> longOrders = ordersMMapper.listLongOtherOrderByPatient(patientId,visitId, queryTime);
+        longOrders = handleStopOrder(longOrders,queryTime);
         LogQuery logQuerylong = LogQuery.create(patientId,visitId,longOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER),queryTime);
         List<OrderExcuteLog> longDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQuerylong);
         handleOrderService.countOrder(result,longOrders, Constant.CHANG,longDistinctLogs);

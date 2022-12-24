@@ -7,6 +7,7 @@ import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.handler.HandleOrderService;
 import com.pda.api.dto.base.*;
 import com.pda.common.Constant;
+import com.pda.common.ExcuteStatusEnum;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
 import com.pda.utils.StringUtil;
@@ -120,7 +121,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
 
     private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){
         for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
-            log.info("=============step 1 医嘱编号:{},orderNo:{},状态:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
+            log.info("=============step 1 医嘱编号:{},orderNo:{},visitId:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
             log.info("=============step 2 医嘱编号:{},orderNo:{},visitId:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getVisitId(),orderExcuteLog.getExcuteStatus());
             if(dto.getPatientId().equals(orderExcuteLog.getPatientId())
                     && dto.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && dto.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
@@ -133,14 +134,16 @@ public class HandleOrderServiceImpl implements HandleOrderService {
 
     private void setCount(BaseCountDto result, Integer repeatRedicator, List<OrderExcuteLog> logs, OrdersM order) {
         if (Constant.CHANG == repeatRedicator) {
+            log.info("=========step 1 ：长期医嘱条数:{}，orderNo：{}========",result.getTotalBottles(),order.getOrderNo());
             result.setTotalBottles(result.getTotalBottles() + 1);
+            log.info("=========step 2 ：长期医嘱条数:{}，orderNo：{}========",result.getTotalBottles(),order.getOrderNo());
         } else {
             result.setTempTotalBottles(result.getTempTotalBottles() + 1);
         }
         if (CollectionUtil.isNotEmpty(logs)) {
             logs.forEach(orderExcuteLog -> {
                 if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
-                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId()) {
+                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId() && ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())) {
                     if (Constant.CHANG == repeatRedicator) {
                         result.setCheckedBottles(result.getCheckedBottles() + 1);
                     } else {
