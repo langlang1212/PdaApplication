@@ -97,6 +97,7 @@ public class LoginServiceImpl extends PdaBaseService implements LoginService {
     @Override
     public Map<String, Object> loginByQrcode(String account) {
         // 1、查询用户信息
+        account = account.toUpperCase();
         UserResDto userResDto = mobileCommonMapper.checkUser(account);
         // 2、设置病区
         setWards(userResDto);
