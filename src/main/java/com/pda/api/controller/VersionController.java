@@ -1,11 +1,13 @@
 package com.pda.api.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.pda.api.domain.entity.PdaVersion;
 import com.pda.api.mapper.slave.VersionMapper;
 import com.pda.common.Result;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -22,9 +24,13 @@ public class VersionController {
     @Autowired
     private VersionMapper versionMapper;
 
-    @GetMapping("version")
-    public Result checkUpdate(){
-        PdaVersion version = versionMapper.selectVersion();
-        return Result.success(version);
+    @GetMapping("/version/{version}")
+    public Result checkUpdate(@PathVariable("version") Long version){
+        PdaVersion pdaVersion = versionMapper.selectVersion();
+        if(ObjectUtil.isNotNull(pdaVersion) && pdaVersion.getVersion().longValue() > version.longValue()){
+            return Result.success(pdaVersion);
+        }else{
+            return Result.success(null);
+        }
     }
 }

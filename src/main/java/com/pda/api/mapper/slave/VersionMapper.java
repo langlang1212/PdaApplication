@@ -6,6 +6,6 @@ import org.apache.ibatis.annotations.Select;
 
 public interface VersionMapper extends BaseMapper<PdaVersion> {
 
-    @Select("select top 1 * from pda_version order by version desc")
+    @Select("select * from pda_version order by version desc limit 1")
     PdaVersion selectVersion();
 }

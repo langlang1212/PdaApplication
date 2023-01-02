@@ -29,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
 
         registry.addInterceptor(userInterceptor).addPathPatterns("/**")
-                .excludePathPatterns("/pda/login","/version/**")
+                .excludePathPatterns("/pda/login","/apkversion/**")
                 .excludePathPatterns("/pda/doc.html")
                 .excludePathPatterns("/pda/webjars/**");
     }
