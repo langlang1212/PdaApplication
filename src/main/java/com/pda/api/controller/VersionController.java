@@ -24,7 +24,6 @@ public class VersionController {
 
     @GetMapping("version")
     public Result checkUpdate(){
-
         PdaVersion version = versionMapper.selectVersion();
         return Result.success(version);
     }
