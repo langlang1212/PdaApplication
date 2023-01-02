@@ -42,6 +42,7 @@ security :
       - /webjars/
       - /swagger-resources
       - /v2/api-docs
+      - /version/
 
 # 防止XSS攻击
 xss:

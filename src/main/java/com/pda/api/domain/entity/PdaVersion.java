@@ -28,4 +28,8 @@ public class PdaVersion {
      * 更新内容
      */
     private String content;
+    /**
+     * 更新地址
+     */
+    private String url;
 }

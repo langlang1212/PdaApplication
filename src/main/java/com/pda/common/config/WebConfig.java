@@ -19,11 +19,19 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private UserInterceptor userInterceptor;
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/version/**").addResourceLocations("classpath:/static/");
+    }
+
     //注册拦截器
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
-        registry.addInterceptor(userInterceptor).addPathPatterns("/**").excludePathPatterns("/pda/login").excludePathPatterns("/pda/doc.html").excludePathPatterns("/pda/webjars/**");
+        registry.addInterceptor(userInterceptor).addPathPatterns("/**")
+                .excludePathPatterns("/pda/login","/version/**")
+                .excludePathPatterns("/pda/doc.html")
+                .excludePathPatterns("/pda/webjars/**");
     }
     /*@Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
