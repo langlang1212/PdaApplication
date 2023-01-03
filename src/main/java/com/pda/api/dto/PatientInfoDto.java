@@ -62,4 +62,8 @@ public class PatientInfoDto {
     private String diagnosis;
 
     private String notice;
+
+    private Integer nursingClass;
+
+    private String nursingClassName;
 }

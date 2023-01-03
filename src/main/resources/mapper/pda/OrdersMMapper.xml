@@ -11,7 +11,7 @@
     <select id="findMyPatient" resultType="com.pda.api.dto.PatientInfoDto">
         select pi.patient_id "patientId",visit_id "visitId",pi.name,pi.sex,pi.inp_no "inpNo",pi.bed_no "bedNo",pi.ward_code "wardCode",
         pi.ward_name "wardName",pi.doctor_in_charge "doctorCode",pi.date_of_birth "birthDay",pi.admission_date_time "admissionDate",
-        pi.diagnosis
+        pi.diagnosis,pi.NURSING_CLASS "nursingClass",pi.NURSING_CLASS_NAME "nursingClassName"
         from patient_info pi
         where 1=1
         <if test='deptCode != null and deptCode != ""'>
