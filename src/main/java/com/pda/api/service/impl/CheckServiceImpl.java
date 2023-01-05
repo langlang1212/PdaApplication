@@ -73,11 +73,21 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
     public List<SpecimenCheckResDto> specimenCheck(String patientId, Integer visitId) {
         // 1、查询用户所有标本送检
         String patId = String.format("%s%s",patientId,visitId);
+        log.info("====================标本送检，查询满足条件的标本=========================");
+        long start1Time = System.currentTimeMillis();
         List<SpecimenCheckResDto> results = specimenApplyMapper.selectSubjectCheck(patId);
+        long end1Time = System.currentTimeMillis();
+        log.info("============查询标本所用时间:{}====================",(end1Time - start1Time));
         /*List<SpecimenCheckResDto> results = mobileCommonMapper.selectSubjectCheck(patientId,visitId);*/
+        log.info("====================标本送检，查询所有部门=========================");
+        long start2Time = System.currentTimeMillis();
         List<BaseKeyValueDto> depts = deptService.findAll();
+        long end2Time = System.currentTimeMillis();
+        log.info("============查询所有部门所用时间:{}====================",(end2Time - start2Time));
         Map<Object, List<BaseKeyValueDto>> deptMap = depts.stream().collect(Collectors.groupingBy(BaseKeyValueDto::getKey));
         // 拿到所有科室的信息
+        log.info("====================标本送检，查询所有标本日志=========================");
+        long start3Time = System.currentTimeMillis();
         if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
                 result.setPatientId(patientId);
@@ -95,6 +105,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 }
             });
          }
+        long end3Time = System.currentTimeMillis();
+        log.info("============查询所有部门所用时间:{}====================",(end3Time - start3Time));
         return results;
     }
 
