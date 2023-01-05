@@ -98,7 +98,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 }
                 if(CollectionUtil.isNotEmpty(logMap) && CollectionUtil.isNotEmpty(logMap.get(result.getTestNo()))){
                     List<OrderExcuteLog> resultLog = logMap.get(result.getTestNo());
-                    resultLog = resultLog.stream().sorted(Comparator.comparing(OrderExcuteLog::getType,Comparator.reverseOrder()).thenComparing(OrderExcuteLog::getCheckTime)).collect(Collectors.toList());
+                    resultLog = resultLog.stream().sorted(Comparator.comparing(OrderExcuteLog::getType).thenComparing(OrderExcuteLog::getCheckTime)).collect(Collectors.toList());
                     setSpecimenStatus(result,resultLog);
                     result.setOrderExcuteLogList(resultLog);
                 }
