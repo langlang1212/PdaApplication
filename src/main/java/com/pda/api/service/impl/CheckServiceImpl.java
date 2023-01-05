@@ -161,7 +161,6 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
 
             });
             orderExcuteLog.setType("7");
-
             // 反写lis系统 req_master的req_stat字段
         }
         // 插入
