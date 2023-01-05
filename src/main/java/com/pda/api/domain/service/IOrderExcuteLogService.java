@@ -31,4 +31,6 @@ public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
     List<OrderExcuteLog> findExcuteLog(String patientId, Integer visitId, Integer orderNo, String shouldExcuteDate,String type);
 
     List<OrderExcuteLog> getAllExcuteLog(String shortDate);
+
+    List<OrderExcuteLog> findPatSpecimenLog(String patientId, Integer visitId);
 }

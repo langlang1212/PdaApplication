@@ -62,4 +62,9 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
     public List<OrderExcuteLog> getAllExcuteLog(String shortDate) {
         return orderExcuteLogMapper.selectAllExcuteLog(shortDate,Constant.EXCUTE_TYPE_ORDER);
     }
+
+    @Override
+    public List<OrderExcuteLog> findPatSpecimenLog(String patientId, Integer visitId) {
+        return orderExcuteLogMapper.selectPatSpecimenLog(patientId,visitId);
+    }
 }

@@ -40,4 +40,7 @@ public interface OrderExcuteLogMapper extends BaseMapper<OrderExcuteLog> {
 
     @Select("select * from order_excute_log where type = #{type} and excute_date = #{shortDate}")
     List<OrderExcuteLog> selectAllExcuteLog(@Param("shortDate") String shortDate,@Param("type") String type);
+
+    @Select("select * from order_excute_log where patient_id = #{patientId} and visit_id = #{visitId} and type in ('6','7') and check_status = '1' order by type,check_time")
+    List<OrderExcuteLog> selectPatSpecimenLog(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
 }

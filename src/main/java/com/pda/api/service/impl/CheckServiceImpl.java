@@ -33,10 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -88,6 +85,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         // 拿到所有科室的信息
         log.info("====================标本送检，查询所有标本日志=========================");
         long start3Time = System.currentTimeMillis();
+        List<OrderExcuteLog> logs = iOrderExcuteLogService.findPatSpecimenLog(patientId,visitId);
+        Map<String, List<OrderExcuteLog>> logMap = logs.stream().collect(Collectors.groupingBy(OrderExcuteLog::getTestNo));
         if(CollectionUtil.isNotEmpty(results)){
             results.forEach(result -> {
                 result.setPatientId(patientId);
@@ -97,11 +96,11 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                     BaseKeyValueDto dept = deptMap.get(result.getPerformedBy()).get(0);
                     result.setPerformedDeptName(String.valueOf(dept.getValue()));
                 }
-                // 状态
-                List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,result.getTestNo());
-                if(CollectionUtil.isNotEmpty(logs)){
-                    setSpecimenStatus(result,logs);
-                    result.setOrderExcuteLogList(logs);
+                if(CollectionUtil.isNotEmpty(logMap) && CollectionUtil.isNotEmpty(logMap.get(result.getTestNo()))){
+                    List<OrderExcuteLog> resultLog = logMap.get(result.getTestNo());
+                    resultLog = resultLog.stream().sorted(Comparator.comparing(OrderExcuteLog::getType,Comparator.reverseOrder()).thenComparing(OrderExcuteLog::getCheckTime)).collect(Collectors.toList());
+                    setSpecimenStatus(result,resultLog);
+                    result.setOrderExcuteLogList(resultLog);
                 }
             });
          }
@@ -115,11 +114,15 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         SpecimenCheckCountDto result = new SpecimenCheckCountDto();
         String patId = String.format("%s%s",patientId,visitId);
         List<SpecimenCheckResDto> results = specimenApplyMapper.selectSubjectCheck(patId);
+        // 查询当前病人所有日志
+        List<OrderExcuteLog> allLogs = iOrderExcuteLogService.findPatSpecimenLog(patientId,visitId);
+        Map<String, List<OrderExcuteLog>> logMap = allLogs.stream().collect(Collectors.groupingBy(OrderExcuteLog::getTestNo));
+        // 统计
         if(CollectionUtil.isNotEmpty(results)){
             result.setTotal(results.size());
             results.forEach(resDto -> {
-                List<OrderExcuteLog> logs = iOrderExcuteLogService.findSpecimenLog(patientId,visitId,resDto.getTestNo());
-                if(CollectionUtil.isNotEmpty(logs)){
+                if(CollectionUtil.isNotEmpty(logMap) && CollectionUtil.isNotEmpty(logMap.get(resDto.getTestNo()))){
+                    List<OrderExcuteLog> logs = logMap.get(resDto.getTestNo());
                     OrderExcuteLog orderExcuteLog = logs.get(logs.size() - 1);
                     if("6".equals(orderExcuteLog.getType())){
                         result.setCollaredCount(result.getCollaredCount() + 1);
