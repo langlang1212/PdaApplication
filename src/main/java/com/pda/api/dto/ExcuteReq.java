@@ -38,4 +38,8 @@ public class ExcuteReq {
 
     @ApiModelProperty("用法")
     private String administration;
+    /**
+     * 阴性/阳性
+     */
+    private String result;
 }

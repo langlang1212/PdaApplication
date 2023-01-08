@@ -27,12 +27,11 @@ import com.pda.api.service.ExcuteService;
 import com.pda.api.service.MobileCommonService;
 import com.pda.common.Constant;
 import com.pda.common.ExcuteStatusEnum;
+import com.pda.common.PdaBaseService;
 import com.pda.exception.BusinessException;
 import com.pda.job.ExcuteLogJob;
-import com.pda.utils.DateUtil;
-import com.pda.utils.LocalDateUtils;
-import com.pda.utils.PdaTimeUtil;
-import com.pda.utils.SecurityUtil;
+import com.pda.utils.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +50,8 @@ import java.util.stream.Collectors;
  * @Created by AlanZhang
  */
 @Service
-public class ExcuteServiceImpl implements ExcuteService {
+@Slf4j
+public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
 
     private static final List<String> STATUS_LIST = Arrays.asList("1","2","3");
 
@@ -159,7 +159,10 @@ public class ExcuteServiceImpl implements ExcuteService {
                 existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
                 existLog.setExcuteTime(now);
                 if("5".equals(oralExcuteReq.getExcuteStatus())){
-
+                    // 如果是皮试医嘱，反写his
+                    if("5".equals(oralExcuteReq.getType())){
+                        reverseWriteSkin(currentUser,oralExcuteReq);
+                    }
                 }
                 orderExcuteLogMapper.updateLog(existLog);
             }else{
@@ -178,6 +181,41 @@ public class ExcuteServiceImpl implements ExcuteService {
                 orderExcuteLogMapper.insert(orderExcuteLog);
             }
         });
+    }
+
+    /**
+     * 皮试医嘱反写
+     * @param oralExcuteReq
+     */
+    private void reverseWriteSkin(UserResDto currentUser,ExcuteReq oralExcuteReq) {
+        String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<root>\n" +
+                "\t<AuthHeader>\n" +
+                "\t\t<msgType>TJ641</msgType>\n" +
+                "\t\t<msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId>\n" +
+                "\t\t<createTime>"+ PdaTimeUtil.getCreateTime(new Date()) +"</createTime>\n" +
+                "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                "\t\t<sysPassword/>\n" +
+                "\t</AuthHeader>\n" +
+                "\t<ControlActProcess>\n" +
+                "\t\t<ListInfo>\n" +
+                "\t\t\t<List>\n" +
+                "\t\t\t\t<PatientNo>"+oralExcuteReq.getPatientId()+"</PatientNo>\n" +
+                "\t\t\t\t<GroupNo>"+oralExcuteReq.getOrderNo()+"</GroupNo>\n" +
+                "\t\t\t\t<test_result>"+oralExcuteReq.getResult()+"</test_result>\n" +
+                "\t\t\t\t<perform_date>"+PdaTimeUtil.getLongTime(new Date())+"</perform_date>\n" +
+                "\t\t\t\t<perform_user>"+currentUser.getUserName()+"</perform_user>\n" +
+                "\t\t\t</List>\n" +
+                "\t\t</ListInfo>\n" +
+                "\t</ControlActProcess>\n" +
+                "</root>\n";
+        String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+        if(StringUtil.isNotBlank(result)){
+            log.info("皮试医嘱反写结果:{}",result);
+        }else{
+            log.error("皮试医嘱反写失败，param:{},result:{}",param,result);
+        }
     }
 
     private OrderExcuteLog getExcuteLog(ExcuteReq excuteReq,String type) {
