@@ -1,4 +1,6 @@
 ws :
-  forwardUrl : http://183.230.33.239:8182/services/YDYH?wsdl
-  reverseUrl : http://183.230.33.239:8184/services/Mirth?wsdl
+  #forwardUrl : http://183.230.33.239:8182/services/YDYH?wsdl
+  forwardUrl : http://192.168.61.24:8182/services/YDYH?wsdl
+  #reverseUrl : http://183.230.33.239:8184/services/Mirth?wsdl
+  reverseUrl : http://192.168.61.24:8184/services/Mirth?wsdl
   methodName : acceptMessage
