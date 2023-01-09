@@ -2,6 +2,7 @@ package com.pda.api.domain.service;
 
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.pda.api.dto.ExcuteReq;
 import com.pda.api.dto.query.LogQuery;
 import org.apache.ibatis.annotations.Select;
 
@@ -33,4 +34,6 @@ public interface IOrderExcuteLogService extends IService<OrderExcuteLog> {
     List<OrderExcuteLog> getAllExcuteLog(String shortDate);
 
     List<OrderExcuteLog> findPatSpecimenLog(String patientId, Integer visitId);
+
+    public OrderExcuteLog getExcuteLog(ExcuteReq excuteReq, String type);
 }

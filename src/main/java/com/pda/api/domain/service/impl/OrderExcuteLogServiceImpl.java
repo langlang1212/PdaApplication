@@ -1,8 +1,10 @@
 package com.pda.api.domain.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.pda.api.dto.ExcuteReq;
 import com.pda.api.dto.query.LogQuery;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.common.Constant;
@@ -66,5 +68,15 @@ public class OrderExcuteLogServiceImpl extends ServiceImpl<OrderExcuteLogMapper,
     @Override
     public List<OrderExcuteLog> findPatSpecimenLog(String patientId, Integer visitId) {
         return orderExcuteLogMapper.selectPatSpecimenLog(patientId,visitId);
+    }
+
+    @Override
+    public OrderExcuteLog getExcuteLog(ExcuteReq excuteReq, String type) {
+        LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
+                .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
+                .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate());
+        OrderExcuteLog orderExcuteLog = orderExcuteLogMapper.selectOne(logLambdaQueryWrapper);
+        return orderExcuteLog;
     }
 }

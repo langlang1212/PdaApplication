@@ -320,5 +320,15 @@ public class DrugCheckServiceImpl implements DrugCheckService {
                 throw new BusinessException("当前医嘱已经校对过两次!");
             }
         }
+        ExcuteReq excuteReq = new ExcuteReq();
+        excuteReq.setPatientId(checkReqDto.getPatientId());
+        excuteReq.setVisitId(checkReqDto.getVisitId());
+        excuteReq.setOrderNo(checkReqDto.getOrderNo());
+        excuteReq.setExcuteDate(checkReqDto.getShouldExcuteDate());
+        excuteReq.setType(Constant.EXCUTE_TYPE_ORDER);
+        OrderExcuteLog excuteLog = iOrderExcuteLogService.getExcuteLog(excuteReq, Constant.EXCUTE_TYPE_ORDER);
+        if(ObjectUtil.isNotNull(excuteLog) && ("2".equals(excuteLog.getExcuteStatus()) || "3".equals(excuteLog.getExcuteStatus()) || "4".equals(excuteLog.getExcuteStatus()) || "5".equals(excuteLog.getExcuteStatus()))){
+            throw new BusinessException("正在执行中的医嘱不允许核查或校对!");
+        }
     }
 }
