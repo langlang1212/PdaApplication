@@ -63,5 +63,18 @@ public class DataSourceConfig {
         return dataSourceProperties.initializeDataSourceBuilder().build();
     }
 
+    //第四个ds4数据源配置
+    @Bean(name = "ds4DataSourceProperties")
+    @ConfigurationProperties(prefix = "spring.datasource.ds4")
+    public DataSourceProperties ds4DataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    //第四个ds4数据源
+    @Bean("ds4DataSource")
+    public DataSource ds4DataSource(@Qualifier("ds4DataSourceProperties") DataSourceProperties dataSourceProperties) {
+        return dataSourceProperties.initializeDataSourceBuilder().build();
+    }
+
 }
 
