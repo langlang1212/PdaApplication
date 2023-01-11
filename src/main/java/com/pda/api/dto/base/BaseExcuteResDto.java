@@ -1,6 +1,9 @@
 package com.pda.api.dto.base;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * @Classname BaseExcuteResDto

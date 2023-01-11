@@ -105,6 +105,13 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                         logs.forEach(orderExcuteLog -> {
                             if(firstSubOrder.getPatientId().equals(orderExcuteLog.getPatientId()) && firstSubOrder.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue()
                                     && firstSubOrder.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
+                                if(ObjectUtil.isNotNull(baseOrderDto.getLatestOperTime())){
+                                    if(orderExcuteLog.getCheckTime().isAfter(baseOrderDto.getLatestOperTime())){
+                                        baseOrderDto.setLatestOperTime(orderExcuteLog.getCheckTime());
+                                    }
+                                }else{
+                                    baseOrderDto.setLatestOperTime(orderExcuteLog.getCheckTime());
+                                }
                                 checkedLog.add(orderExcuteLog);
                             }
                         });
@@ -114,7 +121,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 baseOrderDto.setOrderExcuteLogs(checkedLog);
                 result.add(baseOrderDto);
             }
-            Collections.sort(result);
+            result.sort(((o1, o2) -> o2.getLatestOperTime().compareTo(o1.getLatestOperTime())));
         }
         return result;
     }
@@ -125,6 +132,13 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             log.info("=============step 2 医嘱编号:{},orderNo:{},visitId:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getVisitId(),orderExcuteLog.getExcuteStatus());
             if(dto.getPatientId().equals(orderExcuteLog.getPatientId())
                     && dto.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && dto.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
+                if(ObjectUtil.isNotNull(dto.getLatestOperTime())){
+                    if(orderExcuteLog.getCheckTime().isAfter(dto.getLatestOperTime())){
+                        dto.setLatestOperTime(orderExcuteLog.getCheckTime());
+                    }
+                }else{
+                    dto.setLatestOperTime(orderExcuteLog.getCheckTime());
+                }
                 log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
                 checkedLog.add(orderExcuteLog);
                 dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());

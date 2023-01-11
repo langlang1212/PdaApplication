@@ -51,6 +51,9 @@ public class BaseOrderDto implements Comparable<BaseOrderDto>{
 
     private List<OrderExcuteLog> orderExcuteLogs;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private LocalDateTime latestOperTime;
+
     @Override
     public int compareTo(BaseOrderDto o) {
         return this.getOrderNo() - o.getOrderNo();
