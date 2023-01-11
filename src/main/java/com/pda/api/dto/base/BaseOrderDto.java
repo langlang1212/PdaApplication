@@ -3,6 +3,8 @@ package com.pda.api.dto.base;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.dto.DrugSubOrderDto;
+import com.pda.utils.DateUtil;
+import com.pda.utils.LocalDateUtils;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -52,7 +54,7 @@ public class BaseOrderDto implements Comparable<BaseOrderDto>{
     private List<OrderExcuteLog> orderExcuteLogs;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private LocalDateTime latestOperTime;
+    private LocalDateTime latestOperTime = LocalDateTime.of(2020, 1, 1, 0, 0);;
 
     @Override
     public int compareTo(BaseOrderDto o) {

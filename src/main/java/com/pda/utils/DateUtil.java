@@ -1330,6 +1330,11 @@ public class DateUtil {
      * @param day 要转换的日期
      * @return 月开始时间
      */
+
+    public static Date getStartDateOfMonth() {
+        return getStartDateOfMonth(null);
+    }
+
     public static Date getStartDateOfMonth(Date day) {
         if (day == null) {
             return null;

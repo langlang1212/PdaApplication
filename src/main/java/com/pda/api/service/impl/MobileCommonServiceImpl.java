@@ -42,8 +42,6 @@ public class MobileCommonServiceImpl implements MobileCommonService {
     private IOrderExcuteLogService iOrderExcuteLogService;
     @Autowired
     private HandleOrderService handleOrderService;
-    @Autowired
-    private IOrderTypeDictService iOrderTypeDictService;
 
     @Override
     public List<OrdersM> handleStopOrder(List<OrdersM> longOrders, Date queryTime) {

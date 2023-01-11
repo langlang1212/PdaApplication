@@ -1,9 +1,6 @@
 package com.pda.api.dto.base;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * @Classname BaseExcuteResDto
@@ -15,4 +12,8 @@ import java.time.LocalDateTime;
 public class BaseExcuteResDto extends BaseOrderDto{
 
     private String excuteStatus;
+    /**
+     * 1003 瓶签单(输液)
+     */
+    private String type;
 }

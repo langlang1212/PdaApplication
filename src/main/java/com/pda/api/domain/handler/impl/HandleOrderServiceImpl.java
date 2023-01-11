@@ -4,7 +4,9 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
+import com.pda.api.domain.enums.ModuleTypeEnum;
 import com.pda.api.domain.handler.HandleOrderService;
+import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.dto.base.*;
 import com.pda.common.Constant;
 import com.pda.common.ExcuteStatusEnum;
@@ -13,6 +15,7 @@ import com.pda.utils.LocalDateUtils;
 import com.pda.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -27,6 +30,9 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class HandleOrderServiceImpl implements HandleOrderService {
+
+    @Autowired
+    private IOrderTypeDictService iOrderTypeDictService;
 
     @Override
     public void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs) {
@@ -45,6 +51,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
     public List<BaseOrderDto> handleOrder(List<OrdersM> orders, List<OrderExcuteLog> logs,String type,Date queryTime) {
         List<BaseOrderDto> result = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(orders)){
+            // 输液的用法
+            Set<String> labelsByType3 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE3.code()));
+            Set<String> labelsByType6 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE6.code()));
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
@@ -78,6 +87,12 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                     }else{
                         baseOrderDto.setSchedule(Arrays.asList(split));
                     }
+                }
+                // 判断是否是输液的
+                if(labelsByType3.contains(firstSubOrder.getAdministration())){
+                    ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
+                }else if(labelsByType6.contains(firstSubOrder.getAdministration())){
+                    ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE6.code());
                 }
                 baseOrderDto.setStopDateTime(firstSubOrder.getStopDateTime());
                 log.info("=======================orderNo:{}=================",baseOrderDto.getOrderNo());
