@@ -14,11 +14,11 @@
         pi.diagnosis,pi.NURSING_CLASS "nursingClass",pi.NURSING_CLASS_NAME "nursingClassName"
         from patient_info pi
         where 1=1
-        <if test='deptCode != null and deptCode != ""'>
+        <!--<if test='deptCode != null and deptCode != ""'>
             and pi.dept_code = #{deptCode}
-        </if>
+        </if>-->
         <if test='wardCode != null and wardCode != ""'>
-            and pi.ward_code = #{wardCode}
+            and (pi.dept_code = #{wardCode} or pi.ward_code = #{wardCode})
         </if>
         <if test='keyword != null and keyword != ""'>
             and (pi.name like concat(concat('%',#{keyword}),'%') or to_char(pi.bed_no) like concat(concat('%',#{keyword}),'%') or pi.inp_no like concat(concat('%',#{keyword}),'%'))

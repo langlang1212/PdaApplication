@@ -141,11 +141,12 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         List<UserInfo> list = iUserInfoService.list();
         Map<String, String> userMap = list.stream().collect(Collectors.toMap(UserInfo::getUserName, UserInfo::getName));
-        if(Constant.DOCTOR.equals(currentUser.getJob())){ //医生
+        /*if(Constant.DOCTOR.equals(currentUser.getJob())){ //医生
             result = ordersMMapper.findMyPatient(keyword,wardCode,null,currentUser.getUserName());
         }else if(Constant.NURSE.equals(currentUser.getJob())){ // 护士
             result = ordersMMapper.findMyPatient(keyword,null,wardCode,currentUser.getUserName());
-        }
+        }*/
+        result = ordersMMapper.findMyPatient(keyword,wardCode,currentUser.getUserName());
         // 2、拿到饮食提醒
         List<FoodNoticeDto> noticeDtos = ordersMMapper.selectNotice();
         Map<String, List<FoodNoticeDto>> noticeMap = noticeDtos.stream().collect(Collectors.groupingBy(FoodNoticeDto::getPatientId));
