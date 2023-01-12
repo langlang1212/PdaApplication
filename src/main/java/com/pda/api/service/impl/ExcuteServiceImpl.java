@@ -160,10 +160,11 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 existLog.setExcuteTime(now);
                 existLog.setCheckTime(now);
                 if("5".equals(oralExcuteReq.getExcuteStatus())){
-                    // 如果是皮试医嘱，反写his
-                    /*if("5".equals(oralExcuteReq.getType())){
-                        reverseWriteSkin(currentUser,oralExcuteReq);
-                    }*/
+                    if("5".equals(oralExcuteReq.getType())){
+                        existLog.setRemark(oralExcuteReq.getResult());
+                        // 如果是皮试医嘱，反写his
+                        /*reverseWriteSkin(currentUser,oralExcuteReq);*/
+                    }
                 }
                 orderExcuteLogMapper.updateLog(existLog);
             }else{

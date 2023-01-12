@@ -52,6 +52,16 @@ public class OrderExcuteLog implements Serializable {
 
     private String deviceNo;
 
+    private String remark;
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
     public String getDeviceNo() {
         return deviceNo;
     }
