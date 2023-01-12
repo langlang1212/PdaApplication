@@ -61,6 +61,12 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 BaseOrderDto baseOrderDto;
                 if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
                     baseOrderDto = new BaseExcuteResDto();
+                    // 判断是否是输液的
+                    if(labelsByType3.contains(firstSubOrder.getAdministration())){
+                        ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
+                    }else if(labelsByType6.contains(firstSubOrder.getAdministration())){
+                        ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE6.code());
+                    }
                 }else{
                     baseOrderDto = new BaseOrderDto();
                 }
@@ -87,12 +93,6 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                     }else{
                         baseOrderDto.setSchedule(Arrays.asList(split));
                     }
-                }
-                // 判断是否是输液的
-                if(labelsByType3.contains(firstSubOrder.getAdministration())){
-                    ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
-                }else if(labelsByType6.contains(firstSubOrder.getAdministration())){
-                    ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE6.code());
                 }
                 baseOrderDto.setStopDateTime(firstSubOrder.getStopDateTime());
                 log.info("=======================orderNo:{}=================",baseOrderDto.getOrderNo());

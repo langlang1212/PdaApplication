@@ -158,6 +158,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 existLog.setExcuteUserName(currentUser.getName());
                 existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
                 existLog.setExcuteTime(now);
+                existLog.setCheckTime(now);
                 if("5".equals(oralExcuteReq.getExcuteStatus())){
                     // 如果是皮试医嘱，反写his
                     if("5".equals(oralExcuteReq.getType())){
@@ -176,6 +177,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
                 orderExcuteLog.setCheckStatus("1");
                 orderExcuteLog.setExcuteTime(now);
+                orderExcuteLog.setCheckTime(now);
                 orderExcuteLog.setType(type);
                 // 插入
                 orderExcuteLogMapper.insert(orderExcuteLog);
