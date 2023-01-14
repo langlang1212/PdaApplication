@@ -53,7 +53,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
         if(CollectionUtil.isNotEmpty(orders)){
             // 输液的用法
             Set<String> labelsByType3 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE3.code()));
-            Set<String> labelsByType6 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE6.code()));
+            Set<String> labelsByType7 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE7.code()));
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
@@ -63,9 +63,11 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                     baseOrderDto = new BaseExcuteResDto();
                     // 判断是否是输液的
                     if(labelsByType3.contains(firstSubOrder.getAdministration())){
-                        ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
-                    }else if(labelsByType6.contains(firstSubOrder.getAdministration())){
-                        ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE6.code());
+                        if(labelsByType7.contains(firstSubOrder.getAdministration())){
+                            ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE7.code());
+                        }else{
+                            ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
+                        }
                     }
                 }else{
                     baseOrderDto = new BaseOrderDto();
