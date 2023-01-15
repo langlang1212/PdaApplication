@@ -174,7 +174,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
         if (CollectionUtil.isNotEmpty(logs)) {
             logs.forEach(orderExcuteLog -> {
                 if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
-                        order.getOrderNo() == orderExcuteLog.getOrderNo() && order.getVisitId() == orderExcuteLog.getVisitId() && ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())) {
+                        order.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && order.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue() /*&& ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())*/) {
                     if (Constant.CHANG == repeatRedicator) {
                         result.setCheckedBottles(result.getCheckedBottles() + 1);
                     } else {
