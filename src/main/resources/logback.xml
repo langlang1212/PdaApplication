@@ -34,7 +34,7 @@
             <level>DEBUG</level>
             <!-- 匹配时的操作：接收（记录） -->
             <!--<onMatch>ACCEPT</onMatch>-->
-            <!-- 不匹配时的操作：拒绝（不记录） 屏蔽过后，debug及以下级别日志都会打印-->
+            <!-- 不匹配时的操作：拒绝（不记录） 屏蔽过后，日志级别小于debug的也会打印-->
             <!--<onMismatch>DENY</onMismatch>-->
         </filter>
 	</appender>
@@ -68,7 +68,7 @@
 	</root>
 	
 	<!--系统操作日志-->
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="file_info" />
         <appender-ref ref="file_error" />
     </root>
