@@ -1,6 +1,7 @@
 package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.base.Joiner;
 import com.pda.api.domain.entity.UserInfo;
 import com.pda.api.domain.service.IUserInfoService;
@@ -198,7 +199,11 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         patientPatrolDto.setOperUserCode(currentUser.getUserName());
         patientPatrolDto.setOperUserName(currentUser.getName());
         patientPatrolDto.setType(patrolOperDto.getType());
-        patientPatrolDto.setOperTime(new Date());
+        if(ObjectUtil.isNotNull(patientPatrolDto.getOperTime())){
+            patientPatrolDto.setOperTime(patrolOperDto.getOperTime());
+        }else{
+            patientPatrolDto.setOperTime(new Date());
+        }
         //
         List<Integer> ids = new ArrayList<>();
         List<String> names = new ArrayList<>();
