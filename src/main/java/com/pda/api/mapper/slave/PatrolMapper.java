@@ -23,7 +23,7 @@ public interface PatrolMapper{
             "patrol_id 'patrolId',patrol_name 'patrolName'," +
             "oper_user_code 'operUserCode',oper_user_name 'operUserName'," +
             "oper_time 'operTime', type " +
-            "from patient_patrol where patient_id = #{patientId} and visit_id = #{visitId}")
+            "from patient_patrol where patient_id = #{patientId} and visit_id = #{visitId} and operTime >= DATE_SUB(now(),INTERVAL 3 DAY) order by operTime desc")
     List<PatientPatrolDto> selectPatientPatrol(String patientId, Integer visitId);
 
     void inserPatientPatrol(PatientPatrolDto patientPatrolDto);
