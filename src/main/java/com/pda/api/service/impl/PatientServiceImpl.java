@@ -199,7 +199,7 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         patientPatrolDto.setOperUserCode(currentUser.getUserName());
         patientPatrolDto.setOperUserName(currentUser.getName());
         patientPatrolDto.setType(patrolOperDto.getType());
-        if(ObjectUtil.isNotNull(patientPatrolDto.getOperTime())){
+        if(ObjectUtil.isNotNull(patrolOperDto.getOperTime())){
             patientPatrolDto.setOperTime(patrolOperDto.getOperTime());
         }else{
             patientPatrolDto.setOperTime(new Date());
