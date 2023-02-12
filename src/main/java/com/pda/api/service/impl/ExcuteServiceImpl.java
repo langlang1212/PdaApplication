@@ -342,6 +342,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
     private Set<String> getLiquidLabels() {
         List<String> types = new ArrayList<>();
         types.add(ModuleTypeEnum.TYPE3.code());
+        types.add(ModuleTypeEnum.TYPE4.code());
         types.add(ModuleTypeEnum.TYPE5.code());
         types.add(ModuleTypeEnum.TYPE6.code());
         return iOrderTypeDictService.findLabelsByType(types);
