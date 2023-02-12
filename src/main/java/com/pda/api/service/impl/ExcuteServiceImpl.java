@@ -138,7 +138,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         Set<String> labels = getLiquidLabels();
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
-            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,type);
+            OrderExcuteLog existLog = getCompleteExcuteLog(oralExcuteReq,type);
             if(ObjectUtil.isNotNull(existLog)){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
@@ -235,7 +235,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         }
     }
 
-    private OrderExcuteLog getExcuteLog(ExcuteReq excuteReq,String type) {
+    private OrderExcuteLog getCompleteExcuteLog(ExcuteReq excuteReq,String type) {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
         logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
                 .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
