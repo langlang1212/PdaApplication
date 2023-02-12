@@ -139,7 +139,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
             OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER);
-            if(ObjectUtil.isNotNull(existLog) && ExcuteStatusEnum.COMPLETED.code().equals(existLog.getExcuteStatus())){
+            if(ObjectUtil.isNotNull(existLog)){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
             /*List<OrderExcuteLog> orderCheckedLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_DRUG);
@@ -225,7 +225,8 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
         logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
                 .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
-                .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate());
+                .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate())
+                .eq(OrderExcuteLog::getExcuteStatus, ExcuteStatusEnum.COMPLETED.code());
         OrderExcuteLog orderExcuteLog = orderExcuteLogMapper.selectOne(logLambdaQueryWrapper);
         return orderExcuteLog;
     }
