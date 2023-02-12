@@ -157,7 +157,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
         List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-        if (CollectionUtil.isNotEmpty(longCheckedLogs)) {
+        if (CollectionUtil.isNotEmpty(longResOrders)) {
             result.addAll(longResOrders);
         }
         if (CollectionUtil.isNotEmpty(shortResOrders)) {
