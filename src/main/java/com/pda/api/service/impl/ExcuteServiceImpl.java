@@ -138,7 +138,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         Set<String> labels = getLiquidLabels();
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
-            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,Constant.EXCUTE_TYPE_ORDER);
+            OrderExcuteLog existLog = getExcuteLog(oralExcuteReq,type);
             if(ObjectUtil.isNotNull(existLog)){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
             }
@@ -148,41 +148,55 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             }*/
             // 校验配液类的是否核对
             if(labels.contains(oralExcuteReq.getAdministration())){
-                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
+                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,type);
                 if(CollectionUtil.isEmpty(orderCheckLog)){
                     throw new BusinessException("当前医嘱没有核对,请先核对医嘱单!");
                 }
             }
-            if(ObjectUtil.isNotNull(existLog)){
-                existLog.setExcuteUserCode(currentUser.getUserName());
-                existLog.setExcuteUserName(currentUser.getName());
-                existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
-                existLog.setExcuteTime(now);
-                existLog.setCheckTime(now);
-                if("5".equals(oralExcuteReq.getExcuteStatus())){
-                    if("5".equals(oralExcuteReq.getType())){
-                        existLog.setRemark(oralExcuteReq.getResult());
-                        // 如果是皮试医嘱，反写his
-                        /*reverseWriteSkin(currentUser,oralExcuteReq);*/
-                    }
-                }
-                orderExcuteLogMapper.updateLog(existLog);
-            }else{
-                OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
-                orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
-                orderExcuteLog.setVisitId(oralExcuteReq.getVisitId());
-                orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
-                orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
-                orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
-                orderExcuteLog.setExcuteUserName(currentUser.getName());
-                orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
-                orderExcuteLog.setCheckStatus("1");
-                orderExcuteLog.setExcuteTime(now);
-                orderExcuteLog.setCheckTime(now);
-                orderExcuteLog.setType(type);
-                // 插入
-                orderExcuteLogMapper.insert(orderExcuteLog);
-            }
+            OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
+            orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
+            orderExcuteLog.setVisitId(oralExcuteReq.getVisitId());
+            orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
+            orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
+            orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
+            orderExcuteLog.setExcuteUserName(currentUser.getName());
+            orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+            orderExcuteLog.setCheckStatus("1");
+            orderExcuteLog.setExcuteTime(now);
+            orderExcuteLog.setCheckTime(now);
+            orderExcuteLog.setType(type);
+            // 插入
+            orderExcuteLogMapper.insert(orderExcuteLog);
+//            if(ObjectUtil.isNotNull(existLog)){
+//                existLog.setExcuteUserCode(currentUser.getUserName());
+//                existLog.setExcuteUserName(currentUser.getName());
+//                existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+//                existLog.setExcuteTime(now);
+//                existLog.setCheckTime(now);
+//                if("5".equals(oralExcuteReq.getExcuteStatus())){
+//                    if("5".equals(oralExcuteReq.getType())){
+//                        existLog.setRemark(oralExcuteReq.getResult());
+//                        // 如果是皮试医嘱，反写his
+//                        /*reverseWriteSkin(currentUser,oralExcuteReq);*/
+//                    }
+//                }
+//                orderExcuteLogMapper.updateLog(existLog);
+//            }else{
+//                OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
+//                orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
+//                orderExcuteLog.setVisitId(oralExcuteReq.getVisitId());
+//                orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
+//                orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
+//                orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
+//                orderExcuteLog.setExcuteUserName(currentUser.getName());
+//                orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
+//                orderExcuteLog.setCheckStatus("1");
+//                orderExcuteLog.setExcuteTime(now);
+//                orderExcuteLog.setCheckTime(now);
+//                orderExcuteLog.setType(type);
+//                // 插入
+//                orderExcuteLogMapper.insert(orderExcuteLog);
+//            }
         });
     }
 
