@@ -158,7 +158,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 }
                 log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
                 checkedLog.add(orderExcuteLog);
-                if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getExcuteStatus())){
+                if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
                     dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
                 }
             }
