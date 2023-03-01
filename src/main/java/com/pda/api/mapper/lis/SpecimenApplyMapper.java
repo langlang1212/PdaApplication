@@ -18,6 +18,6 @@ public interface SpecimenApplyMapper extends BaseMapper<SpecimenCheck> {
 
     List<SpecimenCheckResDto> selectSubjectCheck(String patId);
 
-    @Update("update req_master set req_stat = '4' where barcode = #{testNo} and pat_id = #{patId}")
+    @Update("update req_master set req_stat = '3' where barcode = #{testNo} and pat_id = #{patId}")
     int sendSpecimen(@Param("testNo") String testNo,@Param("patId") String patId);
 }

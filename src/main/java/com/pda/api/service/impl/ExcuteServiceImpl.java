@@ -165,6 +165,9 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             orderExcuteLog.setExcuteTime(now);
             orderExcuteLog.setCheckTime(now);
             orderExcuteLog.setType(type);
+            if("5".equals(oralExcuteReq.getExcuteStatus()) && "5".equals(oralExcuteReq.getType())){
+                orderExcuteLog.setRemark(oralExcuteReq.getResult());
+            }
             // 插入
             orderExcuteLogMapper.insert(orderExcuteLog);
 //            if(ObjectUtil.isNotNull(existLog)){
