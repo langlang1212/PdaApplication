@@ -110,7 +110,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
         // 处理返回数据
         List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-        if (CollectionUtil.isNotEmpty(longCheckedLogs)) {
+        if (CollectionUtil.isNotEmpty(longResOrders)) {
             result.addAll(longResOrders);
         }
         if (CollectionUtil.isNotEmpty(shortResOrders)) {
@@ -135,7 +135,10 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
     }
 
     public void excute(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
+        // 配液的类型
         Set<String> labels = getLiquidLabels();
+        // 皮试医嘱用法类型
+        Set<String> skinLabels = getSkinLabels();
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
             OrderExcuteLog existLog = getCompleteExcuteLog(oralExcuteReq,type);
@@ -165,8 +168,9 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             orderExcuteLog.setExcuteTime(now);
             orderExcuteLog.setCheckTime(now);
             orderExcuteLog.setType(type);
-            if("5".equals(oralExcuteReq.getExcuteStatus()) && "5".equals(oralExcuteReq.getType())){
+            if("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())){
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
+                reverseWriteSkin(currentUser,oralExcuteReq);
             }
             // 插入
             orderExcuteLogMapper.insert(orderExcuteLog);
@@ -230,6 +234,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 "\t\t</ListInfo>\n" +
                 "\t</ControlActProcess>\n" +
                 "</root>\n";
+        log.info("皮试反写入参:{}",param);
         String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
         if(StringUtil.isNotBlank(result)){
             log.info("皮试医嘱反写结果:{}",result);
@@ -363,6 +368,12 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         types.add(ModuleTypeEnum.TYPE4.code());
         types.add(ModuleTypeEnum.TYPE5.code());
         types.add(ModuleTypeEnum.TYPE6.code());
+        return iOrderTypeDictService.findLabelsByType(types);
+    }
+
+    private Set<String> getSkinLabels() {
+        List<String> types = new ArrayList<>();
+        types.add(ModuleTypeEnum.TYPE7.code());
         return iOrderTypeDictService.findLabelsByType(types);
     }
 
