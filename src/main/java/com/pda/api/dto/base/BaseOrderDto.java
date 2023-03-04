@@ -34,6 +34,14 @@ public class BaseOrderDto implements Comparable<BaseOrderDto>{
      * 例如: 1/日
      */
     private String frequency;
+    /**
+     * 次数
+     */
+    private Integer frequencyCount;
+    /**
+     * 2:可以完成
+     */
+    private String finishFlag;
 
     private String excuteDate;
 

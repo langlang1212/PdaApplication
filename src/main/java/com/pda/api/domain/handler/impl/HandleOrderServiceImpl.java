@@ -81,6 +81,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 baseOrderDto.setVisitId(firstSubOrder.getVisitId());
                 baseOrderDto.setOrderNo(orderNo);
                 if(ObjectUtil.isNotEmpty(firstSubOrder.getFreqCounter())){
+                    baseOrderDto.setFrequencyCount(firstSubOrder.getFreqCounter());
                     baseOrderDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
                 }
                 baseOrderDto.setExcuteDate(DateUtil.getShortDate(queryTime));
@@ -144,6 +145,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
     }
 
     private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){
+        int count = 0;
         for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
             log.info("=============step 1 医嘱编号:{},orderNo:{},visitId:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
             log.info("=============step 2 医嘱编号:{},orderNo:{},visitId:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getVisitId(),orderExcuteLog.getExcuteStatus());
@@ -156,12 +158,18 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 }else{
                     dto.setLatestOperTime(orderExcuteLog.getCheckTime());
                 }
+                if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
+                    count = count + 1;
+                }
                 log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
                 checkedLog.add(orderExcuteLog);
                 if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
                     dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
                 }
             }
+        }
+        if(count == dto.getFrequencyCount().intValue()){
+            dto.setFinishFlag("2");
         }
     }
 
