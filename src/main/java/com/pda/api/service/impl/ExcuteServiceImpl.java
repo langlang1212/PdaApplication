@@ -148,7 +148,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             }*/
             // 校验配液类的是否核对
             if(labels.contains(oralExcuteReq.getAdministration())){
-                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,type);
+                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
                 if(CollectionUtil.isEmpty(orderCheckLog)){
                     throw new BusinessException("当前医嘱没有核对,请先核对医嘱单!");
                 }
@@ -252,7 +252,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
         logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
                 .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
-                .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getCheckStatus,"1");
+                .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getCheckStatus,"1").eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate());
         List<OrderExcuteLog> orderExcuteLogs = orderExcuteLogMapper.selectList(logLambdaQueryWrapper);
         return orderExcuteLogs;
     }
