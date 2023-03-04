@@ -80,6 +80,7 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 baseOrderDto.setPatientId(firstSubOrder.getPatientId());
                 baseOrderDto.setVisitId(firstSubOrder.getVisitId());
                 baseOrderDto.setOrderNo(orderNo);
+                log.info("设置频次:{}",firstSubOrder.getFreqCounter());
                 if(ObjectUtil.isNotEmpty(firstSubOrder.getFreqCounter())){
                     baseOrderDto.setFrequencyCount(firstSubOrder.getFreqCounter());
                     baseOrderDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
@@ -158,17 +159,18 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 }else{
                     dto.setLatestOperTime(orderExcuteLog.getCheckTime());
                 }
-                if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
-                    count = count + 1;
-                }
                 log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
                 checkedLog.add(orderExcuteLog);
                 if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
+                    if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
+                        count = count + 1;
+                    }
                     dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
                 }
             }
         }
-        if(count == dto.getFrequencyCount().intValue()){
+        log.info("频次:{}",dto.getFrequencyCount());
+        if((ModuleTypeEnum.TYPE3.code().equals(dto.getType()) || ModuleTypeEnum.TYPE7.code().equals(dto.getType())) && count == dto.getFrequencyCount().intValue()){
             dto.setFinishFlag("2");
         }
     }
