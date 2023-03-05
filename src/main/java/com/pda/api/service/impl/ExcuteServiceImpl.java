@@ -160,7 +160,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
             orderExcuteLog.setVisitId(oralExcuteReq.getVisitId());
             orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
-            orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
+            orderExcuteLog.setExcuteDate(now.toLocalDate());
             orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
             orderExcuteLog.setExcuteUserName(currentUser.getName());
             orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
