@@ -73,15 +73,15 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         List<OrdersM> shortOrders = ordersMMapper.listShortOtherOrderByPatient(patientId,visitId,startDateOfDay,endDateOfDay);
         shortOrders = handleStopOrder(shortOrders,queryTime);
         // 1.2、处理日志
-        LogQuery logQueryShort = LogQuery.create(patientId,visitId,shortOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER),queryTime);
-        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-        handleOrderService.countOrder(result,shortOrders, Constant.LINSHI,shortDistinctLogs);
+        LogQuery logQueryShort = LogQuery.create(patientId,visitId,shortOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
+        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(logQueryShort);
+        handleOrderService.countOrder(result,shortOrders, Constant.LINSHI,shortCheckedLogs,Constant.EXCUTE_TYPE_ORDER);
         //2、拿到其他长期医嘱
         List<OrdersM> longOrders = ordersMMapper.listLongOtherOrderByPatient(patientId,visitId, queryTime);
         longOrders = handleStopOrder(longOrders,queryTime);
-        LogQuery logQuerylong = LogQuery.create(patientId,visitId,longOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER),queryTime);
-        List<OrderExcuteLog> longDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQuerylong);
-        handleOrderService.countOrder(result,longOrders, Constant.CHANG,longDistinctLogs);
+        LogQuery logQuerylong = LogQuery.create(patientId,visitId,longOrders, Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuerylong);
+        handleOrderService.countOrder(result,longOrders, Constant.CHANG,longCheckedLogs,Constant.EXCUTE_TYPE_ORDER);
     }
 
     @Override
@@ -95,18 +95,18 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         baseReqDto.setRepeatIndicator(0);
 
         List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,labels,Constant.STATUS_LIST);
-        LogQuery logQueryShort = LogQuery.create(baseReqDto,shortOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER),queryTime);
-        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-        handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortDistinctLogs);
+        LogQuery logQueryShort = LogQuery.create(baseReqDto,shortOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
+        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(logQueryShort);
+        handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortCheckedLogs,Constant.EXCUTE_TYPE_ORDER);
 
         // 长期
         List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels,Constant.STATUS_LIST);
         // 获取操作日志
         baseReqDto.setRepeatIndicator(1);
-        LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER),queryTime);
-        List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
+        LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
+        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
         // 处理医嘱
-        handleOrderService.countOrder(result,longOrders,Constant.CHANG,distinctLogs);
+        handleOrderService.countOrder(result,longOrders,Constant.CHANG,longCheckedLogs,Constant.EXCUTE_TYPE_ORDER);
     }
 
     @Override
