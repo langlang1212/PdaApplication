@@ -81,6 +81,12 @@ public class LocalDateUtils {
         return dateParam;
     }
 
+    public static String date2Str(LocalDateTime date){
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String format = df.format(date);
+        return format;
+    }
+
     /**
      * @Description: LocalDateTime转String
      * @Date: 2021/3/16
