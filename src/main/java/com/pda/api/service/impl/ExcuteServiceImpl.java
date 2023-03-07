@@ -2,6 +2,9 @@ package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.XmlUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pda.api.domain.constant.DomainConstant;
@@ -170,10 +173,18 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             orderExcuteLog.setType(type);
             if("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())){
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
-                reverseWriteSkin(currentUser,oralExcuteReq);
+                String reverseResult = reverseWriteSkin(currentUser, oralExcuteReq);
+                if("AA".equals(reverseResult)){
+                    // 插入
+                    orderExcuteLogMapper.insert(orderExcuteLog);
+                }else{
+                    log.error("患者:{},vistiId:{},皮试医嘱{},反写his失败!",orderExcuteLog.getPatientId(),orderExcuteLog.getVisitId(),orderExcuteLog.getOrderNo());
+                    throw new BusinessException("皮试医嘱反写失败!");
+                }
+            }else{
+                // 插入
+                orderExcuteLogMapper.insert(orderExcuteLog);
             }
-            // 插入
-            orderExcuteLogMapper.insert(orderExcuteLog);
 //            if(ObjectUtil.isNotNull(existLog)){
 //                existLog.setExcuteUserCode(currentUser.getUserName());
 //                existLog.setExcuteUserName(currentUser.getName());
@@ -211,7 +222,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
      * 皮试医嘱反写
      * @param oralExcuteReq
      */
-    private void reverseWriteSkin(UserResDto currentUser,ExcuteReq oralExcuteReq) {
+    private String reverseWriteSkin(UserResDto currentUser,ExcuteReq oralExcuteReq) {
         String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<root>\n" +
                 "\t<AuthHeader>\n" +
@@ -234,13 +245,21 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 "\t\t</ListInfo>\n" +
                 "\t</ControlActProcess>\n" +
                 "</root>\n";
-        log.info("皮试反写入参:{}",param);
-        String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
-        if(StringUtil.isNotBlank(result)){
-            log.info("皮试医嘱反写结果:{}",result);
-        }else{
-            log.error("皮试医嘱反写失败，param:{},result:{}",param,result);
+        String typeCode = "";
+        try {
+            log.info("皮试反写入参:{}",param);
+            String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+            if(StringUtil.isNotBlank(result)){
+                log.info("皮试医嘱反写结果:{}",result);
+                Map<String, Object> resultMap = XmlUtil.xmlToMap(param);
+                typeCode = new JSONObject(resultMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+            }else{
+                throw new BusinessException("皮试医嘱反写结果为空!");
+            }
+        }catch (Exception e){
+            throw new BusinessException("皮试医嘱反写失败!",e);
         }
+        return typeCode;
     }
 
     private OrderExcuteLog getCompleteExcuteLog(ExcuteReq excuteReq,String type) {
