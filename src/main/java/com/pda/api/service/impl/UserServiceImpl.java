@@ -1,6 +1,8 @@
 package com.pda.api.service.impl;
 
 import cn.hutool.core.util.XmlUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.pda.api.service.UserService;
 import com.pda.common.PdaBaseService;
 import com.pda.utils.CxfClient;
@@ -77,12 +79,14 @@ public class UserServiceImpl extends PdaBaseService implements UserService {
                 "    </AuthHeader>\n" +
                 "    <ControlActProcess>\n" +
                 "        <PageNum>1</PageNum>\n" +
-                "        <inp_id>0000053585_1</inp_id>\n" +
+                "        <inp_id>TJ00007619_1</inp_id>\n" +
                 "    </ControlActProcess>\n" +
-                "</root>\n";
+                "</root>";
 
         String result = CxfClient.excute("http://183.230.33.239:8182/services/YDYH?wsdl", "acceptMessage", param);
-        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(result);
-        System.out.println("111");
+        Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(param);
+
+        String string = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+        System.out.println(string);
     }
 }

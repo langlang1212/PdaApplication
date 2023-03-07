@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.SpecimenCheck;
@@ -163,6 +163,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 }
             });
             orderExcuteLog.setType("6");
+            // 插入
+            orderExcuteLogMapper.insert(orderExcuteLog);
         }else{
             logs.forEach(log -> {
                 if("7".equals(log.getType())){
@@ -177,11 +179,54 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             });
             orderExcuteLog.setType("7");
             // 反写lis系统 req_master的req_stat字段
-            String patId = String.format("%s%s",specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getVisitId());
-            specimenApplyMapper.sendSpecimen(specimenCheckOperDto.getTestNo(),patId);
+            /*String patId = String.format("%s%s",specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getVisitId());
+            specimenApplyMapper.sendSpecimen(specimenCheckOperDto.getTestNo(),patId);*/
+            String result = sendSpecimen(specimenCheckOperDto, currentUser);
+            if("AA".equals(result)){
+                // 插入
+                orderExcuteLogMapper.insert(orderExcuteLog);
+            }else{
+                log.error("患者:{},标本:{},送检失败",specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getTestNo());
+                throw new BusinessException("标本送检反写失败!");
+            }
         }
-        // 插入
-        orderExcuteLogMapper.insert(orderExcuteLog);
+    }
+
+    private String sendSpecimen(SpecimenCheckOperDto specimenCheckOperDto,UserResDto currentUser){
+        String param = "<root>\n" +
+                "    <AuthHeader>\n" +
+                "        <msgType>TJ643</msgType>\n" +
+                "        <msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId>\n" +
+                "        <createTime>20170318134450</createTime>\n" +
+                "        <sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                "        <targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                "        <sysPassword/>\n" +
+                "    </AuthHeader>\n" +
+                "    <ControlActProcess>\n" +
+                "        <ListInfo>\n" +
+                "            <List>\n" +
+                "                <barcode>"+specimenCheckOperDto.getTestNo()+"</barcode>\n" +
+                "                <sampled_dt>"+PdaTimeUtil.getLongTime(new Date())+"</sampled_dt>\n" +
+                "                <sampled_user>"+currentUser.getUserName()+"</sampled_user>\n" +
+                "            </List>\n" +
+                "        </ListInfo>\n" +
+                "    </ControlActProcess>\n" +
+                "</root>";
+        String typeCode = "";
+        try {
+            log.info("标本送检入参:{}",param);
+            String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+            if(StringUtil.isNotBlank(result)){
+                log.info("标本送检反写结果:{}",result);
+                Map<String, Object> resultMap = XmlUtil.xmlToMap(param);
+                typeCode = new JSONObject(resultMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+            }else{
+                throw new BusinessException("标本送检反写结果为空!");
+            }
+        }catch (Exception e){
+            throw new BusinessException("标本送检反写失败!",e);
+        }
+        return typeCode;
     }
 
     private void setSpecimenStatus(SpecimenCheckResDto result, List<OrderExcuteLog> logs) {
