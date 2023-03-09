@@ -68,6 +68,8 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                         }else{
                             ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
                         }
+                    }else if(labelsByType7.contains(firstSubOrder.getAdministration())){
+                        ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE7.code());
                     }
                 }else{
                     baseOrderDto = new BaseOrderDto();
@@ -162,15 +164,18 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                 log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
                 checkedLog.add(orderExcuteLog);
                 if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
+                    log.info("==== 该订单类型为医嘱执行，医嘱日志状态:{}",orderExcuteLog.getExcuteStatus());
                     if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
                         count = count + 1;
+                        log.info("计算过后的频次:{}",count);
                     }
                     dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
                 }
             }
         }
-        log.info("频次:{}",dto.getFrequencyCount());
+        log.info("类型:{},频次:{},统计次数:{}",dto.getType(),dto.getFrequencyCount(),count);
         if((ModuleTypeEnum.TYPE3.code().equals(dto.getType()) || ModuleTypeEnum.TYPE7.code().equals(dto.getType())) && count == dto.getFrequencyCount().intValue()){
+            log.info("设置完成标识");
             dto.setFinishFlag("2");
         }
     }

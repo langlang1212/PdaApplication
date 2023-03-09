@@ -1,10 +1,10 @@
 package com.pda.utils;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.pda.common.config.JaxWsDynamicClientFactory;
 import com.pda.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.springframework.stereotype.Component;
