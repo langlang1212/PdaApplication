@@ -236,7 +236,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 "\t<ControlActProcess>\n" +
                 "\t\t<ListInfo>\n" +
                 "\t\t\t<List>\n" +
-                "\t\t\t\t<PatientNo>"+oralExcuteReq.getPatientId()+"</PatientNo>\n" +
+                "\t\t\t\t<PatientNo>"+String.format("%s%s",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId())+"</PatientNo>\n" +
                 "\t\t\t\t<GroupNo>"+String.format("%s%s%s%s","YZ",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo())+"</GroupNo>\n" +
                 "\t\t\t\t<test_result>"+oralExcuteReq.getResult()+"</test_result>\n" +
                 "\t\t\t\t<perform_date>"+PdaTimeUtil.getLongTime(new Date())+"</perform_date>\n" +
