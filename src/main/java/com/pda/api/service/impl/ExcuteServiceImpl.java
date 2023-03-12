@@ -174,7 +174,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             if("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())){
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
                 String reverseResult = reverseWriteSkin(currentUser, oralExcuteReq);
-                if("AA".equals(reverseResult)){
+                if("1".equals(reverseResult)){
                     // 插入
                     orderExcuteLogMapper.insert(orderExcuteLog);
                 }else{
