@@ -174,7 +174,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             if("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())){
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
                 String reverseResult = reverseWriteSkin(currentUser, oralExcuteReq);
-                if("1".equals(reverseResult)){
+                if(reverseResult.contains("<TypeCode>1</TypeCode>")){
                     // 插入
                     orderExcuteLogMapper.insert(orderExcuteLog);
                 }else{
@@ -245,21 +245,18 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 "\t\t</ListInfo>\n" +
                 "\t</ControlActProcess>\n" +
                 "</root>\n";
-        String typeCode = "";
+        String result = "";
         try {
             log.info("皮试反写入参:{}",param);
-            String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
-            if(StringUtil.isNotBlank(result)){
-                log.info("皮试医嘱反写结果:{}",result);
-                Map<String, Object> resultMap = XmlUtil.xmlToMap(param);
-                typeCode = new JSONObject(resultMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
-            }else{
+            result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+            log.info("皮试医嘱反写结果:{}",result);
+            if(StringUtil.isEmpty(result)){
                 throw new BusinessException("皮试医嘱反写结果为空!");
             }
         }catch (Exception e){
             throw new BusinessException("皮试医嘱反写失败!",e);
         }
-        return typeCode;
+        return result;
     }
 
     private OrderExcuteLog getCompleteExcuteLog(ExcuteReq excuteReq,String type) {

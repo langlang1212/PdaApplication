@@ -182,7 +182,7 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             /*String patId = String.format("%s%s",specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getVisitId());
             specimenApplyMapper.sendSpecimen(specimenCheckOperDto.getTestNo(),patId);*/
             String result = sendSpecimen(specimenCheckOperDto, currentUser);
-            if("AA".equals(result)){
+            if(result.contains("<TypeCode>AA</TypeCode>")){
                 // 插入
                 orderExcuteLogMapper.insert(orderExcuteLog);
             }else{
@@ -212,21 +212,18 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 "        </ListInfo>\n" +
                 "    </ControlActProcess>\n" +
                 "</root>";
-        String typeCode = "";
+        String result = "";
         try {
             log.info("标本送检入参:{}",param);
-            String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
-            if(StringUtil.isNotBlank(result)){
-                log.info("标本送检反写结果:{}",result);
-                Map<String, Object> resultMap = XmlUtil.xmlToMap(param);
-                typeCode = new JSONObject(resultMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
-            }else{
+            result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+            log.info("标本送检反写结果:{}",result);
+            if(StringUtil.isEmpty(result)){
                 throw new BusinessException("标本送检反写结果为空!");
             }
         }catch (Exception e){
             throw new BusinessException("标本送检反写失败!",e);
         }
-        return typeCode;
+        return result;
     }
 
     private void setSpecimenStatus(SpecimenCheckResDto result, List<OrderExcuteLog> logs) {
