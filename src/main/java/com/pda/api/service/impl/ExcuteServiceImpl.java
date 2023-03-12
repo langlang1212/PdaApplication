@@ -153,7 +153,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 throw new BusinessException("当前医嘱没有核查,请先核查医嘱单!");
             }*/
             // 校验配液类的是否核对
-            if(labels.contains(oralExcuteReq.getAdministration())){
+            if(labels.contains(oralExcuteReq.getAdministration()) && !skinLabels.contains(oralExcuteReq.getAdministration())){
                 List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
                 if(CollectionUtil.isEmpty(orderCheckLog)){
                     throw new BusinessException("当前医嘱没有核对,请先核对医嘱单!");
