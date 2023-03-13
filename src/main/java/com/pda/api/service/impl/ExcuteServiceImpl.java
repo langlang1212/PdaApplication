@@ -173,8 +173,9 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             orderExcuteLog.setType(type);
             if("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())){
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
-                String reverseResult = reverseWriteSkin(currentUser, oralExcuteReq);
-                if(reverseResult.contains("<TypeCode>1</TypeCode>")){
+                String typeCode = reverseWriteSkin(currentUser, oralExcuteReq);
+                log.info("皮试医嘱结果 typeCode:{}",typeCode);
+                if(StringUtil.isNotEmpty(typeCode) && "1".equals(typeCode)){
                     // 插入
                     orderExcuteLogMapper.insert(orderExcuteLog);
                 }else{
@@ -245,18 +246,21 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 "\t\t</ListInfo>\n" +
                 "\t</ControlActProcess>\n" +
                 "</root>\n";
-        String result = "";
+        String typeCode = "";
         try {
             log.info("皮试反写入参:{}",param);
-            result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+            String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
             log.info("皮试医嘱反写结果:{}",result);
-            if(StringUtil.isEmpty(result)){
+            if(StringUtil.isNotEmpty(result)){
+                Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(result);
+                typeCode = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+            }else{
                 throw new BusinessException("皮试医嘱反写结果为空!");
             }
         }catch (Exception e){
             throw new BusinessException("皮试医嘱反写失败!",e);
         }
-        return result;
+        return typeCode;
     }
 
     private OrderExcuteLog getCompleteExcuteLog(ExcuteReq excuteReq,String type) {

@@ -181,8 +181,9 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             // 反写lis系统 req_master的req_stat字段
             /*String patId = String.format("%s%s",specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getVisitId());
             specimenApplyMapper.sendSpecimen(specimenCheckOperDto.getTestNo(),patId);*/
-            String result = sendSpecimen(specimenCheckOperDto, currentUser);
-            if(result.contains("<TypeCode>AA</TypeCode>")){
+            String typeCode = sendSpecimen(specimenCheckOperDto, currentUser);
+            log.info("标本送检结果 typeCode:{}",typeCode);
+            if(StringUtil.isNotEmpty(typeCode) && "AA".equals(typeCode)){
                 // 插入
                 orderExcuteLogMapper.insert(orderExcuteLog);
             }else{
@@ -212,18 +213,21 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 "        </ListInfo>\n" +
                 "    </ControlActProcess>\n" +
                 "</root>";
-        String result = "";
+        String typeCode = "";
         try {
             log.info("标本送检入参:{}",param);
-            result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
+            String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
             log.info("标本送检反写结果:{}",result);
-            if(StringUtil.isEmpty(result)){
+            if(StringUtil.isNotEmpty(result)){
+                Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(result);
+                typeCode = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+            }else{
                 throw new BusinessException("标本送检反写结果为空!");
             }
         }catch (Exception e){
             throw new BusinessException("标本送检反写失败!",e);
         }
-        return result;
+        return typeCode;
     }
 
     private void setSpecimenStatus(SpecimenCheckResDto result, List<OrderExcuteLog> logs) {

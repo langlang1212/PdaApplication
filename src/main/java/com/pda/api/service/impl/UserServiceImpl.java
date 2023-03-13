@@ -67,23 +67,8 @@ public class UserServiceImpl extends PdaBaseService implements UserService {
     }
 
     public static void main(String[] args) {
-        String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<root>\n" +
-                "    <AuthHeader>\n" +
-                "        <msgType>TJ618</msgType>\n" +
-                "        <msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId>\n" +
-                "        <createTime>20181229154012</createTime>\n" +
-                "        <sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
-                "        <targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
-                "        <sysPassword/>\n" +
-                "    </AuthHeader>\n" +
-                "    <ControlActProcess>\n" +
-                "        <PageNum>1</PageNum>\n" +
-                "        <inp_id>TJ00007619_1</inp_id>\n" +
-                "    </ControlActProcess>\n" +
-                "</root>";
+        String param = "<AuthHeader><msgType>TJ643</msgType><msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId><createTime>20170318134450</createTime><sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId><targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId><sysPassword/><ControlActProcess><Response><TypeCode>AA</TypeCode><Text>采样确认成功！</Text></Response></ControlActProcess></AuthHeader>";
 
-        String result = CxfClient.excute("http://183.230.33.239:8182/services/YDYH?wsdl", "acceptMessage", param);
         Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(param);
 
         String string = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
