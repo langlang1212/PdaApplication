@@ -1,4 +1,4 @@
-package com.pda.api.infrastructure;
+package com.pda.api.infrastructure.repostory;
 
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.repository.OrderRepository;
