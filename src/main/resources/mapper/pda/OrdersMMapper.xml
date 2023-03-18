@@ -71,6 +71,13 @@
         order by order_no
     </select>
 
+    <select id="selectOrderByPatient" resultType="com.pda.api.domain.entity.OrdersM">
+        select *
+        from orders_m
+        where patient_id = #{patientId} and visit_id = #{visitId}
+        order by order_no
+    </select>
+
     <select id="selectAllTodoOrders" resultType="com.pda.api.domain.entity.OrdersM">
         select distinct patient_id,visit_id,order_no
         from orders_m

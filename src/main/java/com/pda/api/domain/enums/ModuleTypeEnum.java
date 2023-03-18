@@ -47,4 +47,13 @@ public enum ModuleTypeEnum {
         types.add(TYPE6.code());
         return types;
     }
+
+    public static List<String> getLiquidType(){
+        List<String> types = new ArrayList<>();
+        types.add(TYPE3.code());
+        types.add(TYPE4.code());
+        types.add(TYPE5.code());
+        types.add(TYPE6.code());
+        return types;
+    }
 }

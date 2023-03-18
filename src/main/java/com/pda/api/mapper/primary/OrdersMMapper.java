@@ -41,4 +41,6 @@ public interface OrdersMMapper extends BaseMapper<OrdersM> {
     List<OrdersM> listShortOtherOrderByPatient(@Param("patientId") String patientId,@Param("visitId") Integer visitId,@Param("startDateOfDay") Date startDateOfDay,@Param("endDateOfDay") Date endDateOfDay);
 
     List<OrdersM> listLongOtherOrderByPatient(@Param("patientId") String patientId, @Param("visitId") Integer visitId, @Param("endTime") Date queryTime);
+
+    List<OrdersM> selectOrderByPatient(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
 }
