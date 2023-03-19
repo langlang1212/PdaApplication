@@ -30,7 +30,7 @@ public class AllStrategy implements ExcuteStrategy {
     @Override
     public void count(BaseCountDto result, Date queryTime,String patientId,Integer visitId) {
         // 1、处理其他医嘱
-        this.mobileCommonService.countOtherOrder(result,queryTime,patientId,visitId);
+        /*this.mobileCommonService.countOtherOrder(result,queryTime,patientId,visitId);*/
         // 2、处理his分类医嘱
         this.mobileCommonService.countHisOrder(result,queryTime,patientId,visitId,this.labels);
     }
@@ -38,7 +38,7 @@ public class AllStrategy implements ExcuteStrategy {
     @Override
     public void list(List<BaseOrderDto> result, Date queryTime,String patientId,Integer visitId) {
         // 1、处理其他医嘱
-        this.mobileCommonService.listOtherOrder(result,queryTime,patientId,visitId);
+        /*this.mobileCommonService.listOtherOrder(result,queryTime,patientId,visitId);*/
         // 2、处理his分类医嘱
         this.mobileCommonService.listHisOrder(result,queryTime,patientId,visitId,this.labels);
     }
