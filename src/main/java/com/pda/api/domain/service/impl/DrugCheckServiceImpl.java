@@ -83,29 +83,29 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         // 区分长期医嘱和临时医嘱
         Map<String,List<OrdersM>> orderGroup = orderFactory.group(groupDto);
         // 处理医嘱
-        getDrugCountResult(result, groupDto, orderGroup);
+        getCountResult(result, groupDto, orderGroup,DRUG_TYPES);
         return result;
     }
 
-    private void getDrugCountResult(BaseCountDto result, OrderGroupDto groupDto, Map<String, List<OrdersM>> orderGroup) {
+    private void getCountResult(BaseCountDto result, OrderGroupDto groupDto, Map<String, List<OrdersM>> orderGroup,List<String> types) {
         for(String key : orderGroup.keySet()){
             if(OrderTypeEnum.LONG.code().equals(key)){
                 // 长期
                 List<OrdersM> longOrders = orderGroup.get(key);
                 longOrders = mobileCommonService.handleStopOrder(longOrders,groupDto.getQueryTime());
                 // 获取操作日志
-                LogQuery logQuery = LogQuery.create(groupDto.getReq(),longOrders,DRUG_TYPES,groupDto.getQueryTime());
+                LogQuery logQuery = LogQuery.create(groupDto.getReq(),longOrders,types,groupDto.getQueryTime());
                 List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
                 // 处理医嘱
-                handleOrderService.countOrder(result,longOrders, Constant.CHANG,distinctLogs,Constant.EXCUTE_TYPE_DRUG);
+                handleOrderService.countOrder(result,longOrders, Constant.CHANG,distinctLogs,groupDto.getExcuteType());
             }else {
                 // 短期
                 List<OrdersM> shortOrders = orderGroup.get(key);
                 shortOrders = mobileCommonService.handleStopOrder(shortOrders,groupDto.getQueryTime());
                 // 获取操作日志
-                LogQuery logQueryShort = LogQuery.create(groupDto.getReq(),shortOrders,DRUG_TYPES,groupDto.getQueryTime());
+                LogQuery logQueryShort = LogQuery.create(groupDto.getReq(),shortOrders,types,groupDto.getQueryTime());
                 List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-                handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortDistinctLogs,Constant.EXCUTE_TYPE_DRUG);
+                handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortDistinctLogs,groupDto.getExcuteType());
             }
         }
         // 设置剩余的
@@ -218,70 +218,60 @@ public class DrugCheckServiceImpl implements DrugCheckService {
      */
     @Override
     public BaseCountDto distributionCount(DrugDispensionReqDto dto) {
-        // 1、结果
+        // 结果
         BaseCountDto result = new BaseCountDto();
-        // 拿到时间
-        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
-
-        Set<String> labels = getLiquidLabels();
-        // 查询病人所有药
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels,STATUS_LIST);
-        longOrders = mobileCommonService.handleStopOrder(longOrders,queryTime);
-        // 获取操作日志
-        LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
-        List<OrderExcuteLog> distinctLogs = iOrderExcuteLogService.findDistinctLog(logQuery);
-        handleOrderService.countOrder(result,longOrders,Constant.CHANG,distinctLogs,Constant.EXCUTE_TYPE_LIQUID);
-        // 处理临时医嘱
-        Date startDateOfDay = DateUtil.getTimeOfYestoday();
-        Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,STATUS_LIST);
-        shortOrders = mobileCommonService.handleStopOrder(shortOrders,queryTime);
-
-        LogQuery logQueryShort = LogQuery.create(dto,shortOrders,LIQUID_TYPES,queryTime);
-        List<OrderExcuteLog> shortDistinctLogs = iOrderExcuteLogService.findDistinctLog(logQueryShort);
-        handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortDistinctLogs,Constant.EXCUTE_TYPE_LIQUID);
-        // 设置剩余的
-        result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
-        result.setTempSurplusBottles(result.getTempTotalBottles() - result.getTempCheckedBottles());
+        // 根据传入参数查询所有医嘱
+        List<OrdersM> orders = orderRepository.listOrder(dto);
+        // 用法
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(ModuleTypeEnum.getLiquidType());
+        // 装入参数
+        OrderGroupDto groupDto = orderFactory.processGroupDto(dto,orders,labels,STATUS_LIST,Constant.EXCUTE_TYPE_LIQUID);
+        // 区分长期医嘱和临时医嘱
+        Map<String,List<OrdersM>> orderGroup = orderFactory.group(groupDto);
+        // 处理医嘱
+        getCountResult(result, groupDto, orderGroup,LIQUID_TYPES);
         return result;
-    }
-
-    private Set<String> getLiquidLabels() {
-        List<String> types = new ArrayList<>();
-        types.add(ModuleTypeEnum.TYPE3.code());
-        types.add(ModuleTypeEnum.TYPE4.code());
-        types.add(ModuleTypeEnum.TYPE5.code());
-        types.add(ModuleTypeEnum.TYPE6.code());
-        return iOrderTypeDictService.findLabelsByType(types);
     }
 
     @Override
     public Map<String,List<BaseOrderDto>> distributionOrders(DrugDispensionReqDto dto) {
-        // 拿到时间
-        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
-        // 拿到配液用法
-        Set<String> labels = getLiquidLabels();
-        // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(dto.getPatientId(),dto.getVisitId(),queryTime,labels,STATUS_LIST);
-        longOrders = mobileCommonService.handleStopOrder(longOrders,queryTime);
-        // 拿到所有核查日志
-        LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,queryTime);
-        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
-        // 处理返回数据
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders,longCheckedLogs,Constant.EXCUTE_TYPE_LIQUID,queryTime);
-        // 临时
-        // 获取临时医嘱的时间范围
-        Date startDateOfDay = DateUtil.getTimeOfYestoday();
-        Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
-        // 查询临时医嘱
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(dto.getPatientId(),dto.getVisitId(),startDateOfDay,endDateOfDay,labels,STATUS_LIST);
-        shortOrders = mobileCommonService.handleStopOrder(shortOrders,queryTime);
-        // 拿到所有核查日志
-        LogQuery shortLogQuery = LogQuery.create(dto,shortOrders,LIQUID_TYPES,queryTime);
-        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
-        // 处理返回数据
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders,shortCheckedLogs,Constant.EXCUTE_TYPE_LIQUID,queryTime);
+        // 根据传入参数查询所有医嘱
+        List<OrdersM> orders = orderRepository.listOrder(dto);
+        // 用法
+        Set<String> labels = iOrderTypeDictService.findLabelsByType(ModuleTypeEnum.getLiquidType());
+        // 装入参数
+        OrderGroupDto groupDto = orderFactory.processGroupDto(dto,orders,labels,STATUS_LIST,Constant.EXCUTE_TYPE_DRUG);
+        // 区分长期医嘱和临时医嘱
+        Map<String,List<OrdersM>> orderGroup = orderFactory.group(groupDto);
         // 封装结果
+        Map<String, List<BaseOrderDto>> resultMap = getLiquidResult(dto, groupDto, orderGroup);
+        return resultMap;
+    }
+
+    private Map<String, List<BaseOrderDto>> getLiquidResult(DrugDispensionReqDto dto, OrderGroupDto groupDto, Map<String, List<OrdersM>> orderGroup) {
+        List<BaseOrderDto> longResOrders = Lists.newArrayList();
+        List<BaseOrderDto> shortResOrders = Lists.newArrayList();
+        for(String key : orderGroup.keySet()){
+            if(OrderTypeEnum.LONG.code().equals(key)){
+                // 长期医嘱
+                List<OrdersM> longOrders = orderGroup.get(key);
+                longOrders = mobileCommonService.handleStopOrder(longOrders,groupDto.getQueryTime());
+                // 拿到所有核查日志
+                LogQuery logQuery = LogQuery.create(dto,longOrders,LIQUID_TYPES,groupDto.getQueryTime());
+                List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
+                // 处理返回数据
+                longResOrders = handleOrderService.handleOrder(longOrders,longCheckedLogs, groupDto.getExcuteType(),groupDto.getQueryTime());
+            }else {
+                // 临时医嘱
+                List<OrdersM> shortOrders = orderGroup.get(key);
+                shortOrders = mobileCommonService.handleStopOrder(shortOrders,groupDto.getQueryTime());
+                // 拿到所有核查日志
+                LogQuery shortLogQuery = LogQuery.create(dto,shortOrders,LIQUID_TYPES,groupDto.getQueryTime());
+                List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(shortLogQuery);
+                // 处理返回数据
+                shortResOrders = handleOrderService.handleOrder(shortOrders,shortCheckedLogs,groupDto.getExcuteType(),groupDto.getQueryTime());
+            }
+        }
         Map<String,List<BaseOrderDto>> resultMap = new HashMap<>();
         List<BaseOrderDto> noChecked = new ArrayList<>();
         List<BaseOrderDto> checked = new ArrayList<>();
