@@ -157,6 +157,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         String key = String.format("%s%s%s",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
         try{
             if(redisService.hasKey(key)){
+                log.info("医嘱单,patientId:{},visitId:{},orderNo:{}正在执行......",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
                 throw new BusinessException("当前医嘱单正在执行,请稍后再执行下一步!");
             }else{
                 redisService.setCacheObject(key,1);
