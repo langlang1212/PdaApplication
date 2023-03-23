@@ -4,6 +4,8 @@ import com.pda.api.domain.excuteBus.ExcuteStrategy;
 import com.pda.api.dto.base.BaseCountDto;
 import com.pda.api.dto.base.BaseOrderDto;
 import com.pda.api.service.MobileCommonService;
+import com.pda.utils.DateUtil;
+import com.pda.utils.PdaTimeUtil;
 
 import java.util.Date;
 import java.util.List;
@@ -31,8 +33,8 @@ public class OtherStrategy implements ExcuteStrategy {
     }
 
     @Override
-    public void list(List<BaseOrderDto> result, Date queryTime, String patientId, Integer visitId) {
+    public void list(List<BaseOrderDto> result, String patientId, Integer visitId) {
 
-        this.mobileCommonService.listOtherOrder(result,queryTime,patientId,visitId);
+        this.mobileCommonService.listOtherOrder(result, PdaTimeUtil.getTodayOrTomorrow(),patientId,visitId);
     }
 }

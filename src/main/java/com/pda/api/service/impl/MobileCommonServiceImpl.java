@@ -4,9 +4,13 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
+import com.pda.api.domain.enums.OrderTypeEnum;
+import com.pda.api.domain.factory.OrderFactory;
 import com.pda.api.domain.handler.HandleOrderService;
+import com.pda.api.domain.repository.OrderRepository;
 import com.pda.api.domain.service.IOrderExcuteLogService;
 import com.pda.api.domain.service.IOrderTypeDictService;
+import com.pda.api.dto.OrderGroupDto;
 import com.pda.api.dto.base.BaseCountDto;
 import com.pda.api.dto.base.BaseOrderDto;
 import com.pda.api.dto.base.BaseReqDto;
@@ -20,10 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +43,10 @@ public class MobileCommonServiceImpl implements MobileCommonService {
     private IOrderExcuteLogService iOrderExcuteLogService;
     @Autowired
     private HandleOrderService handleOrderService;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private OrderFactory orderFactory;
 
     @Override
     public List<OrdersM> handleStopOrder(List<OrdersM> longOrders, Date queryTime) {
@@ -89,24 +94,29 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         BaseReqDto baseReqDto = new BaseReqDto();
         baseReqDto.setPatientId(patientId);
         baseReqDto.setVisitId(visitId);
-        // 临时
-        Date startDateOfDay = DateUtil.getTimeOfYestoday();
-        Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
-        baseReqDto.setRepeatIndicator(0);
-
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,labels,Constant.STATUS_LIST);
-        LogQuery logQueryShort = LogQuery.create(baseReqDto,shortOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
-        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(logQueryShort);
-        handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,shortCheckedLogs,Constant.EXCUTE_TYPE_ORDER);
-
-        // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels,Constant.STATUS_LIST);
-        // 获取操作日志
-        baseReqDto.setRepeatIndicator(1);
-        LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
-        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
-        // 处理医嘱
-        handleOrderService.countOrder(result,longOrders,Constant.CHANG,longCheckedLogs,Constant.EXCUTE_TYPE_ORDER);
+        // 根据传入参数查询所有医嘱
+        List<OrdersM> orders = orderRepository.listOrder(baseReqDto);
+        if(CollectionUtil.isEmpty(orders)){
+            return;
+        }
+        // 装入参数
+        OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
+        // 查询所有日志
+        LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
+        List<OrderExcuteLog> orderExcuteLogs = iOrderExcuteLogService.findOperLog(logQuery);
+        Map<String, List<OrderExcuteLog>> excuteLogGroup = orderExcuteLogs.stream().collect(Collectors.groupingBy(o -> o.getPatientId() + "-" + o.getVisitId() + "-" + o.getOrderNo()));
+        // 区分长期医嘱和临时医嘱
+        Map<String,List<OrdersM>> orderGroup = orderFactory.group(groupDto);
+        //
+        for(String key : orderGroup.keySet()){
+            if(OrderTypeEnum.LONG.code().equals(key)){
+                List<OrdersM> longOrders = orderGroup.get(key);
+                handleOrderService.countOrder(result,longOrders,Constant.CHANG,excuteLogGroup,Constant.EXCUTE_TYPE_ORDER);
+            }else {
+                List<OrdersM> shortOrders = orderGroup.get(key);
+                handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,excuteLogGroup,Constant.EXCUTE_TYPE_ORDER);
+            }
+        }
     }
 
     @Override
@@ -136,32 +146,38 @@ public class MobileCommonServiceImpl implements MobileCommonService {
     }
 
     @Override
-    public void listHisOrder(List<BaseOrderDto> result, Date queryTime, String patientId, Integer visitId, Set<String> labels) {
+    public void listHisOrder(List<BaseOrderDto> result, String patientId, Integer visitId, Set<String> labels) {
         BaseReqDto baseReqDto = new BaseReqDto();
         baseReqDto.setPatientId(patientId);
         baseReqDto.setVisitId(visitId);
-        // 临时
-        Date startDateOfDay = DateUtil.getTimeOfYestoday();
-        Date endDateOfDay = DateUtil.getEndDateOfDay(queryTime);
-        baseReqDto.setRepeatIndicator(0);
-
-        List<OrdersM> shortOrders = ordersMMapper.listShortOrderByPatientId(patientId,visitId,startDateOfDay,endDateOfDay,labels,Constant.STATUS_LIST);
-        LogQuery logQueryShort = LogQuery.create(baseReqDto,shortOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
-        List<OrderExcuteLog> shortCheckedLogs = iOrderExcuteLogService.findOperLog(logQueryShort);
-        List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, shortCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-
-        // 长期
-        List<OrdersM> longOrders = ordersMMapper.listLongOrderByPatientId(patientId,visitId, queryTime,labels,Constant.STATUS_LIST);
-        // 获取操作日志
-        baseReqDto.setRepeatIndicator(1);
-        LogQuery logQuery = LogQuery.create(baseReqDto,longOrders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),queryTime);
-        List<OrderExcuteLog> longCheckedLogs = iOrderExcuteLogService.findOperLog(logQuery);
-        List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, longCheckedLogs, Constant.EXCUTE_TYPE_ORDER,queryTime);
-        if (CollectionUtil.isNotEmpty(longResOrders)) {
-            result.addAll(longResOrders);
+        // 根据传入参数查询所有医嘱
+        List<OrdersM> orders = orderRepository.listOrder(baseReqDto);
+        if(CollectionUtil.isEmpty(orders)){
+            return;
         }
-        if (CollectionUtil.isNotEmpty(shortResOrders)) {
-            result.addAll(shortResOrders);
+        // 装入参数
+        OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
+        // 查询所有日志
+        LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
+        List<OrderExcuteLog> orderExcuteLogs = iOrderExcuteLogService.findOperLog(logQuery);
+        Map<String, List<OrderExcuteLog>> excuteLogGroup = orderExcuteLogs.stream().collect(Collectors.groupingBy(o -> o.getPatientId() + "-" + o.getVisitId() + "-" + o.getOrderNo()));
+        // 区分长期医嘱和临时医嘱
+        Map<String,List<OrdersM>> orderGroup = orderFactory.group(groupDto);
+        //
+        for(String key : orderGroup.keySet()){
+            if(OrderTypeEnum.LONG.code().equals(key)){
+                List<OrdersM> longOrders = orderGroup.get(key);
+                List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, excuteLogGroup, Constant.EXCUTE_TYPE_ORDER, groupDto.getQueryTime());
+                if (CollectionUtil.isNotEmpty(longResOrders)) {
+                    result.addAll(longResOrders);
+                }
+            }else {
+                List<OrdersM> shortOrders = orderGroup.get(key);
+                List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, excuteLogGroup, Constant.EXCUTE_TYPE_ORDER, groupDto.getQueryTime());
+                if (CollectionUtil.isNotEmpty(shortResOrders)) {
+                    result.addAll(shortResOrders);
+                }
+            }
         }
     }
 }

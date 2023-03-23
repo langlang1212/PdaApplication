@@ -23,5 +23,5 @@ public interface MobileCommonService {
 
     void listOtherOrder(List<BaseOrderDto> result, Date queryTime, String patientId, Integer visitId);
 
-    void listHisOrder(List<BaseOrderDto> result, Date queryTime, String patientId, Integer visitId, Set<String> labels);
+    void listHisOrder(List<BaseOrderDto> result, String patientId, Integer visitId, Set<String> labels);
 }

@@ -31,6 +31,7 @@ import com.pda.api.service.MobileCommonService;
 import com.pda.common.Constant;
 import com.pda.common.ExcuteStatusEnum;
 import com.pda.common.PdaBaseService;
+import com.pda.common.redis.service.RedisService;
 import com.pda.exception.BusinessException;
 import com.pda.job.ExcuteLogJob;
 import com.pda.utils.*;
@@ -72,6 +73,8 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
     private MobileCommonService mobileCommonService;
     @Autowired
     private ExcuteLogJob excuteLogJob;
+    @Autowired
+    private RedisService redisService;
 
     @Override
     public List<? extends  BaseOrderDto> oralList(String patientId,Integer visitId) {
@@ -144,6 +147,21 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         Set<String> skinLabels = getSkinLabels();
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
+            doExcute(currentUser, now, type, labels, skinLabels, oralExcuteReq);
+        });
+    }
+
+    private void doExcute(UserResDto currentUser, LocalDateTime now, String type, Set<String> labels, Set<String> skinLabels, ExcuteReq oralExcuteReq) {
+        // 1、从redis 查询是否有 patientId+visitId+orderNo的key，如果有，通知用户目前订单正在执行，如果没有则继续执行
+        String key = String.format("%s%s%s%s","excute-",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
+        try{
+            if(redisService.hasKey(key)){
+                log.info("医嘱单,patientId:{},visitId:{},orderNo:{}正在执行......",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
+                throw new BusinessException("当前医嘱单正在执行,请稍后再执行下一步!");
+            }else{
+                redisService.setCacheObject(key,1);
+            }
+
             OrderExcuteLog existLog = getCompleteExcuteLog(oralExcuteReq,type);
             if(ObjectUtil.isNotNull(existLog)){
                 throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
@@ -154,7 +172,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             }*/
             // 校验配液类的是否核对
             if(labels.contains(oralExcuteReq.getAdministration())){
-                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_LIQUID);
+                List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq, Constant.EXCUTE_TYPE_LIQUID);
                 if(CollectionUtil.isEmpty(orderCheckLog)){
                     throw new BusinessException("当前医嘱没有配液核对,请先核对医嘱单!");
                 }
@@ -186,37 +204,14 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 // 插入
                 orderExcuteLogMapper.insert(orderExcuteLog);
             }
-//            if(ObjectUtil.isNotNull(existLog)){
-//                existLog.setExcuteUserCode(currentUser.getUserName());
-//                existLog.setExcuteUserName(currentUser.getName());
-//                existLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
-//                existLog.setExcuteTime(now);
-//                existLog.setCheckTime(now);
-//                if("5".equals(oralExcuteReq.getExcuteStatus())){
-//                    if("5".equals(oralExcuteReq.getType())){
-//                        existLog.setRemark(oralExcuteReq.getResult());
-//                        // 如果是皮试医嘱，反写his
-//                        /*reverseWriteSkin(currentUser,oralExcuteReq);*/
-//                    }
-//                }
-//                orderExcuteLogMapper.updateLog(existLog);
-//            }else{
-//                OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
-//                orderExcuteLog.setPatientId(oralExcuteReq.getPatientId());
-//                orderExcuteLog.setVisitId(oralExcuteReq.getVisitId());
-//                orderExcuteLog.setOrderNo(oralExcuteReq.getOrderNo());
-//                orderExcuteLog.setExcuteDate(LocalDateUtils.str2LocalDate(oralExcuteReq.getExcuteDate()));
-//                orderExcuteLog.setExcuteUserCode(currentUser.getUserName());
-//                orderExcuteLog.setExcuteUserName(currentUser.getName());
-//                orderExcuteLog.setExcuteStatus(oralExcuteReq.getExcuteStatus());
-//                orderExcuteLog.setCheckStatus("1");
-//                orderExcuteLog.setExcuteTime(now);
-//                orderExcuteLog.setCheckTime(now);
-//                orderExcuteLog.setType(type);
-//                // 插入
-//                orderExcuteLogMapper.insert(orderExcuteLog);
-//            }
-        });
+        }catch (Exception e){
+            log.error("医嘱执行失败:{}",e.getMessage());
+            throw new BusinessException("医嘱执行失败:"+e.getMessage());
+        }finally {
+            // 一定要删除key,不然锁死医嘱单
+            redisService.deleteObject(key);
+        }
+
     }
 
     /**
@@ -313,20 +308,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         OrderCountResDto result = new OrderCountResDto();
         // 拿到时间
         Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
-        ExcuteStrategy excuteStrategy = null;
-        Set<String> labels = null;
-        if("0".equals(drugType)){  // 为0就是全部
-            // 用法
-            List<String> hisTypeCodes = ModuleTypeEnum.getHisTypeCodes();
-            labels = iOrderTypeDictService.findLabelsByType(hisTypeCodes);
-            // 统计
-            excuteStrategy = new AllStrategy(mobileCommonService,labels);
-        }else if(ModuleTypeEnum.TYPE9.code().equals(drugType)){ // 1009其他
-            excuteStrategy = new OtherStrategy(mobileCommonService,labels);
-        }else{
-            labels = iOrderTypeDictService.findLabelsByType(Arrays.asList(drugType));
-            excuteStrategy = new SingleStrategy(mobileCommonService,labels);
-        }
+        ExcuteStrategy excuteStrategy = getExcuteStrategy(drugType);
         excuteStrategy.count(result,queryTime,patientId,visitId);
         // 设置剩余的
         result.setSurplusBottles(result.getTotalBottles() - result.getCheckedBottles());
@@ -344,23 +326,30 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         // 结果
         List<BaseOrderDto> result = new ArrayList<>();
         // 查询时间
-        Date queryTime = PdaTimeUtil.getTodayOrTomorrow();
+        Long startTime = System.currentTimeMillis();
+        ExcuteStrategy excuteStrategy = getExcuteStrategy(drugType);
+        Long endTime = System.currentTimeMillis();
+        log.info("查询执行策略和用法用时:{}",endTime - startTime);
+        excuteStrategy.list(result,patientId,visitId);
+        return result;
+    }
+
+    private ExcuteStrategy getExcuteStrategy(String drugType) {
         ExcuteStrategy excuteStrategy = null;
         Set<String> labels = null;
-        if("0".equals(drugType)){  // 为0就是全部
+        if ("0".equals(drugType)) {  // 为0就是全部
             // 用法
             List<String> hisTypeCodes = ModuleTypeEnum.getHisTypeCodes();
             labels = iOrderTypeDictService.findLabelsByType(hisTypeCodes);
             // 统计
-            excuteStrategy = new AllStrategy(mobileCommonService,labels);
-        }else if(ModuleTypeEnum.TYPE9.code().equals(drugType)){ // 1009其他
-            excuteStrategy = new OtherStrategy(mobileCommonService,labels);
-        }else{
+            excuteStrategy = new AllStrategy(mobileCommonService, labels);
+        } else if (ModuleTypeEnum.TYPE9.code().equals(drugType)) { // 1009其他
+            excuteStrategy = new OtherStrategy(mobileCommonService, labels);
+        } else {
             labels = iOrderTypeDictService.findLabelsByType(Arrays.asList(drugType));
-            excuteStrategy = new SingleStrategy(mobileCommonService,labels);
+            excuteStrategy = new SingleStrategy(mobileCommonService, labels);
         }
-        excuteStrategy.list(result,queryTime,patientId,visitId);
-        return result;
+        return excuteStrategy;
     }
 
     @Transactional(rollbackFor = Exception.class,transactionManager = "ds2TransactionManager")

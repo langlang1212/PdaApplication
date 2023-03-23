@@ -2,6 +2,7 @@ package com.pda.api.domain.handler.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.google.common.collect.Lists;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.enums.ModuleTypeEnum;
@@ -41,6 +42,23 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             if(CollectionUtil.isNotEmpty(orderGroup)){
                 for(Integer orderNo : orderGroup.keySet()){
                     OrdersM order = orderGroup.get(orderNo).get(0);
+                    setCount(baseCountDto, repeatRedicator, logs, order,type);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,Map<String, List<OrderExcuteLog>> excuteLogGroup,String type) {
+        if(CollectionUtil.isNotEmpty(orders)){
+            Map<Integer,List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
+            if(CollectionUtil.isNotEmpty(orderGroup)){
+                for(Integer orderNo : orderGroup.keySet()){
+                    OrdersM order = orderGroup.get(orderNo).get(0);
+                    List<OrderExcuteLog> logs = Lists.newArrayList();
+                    if(CollectionUtil.isNotEmpty(excuteLogGroup) && excuteLogGroup.containsKey(order.getPatientId()+"-"+order.getVisitId()+"-"+order.getOrderNo())){
+                        logs = excuteLogGroup.get(order.getPatientId()+"-"+order.getVisitId()+"-"+order.getOrderNo());
+                    }
                     setCount(baseCountDto, repeatRedicator, logs, order,type);
                 }
             }
@@ -147,30 +165,125 @@ public class HandleOrderServiceImpl implements HandleOrderService {
         return result;
     }
 
+    @Override
+    public List<BaseOrderDto> handleOrder(List<OrdersM> orders, Map<String, List<OrderExcuteLog>> excuteLogGroup,String type,Date queryTime) {
+        List<BaseOrderDto> result = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(orders)){
+            // 输液的用法
+            Set<String> labelsByType3 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE3.code()));
+            Set<String> labelsByType7 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE7.code()));
+            Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
+            for(Integer orderNo : orderGroup.keySet()){
+                List<OrdersM> ordersMS = orderGroup.get(orderNo);
+                OrdersM firstSubOrder = ordersMS.get(0);
+                BaseOrderDto baseOrderDto;
+                if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
+                    baseOrderDto = new BaseExcuteResDto();
+                    // 判断是否是输液的
+                    if(labelsByType3.contains(firstSubOrder.getAdministration())){
+                        if(labelsByType7.contains(firstSubOrder.getAdministration())){
+                            ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE7.code());
+                        }else{
+                            ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE3.code());
+                        }
+                    }else if(labelsByType7.contains(firstSubOrder.getAdministration())){
+                        ((BaseExcuteResDto)baseOrderDto).setType(ModuleTypeEnum.TYPE7.code());
+                    }
+                }else{
+                    baseOrderDto = new BaseOrderDto();
+                }
+                if("3".equals(firstSubOrder.getOrderStatus())){
+                    baseOrderDto.setIsStop("1");
+                }else if("2".equals(firstSubOrder.getOrderStatus())){
+                    baseOrderDto.setIsStop("0");
+                }
+                baseOrderDto.setPatientId(firstSubOrder.getPatientId());
+                baseOrderDto.setVisitId(firstSubOrder.getVisitId());
+                baseOrderDto.setOrderNo(orderNo);
+                log.info("设置频次:{}",firstSubOrder.getFreqCounter());
+                if(ObjectUtil.isNotEmpty(firstSubOrder.getFreqCounter())){
+                    baseOrderDto.setFrequencyCount(firstSubOrder.getFreqCounter());
+                    baseOrderDto.setFrequency(String.format("%s/%s",firstSubOrder.getFreqCounter(),firstSubOrder.getFreqIntervalUnit()));
+                }
+                baseOrderDto.setExcuteDate(DateUtil.getShortDate(queryTime));
+                baseOrderDto.setStartDateTime(firstSubOrder.getStartDateTime());
+                baseOrderDto.setRepeatIndicator(firstSubOrder.getRepeatIndicator());
+                if(StringUtils.isNotBlank(firstSubOrder.getPerformSchedule())){
+                    String[] split = firstSubOrder.getPerformSchedule().split("-");
+                    if(split.length == 1){
+                        List<String> schedule = new ArrayList<>();
+                        schedule.add(split[0]);
+                        baseOrderDto.setSchedule(schedule);
+                    }else{
+                        baseOrderDto.setSchedule(Arrays.asList(split));
+                    }
+                }
+                baseOrderDto.setStopDateTime(firstSubOrder.getStopDateTime());
+                log.info("=======================orderNo:{}=================",baseOrderDto.getOrderNo());
+                List<BaseSubOrderDto> subOrderDtoList = new ArrayList<>();
+                ordersMS.forEach(ordersM -> {
+                    BaseSubOrderDto baseSubOrderDto = new BaseSubOrderDto();
+                    baseSubOrderDto.setOrderSubNo(ordersM.getOrderSubNo());
+                    baseSubOrderDto.setOrderText(ordersM.getOrderText());
+                    baseSubOrderDto.setAdministation(ordersM.getAdministration());
+                    if(StringUtils.isNotBlank(ordersM.getDosage())){
+                        baseSubOrderDto.setDosage(ordersM.getDosage()+ordersM.getDosageUnits());
+                    }
+                    baseSubOrderDto.setFreqDetail(ordersM.getFreqDetail());
+
+                    subOrderDtoList.add(baseSubOrderDto);
+                });
+                baseOrderDto.setSubOrderDtoList(subOrderDtoList);
+
+                List<OrderExcuteLog> checkedLog = new ArrayList<>();
+                if(CollectionUtil.isNotEmpty(excuteLogGroup) && excuteLogGroup.containsKey(firstSubOrder.getPatientId()+"-"+firstSubOrder.getVisitId()+"-"+firstSubOrder.getOrderNo())){
+                    List<OrderExcuteLog> logs = excuteLogGroup.get(firstSubOrder.getPatientId()+"-"+firstSubOrder.getVisitId()+"-"+firstSubOrder.getOrderNo());
+                    if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
+                        log.info("处理执行状态");
+                        setExcuteStatus((BaseExcuteResDto) baseOrderDto,logs,checkedLog);
+                    }else{
+                        logs.forEach(orderExcuteLog -> {
+                            if(ObjectUtil.isNotNull(baseOrderDto.getLatestOperTime())){
+                                if(orderExcuteLog.getCheckTime().isAfter(baseOrderDto.getLatestOperTime())){
+                                    baseOrderDto.setLatestOperTime(orderExcuteLog.getCheckTime());
+                                }
+                            }else{
+                                baseOrderDto.setLatestOperTime(orderExcuteLog.getCheckTime());
+                            }
+                            checkedLog.add(orderExcuteLog);
+                        });
+                    }
+                }
+                //log.info("=============step 2 医嘱编号:{},orderNo:{},状态:{}===============",checkedLog.get(0).getPatientId(),checkedLog.get(0).getOrderNo(),checkedLog.get(0).getExcuteStatus());
+                baseOrderDto.setOrderExcuteLogs(checkedLog);
+                result.add(baseOrderDto);
+            }
+            result.sort(((o1, o2) -> o2.getLatestOperTime().compareTo(o1.getLatestOperTime())));
+        }
+        return result;
+    }
+
     private void setExcuteStatus(BaseExcuteResDto dto,List<OrderExcuteLog> orderExcuteLogs,List<OrderExcuteLog> checkedLog){
         int count = 0;
         for (OrderExcuteLog orderExcuteLog : orderExcuteLogs) {
             log.info("=============step 1 医嘱编号:{},orderNo:{},visitId:{}===============",dto.getPatientId(),dto.getOrderNo(),dto.getVisitId());
             log.info("=============step 2 医嘱编号:{},orderNo:{},visitId:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getVisitId(),orderExcuteLog.getExcuteStatus());
-            if(dto.getPatientId().equals(orderExcuteLog.getPatientId())
-                    && dto.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && dto.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue()){
-                if(ObjectUtil.isNotNull(dto.getLatestOperTime())){
-                    if(orderExcuteLog.getCheckTime().isAfter(dto.getLatestOperTime())){
-                        dto.setLatestOperTime(orderExcuteLog.getCheckTime());
-                    }
-                }else{
+            if(ObjectUtil.isNotNull(dto.getLatestOperTime())){
+                if(orderExcuteLog.getCheckTime().isAfter(dto.getLatestOperTime())){
                     dto.setLatestOperTime(orderExcuteLog.getCheckTime());
                 }
-                log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
-                checkedLog.add(orderExcuteLog);
-                if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
-                    log.info("==== 该订单类型为医嘱执行，医嘱日志状态:{}",orderExcuteLog.getExcuteStatus());
-                    if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
-                        count = count + 1;
-                        log.info("计算过后的频次:{}",count);
-                    }
-                    dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
+            }else{
+                dto.setLatestOperTime(orderExcuteLog.getCheckTime());
+            }
+            log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
+            checkedLog.add(orderExcuteLog);
+            if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
+                log.info("==== 该订单类型为医嘱执行，医嘱日志状态:{}",orderExcuteLog.getExcuteStatus());
+                if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
+                    count = count + 1;
+                    log.info("计算过后的频次:{}",count);
                 }
+                dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
             }
         }
         log.info("类型:{},频次:{},统计次数:{}",dto.getType(),dto.getFrequencyCount(),count);

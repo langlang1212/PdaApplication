@@ -16,5 +16,5 @@ public interface ExcuteStrategy {
 
     public void count(BaseCountDto result, Date queryTime,String patientId,Integer visitId);
 
-    public void list(List<BaseOrderDto> result,Date queryTime,String patientId,Integer visitId);
+    public void list(List<BaseOrderDto> result,String patientId,Integer visitId);
 }

@@ -8,6 +8,7 @@ import com.pda.api.dto.base.BaseReqDto;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Classname HandleOrderService
@@ -19,5 +20,9 @@ public interface HandleOrderService {
 
     void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,List<OrderExcuteLog> logs,String type);
 
+    void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,Map<String, List<OrderExcuteLog>> excuteLogGroup,String type);
+
     List<BaseOrderDto> handleOrder(List<OrdersM> orders, List<OrderExcuteLog> logs, String type, Date queryTime);
+
+    List<BaseOrderDto> handleOrder(List<OrdersM> orders, Map<String, List<OrderExcuteLog>> excuteLogGroup, String type, Date queryTime);
 }
