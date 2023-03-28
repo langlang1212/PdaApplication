@@ -177,9 +177,10 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 插入核查日志
         initAddLog(drugCheckReqDtoList, currentUser,type);
-
-        // 添加执行日志
-        addExcuteLog(drugCheckReqDtoList,currentUser,Constant.EXCUTE_TYPE_ORDER);
+        if(type.equals(Constant.EXCUTE_TYPE_LIQUID)){
+            // 添加执行日志
+            addExcuteLog(drugCheckReqDtoList,currentUser,Constant.EXCUTE_TYPE_ORDER);
+        }
     }
 
     private void addExcuteLog(List<CheckReqDto> drugCheckReqDtoList, UserResDto currentUser, String type) {
