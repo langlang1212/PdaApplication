@@ -301,6 +301,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
         if(ObjectUtil.isNotNull(dto.getFrequencyCount()) && count == dto.getFrequencyCount().intValue()){
             log.info("设置完成标识");
             dto.setFinishFlag("2");
+        }else if(ObjectUtil.isNull(dto.getFrequencyCount())){
+            log.info("频次为空!");
+            dto.setFinishFlag("2");
         }
     }
 
