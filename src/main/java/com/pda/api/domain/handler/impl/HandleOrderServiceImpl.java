@@ -170,8 +170,11 @@ public class HandleOrderServiceImpl implements HandleOrderService {
         List<BaseOrderDto> result = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(orders)){
             // 输液的用法
+            Long startTime = System.currentTimeMillis();
             Set<String> labelsByType3 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE3.code()));
             Set<String> labelsByType7 = iOrderTypeDictService.findLabelsByType(Arrays.asList(ModuleTypeEnum.TYPE7.code()));
+            Long endTime = System.currentTimeMillis();
+            log.info("handleOrder查询用法耗时:{}",endTime - startTime);
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
             for(Integer orderNo : orderGroup.keySet()){
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);

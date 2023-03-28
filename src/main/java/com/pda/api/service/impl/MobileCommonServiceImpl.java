@@ -151,19 +151,26 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         baseReqDto.setPatientId(patientId);
         baseReqDto.setVisitId(visitId);
         // 根据传入参数查询所有医嘱
+        Long start1Time = System.currentTimeMillis();
         List<OrdersM> orders = orderRepository.listOrder(baseReqDto);
+        Long end1Time = System.currentTimeMillis();
+        log.info("查询医嘱单用时:{}",end1Time - start1Time);
         if(CollectionUtil.isEmpty(orders)){
             return;
         }
         // 装入参数
         OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
         // 查询所有日志
+        Long start2Time = System.currentTimeMillis();
         LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
         List<OrderExcuteLog> orderExcuteLogs = iOrderExcuteLogService.findOperLog(logQuery);
         Map<String, List<OrderExcuteLog>> excuteLogGroup = orderExcuteLogs.stream().collect(Collectors.groupingBy(o -> o.getPatientId() + "-" + o.getVisitId() + "-" + o.getOrderNo()));
+        Long end2Time = System.currentTimeMillis();
+        log.info("查询操作日志用时:{}",end2Time - start2Time);
         // 区分长期医嘱和临时医嘱
         Map<String,List<OrdersM>> orderGroup = orderFactory.group(groupDto);
         //
+        Long start3Time = System.currentTimeMillis();
         for(String key : orderGroup.keySet()){
             if(OrderTypeEnum.LONG.code().equals(key)){
                 List<OrdersM> longOrders = orderGroup.get(key);
@@ -179,5 +186,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
                 }
             }
         }
+        Long end3Time = System.currentTimeMillis();
+        log.info("handleOrder用时:{}",end3Time - start3Time);
     }
 }
