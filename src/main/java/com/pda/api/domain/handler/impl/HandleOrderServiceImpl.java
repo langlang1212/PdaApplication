@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.OrdersM;
 import com.pda.api.domain.enums.ModuleTypeEnum;
+import com.pda.api.domain.enums.OrderTypeEnum;
 import com.pda.api.domain.handler.HandleOrderService;
 import com.pda.api.domain.service.IOrderTypeDictService;
 import com.pda.api.dto.base.*;
@@ -278,16 +279,23 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             log.info("=============step 3 医嘱编号:{},orderNo:{},状态:{}===============",orderExcuteLog.getPatientId(),orderExcuteLog.getOrderNo(),orderExcuteLog.getExcuteStatus());
             checkedLog.add(orderExcuteLog);
             if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
-                log.info("==== 该订单类型为医嘱执行，医嘱日志状态:{}",orderExcuteLog.getExcuteStatus());
-                if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
-                    count = count + 1;
-                    log.info("计算过后的频次:{}",count);
-                }
                 dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
+                if(ModuleTypeEnum.TYPE3.code().equals(dto.getType()) || ModuleTypeEnum.TYPE7.code().equals(dto.getType())){
+                    log.info("==== 该订单类型为医嘱执行，医嘱日志状态:{}",orderExcuteLog.getExcuteStatus());
+                    if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
+                        count = count + 1;
+                        log.info("计算过后的频次:{}",count);
+                    }
+                }else if(ObjectUtil.isEmpty(dto.getType())){
+                    if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.NO_EXCUTE.code())){
+                        count = count + 1;
+                        log.info("计算过后的频次:{}",count);
+                    }
+                }
             }
         }
         log.info("类型:{},频次:{},统计次数:{}",dto.getType(),dto.getFrequencyCount(),count);
-        if((ModuleTypeEnum.TYPE3.code().equals(dto.getType()) || ModuleTypeEnum.TYPE7.code().equals(dto.getType())) && count == dto.getFrequencyCount().intValue()){
+        if(ObjectUtil.isNotNull(dto.getFrequencyCount()) && count == dto.getFrequencyCount().intValue()){
             log.info("设置完成标识");
             dto.setFinishFlag("2");
         }
