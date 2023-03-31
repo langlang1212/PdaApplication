@@ -38,7 +38,8 @@ public class PatrolSyncServiceImpl implements PatrolSyncService {
     public void syncPatrol(PatientPatrolDto patientPatrolDto, PatientInfo patientInfo){
         log.info("进入同步巡查记录日志！");
         PatrolSyncDto result = new PatrolSyncDto();
-        result.setXunchaTime(DateUtil.formatDateToStr(patientPatrolDto.getOperTime()));
+        result.setZhuyuanId(String.format("%s%s",patientInfo.getPatientId(),patientInfo.getVisitId()));
+        result.setXunchaTime(DateUtil.formatDateToStrNos(patientPatrolDto.getOperTime()));
         result.setXunchaHushiId(patientPatrolDto.getOperUserCode());
         result.setXunchaHushiName(patientPatrolDto.getOperUserName());
         result.setHisDisplayZhuyuanhao(patientInfo.getInpNo());
@@ -62,12 +63,18 @@ public class PatrolSyncServiceImpl implements PatrolSyncService {
 
         // 处理行项目
         List<PatrolLabelDto> patrolLabelDtos = patrolMapper.selectPatrolLabel();
+        log.info("巡视列表数量:{}",patrolLabelDtos.size());
         Map<Integer, List<PatrolLabelDto>> patrolMap = patrolLabelDtos.stream().collect(Collectors.groupingBy(PatrolLabelDto::getPatrolId));
+        log.info("巡视map的长度:{}",patrolMap.size());
         List<PatrolSyncItemDto> itemDtos = Lists.newArrayList();
         String[] split = patientPatrolDto.getPatrolId().split("/");
+        log.info("巡查记录长度:{}",split.length);
         for(int i = 0 ;i < split.length ; i++){
             String str = split[i];
-            PatrolLabelDto patrolLabelDto = patrolMap.get(str).get(0);
+            log.info("巡查id:{}",str);
+            log.info("=======拿到key的列表长度:{}=========",patrolMap.get(Integer.valueOf(str)).size());
+            PatrolLabelDto patrolLabelDto = patrolMap.get(Integer.valueOf(str)).get(0);
+            log.info("======id:{},name:{},code:{}=====",patrolLabelDto.getPatrolId(),patrolLabelDto.getPatrolName(),patrolLabelDto.getPatrolCode());
 
             PatrolSyncItemDto itemDto = new PatrolSyncItemDto();
             itemDto.setXunchaItemCode(patrolLabelDto.getPatrolCode());

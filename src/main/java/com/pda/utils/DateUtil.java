@@ -158,6 +158,10 @@ public class DateUtil {
         return parseDateToStr(date, DATE_TIME_FORMAT_YYYY_MM_DD_HH_MI_SS);
     }
 
+    public static String formatDateToStrNos(Date date) {
+        return parseDateToStr(date, DATE_TIME_FORMAT_YYYY_MM_DD_HH_MI);
+    }
+
     /**
      * 解析yyyy-MM-dd HH:mm:ss为时间
      *
