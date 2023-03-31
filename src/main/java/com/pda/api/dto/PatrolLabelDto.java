@@ -14,4 +14,6 @@ public class PatrolLabelDto {
     private Integer patrolId;
 
     private String patrolName;
+
+    private String patrolCode;
 }

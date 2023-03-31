@@ -21,4 +21,7 @@ public interface PatientInfoMapper extends BaseMapper<PatientInfo> {
 
     @Select("select distinct bed_no from patient_info where ward_code = #{wardCode}")
     List<Integer> findAlreadyBed(String wardCode);
+
+    @Select("select * from patient_info where patient_id = #{patientId} and visit_id = #{visitId}")
+    PatientInfo findPatientInfo(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
 }

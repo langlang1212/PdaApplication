@@ -3,6 +3,7 @@ package com.pda.api.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.base.Joiner;
+import com.pda.api.domain.entity.PatientInfo;
 import com.pda.api.domain.entity.UserInfo;
 import com.pda.api.domain.service.IUserInfoService;
 import com.pda.api.dto.*;
@@ -10,6 +11,7 @@ import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.primary.PatientInfoMapper;
 import com.pda.api.mapper.slave.PatrolMapper;
 import com.pda.api.service.PatientService;
+import com.pda.api.service.PatrolSyncService;
 import com.pda.api.service.PdaService;
 import com.pda.common.Constant;
 import com.pda.common.PdaBaseService;
@@ -44,6 +46,10 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     private IUserInfoService iUserInfoService;
     @Autowired
     private PatrolMapper patrolMapper;
+    @Autowired
+    private PatientInfoMapper patientInfoMapper;
+    @Autowired
+    private PatrolSyncService patrolSyncService;
 
     @Override
     public String fintPatientInhInfo(PatientReqDto patientReqDto) {
@@ -216,5 +222,10 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
         patientPatrolDto.setPatrolName(Joiner.on("/").join(names));
 
         patrolMapper.inserPatientPatrol(patientPatrolDto);
+        // 同步zpd
+        /*PatientInfo patientInfo = patientInfoMapper.findPatientInfo(patrolOperDto.getPatientId(),patrolOperDto.getVisitId());
+        if(ObjectUtil.isNull(patientInfo)){
+            throw new BusinessException("未查询到病人!"+patrolOperDto.getPatientId()+":"+patrolOperDto.getVisitId());
+        }*/
     }
 }

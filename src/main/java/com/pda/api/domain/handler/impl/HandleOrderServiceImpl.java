@@ -177,7 +177,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             Long endTime = System.currentTimeMillis();
             log.info("handleOrder查询用法耗时:{}",endTime - startTime);
             Map<Integer, List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
+            Long allStartTime = System.currentTimeMillis();
             for(Integer orderNo : orderGroup.keySet()){
+                Long handleOneStartTime = System.currentTimeMillis();
                 List<OrdersM> ordersMS = orderGroup.get(orderNo);
                 OrdersM firstSubOrder = ordersMS.get(0);
                 BaseOrderDto baseOrderDto;
@@ -238,7 +240,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                     subOrderDtoList.add(baseSubOrderDto);
                 });
                 baseOrderDto.setSubOrderDtoList(subOrderDtoList);
-
+                Long handleOneEndTime = System.currentTimeMillis();
+                log.info("xxxxxxxxxxxxxxx设置返回值第一步设置属性时长:{}xxxxxxxxxxxxxxxxxxxx",handleOneEndTime - handleOneStartTime);
+                Long logStartTime = System.currentTimeMillis();
                 List<OrderExcuteLog> checkedLog = new ArrayList<>();
                 if(CollectionUtil.isNotEmpty(excuteLogGroup) && excuteLogGroup.containsKey(firstSubOrder.getPatientId()+"-"+firstSubOrder.getVisitId()+"-"+firstSubOrder.getOrderNo())){
                     List<OrderExcuteLog> logs = excuteLogGroup.get(firstSubOrder.getPatientId()+"-"+firstSubOrder.getVisitId()+"-"+firstSubOrder.getOrderNo());
@@ -258,10 +262,14 @@ public class HandleOrderServiceImpl implements HandleOrderService {
                         });
                     }
                 }
+                Long logEndTime = System.currentTimeMillis();
+                log.info("日志处理时长:{}",logEndTime - logStartTime);
                 //log.info("=============step 2 医嘱编号:{},orderNo:{},状态:{}===============",checkedLog.get(0).getPatientId(),checkedLog.get(0).getOrderNo(),checkedLog.get(0).getExcuteStatus());
                 baseOrderDto.setOrderExcuteLogs(checkedLog);
                 result.add(baseOrderDto);
             }
+            Long allEndTime = System.currentTimeMillis();
+            log.info("zzzzzzzzzzzzzzzzz所有订单处理时长:{}zzzzzzzzzzzzzzzzz",allEndTime - allStartTime);
             result.sort(((o1, o2) -> o2.getLatestOperTime().compareTo(o1.getLatestOperTime())));
         }
         return result;

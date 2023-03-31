@@ -173,17 +173,23 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         Long start3Time = System.currentTimeMillis();
         for(String key : orderGroup.keySet()){
             if(OrderTypeEnum.LONG.code().equals(key)){
+                Long longStartTime = System.currentTimeMillis();
                 List<OrdersM> longOrders = orderGroup.get(key);
                 List<BaseOrderDto> longResOrders = handleOrderService.handleOrder(longOrders, excuteLogGroup, Constant.EXCUTE_TYPE_ORDER, groupDto.getQueryTime());
                 if (CollectionUtil.isNotEmpty(longResOrders)) {
                     result.addAll(longResOrders);
                 }
+                Long longEndTime = System.currentTimeMillis();
+                log.info("==============处理长期医嘱时长:{}=================",longEndTime - longStartTime);
             }else {
+                Long shortStartTime = System.currentTimeMillis();
                 List<OrdersM> shortOrders = orderGroup.get(key);
                 List<BaseOrderDto> shortResOrders = handleOrderService.handleOrder(shortOrders, excuteLogGroup, Constant.EXCUTE_TYPE_ORDER, groupDto.getQueryTime());
                 if (CollectionUtil.isNotEmpty(shortResOrders)) {
                     result.addAll(shortResOrders);
                 }
+                Long shortEndTime = System.currentTimeMillis();
+                log.info("==============处理临时医嘱时长:{}=================",shortEndTime - shortStartTime);
             }
         }
         Long end3Time = System.currentTimeMillis();
