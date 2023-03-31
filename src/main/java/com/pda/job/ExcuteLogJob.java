@@ -46,7 +46,7 @@ public class ExcuteLogJob {
     private IOrderExcuteLogService iOrderExcuteLogService;
 
     //添加定时任务
-    @Scheduled(cron = "0 0 0/3 * * ? ")
+    @Scheduled(cron = "0 0/10 * * * ? ")
     //@PostConstruct
     @Transactional(rollbackFor = Exception.class,transactionManager = "ds2TransactionManager")
     public void excute() {
