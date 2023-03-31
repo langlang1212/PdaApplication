@@ -223,9 +223,10 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
 
         patrolMapper.inserPatientPatrol(patientPatrolDto);
         // 同步zpd
-        /*PatientInfo patientInfo = patientInfoMapper.findPatientInfo(patrolOperDto.getPatientId(),patrolOperDto.getVisitId());
+        PatientInfo patientInfo = patientInfoMapper.findPatientInfo(patrolOperDto.getPatientId(),patrolOperDto.getVisitId());
         if(ObjectUtil.isNull(patientInfo)){
             throw new BusinessException("未查询到病人!"+patrolOperDto.getPatientId()+":"+patrolOperDto.getVisitId());
-        }*/
+        }
+        patrolSyncService.syncPatrol(patientPatrolDto,patientInfo);
     }
 }

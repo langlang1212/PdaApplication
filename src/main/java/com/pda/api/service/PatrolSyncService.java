@@ -2,7 +2,6 @@ package com.pda.api.service;
 
 import com.pda.api.domain.entity.PatientInfo;
 import com.pda.api.dto.PatientPatrolDto;
-import com.pda.api.dto.PatrolSyncDto;
 
 /**
  * @Classname PatrolSyncService
@@ -12,5 +11,5 @@ import com.pda.api.dto.PatrolSyncDto;
  */
 public interface PatrolSyncService {
 
-    public void syncPatrol(PatientPatrolDto patientPatrolDto, PatientInfo patientInfo, PatrolSyncDto patrolSyncDto);
+    public void syncPatrol(PatientPatrolDto patientPatrolDto, PatientInfo patientInfo);
 }

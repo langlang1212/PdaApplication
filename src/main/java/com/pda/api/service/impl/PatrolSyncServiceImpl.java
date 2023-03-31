@@ -35,7 +35,7 @@ public class PatrolSyncServiceImpl implements PatrolSyncService {
     private RestTemplate restTemplate;
 
     @Async
-    public void syncPatrol(PatientPatrolDto patientPatrolDto, PatientInfo patientInfo, PatrolSyncDto patrolSyncDto){
+    public void syncPatrol(PatientPatrolDto patientPatrolDto, PatientInfo patientInfo){
         log.info("进入同步巡查记录日志！");
         PatrolSyncDto result = new PatrolSyncDto();
         result.setXunchaTime(DateUtil.formatDateToStr(patientPatrolDto.getOperTime()));
