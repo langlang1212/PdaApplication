@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -67,11 +68,16 @@ public class UserServiceImpl extends PdaBaseService implements UserService {
     }
 
     public static void main(String[] args) {
-        String param = "<AuthHeader><msgType>TJ643</msgType><msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId><createTime>20170318134450</createTime><sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId><targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId><sysPassword/><ControlActProcess><Response><TypeCode>AA</TypeCode><Text>采样确认成功！</Text></Response></ControlActProcess></AuthHeader>";
+        Map<String,String> resultMap = new HashMap<>();
+        String param = "<AuthHeader><msgType>TJ643</msgType><msgId>F4A4F960-5B0E-4889-874B-DA732ECD0844</msgId><createTime>20170318134450</createTime><sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId><targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId><sysPassword/><ControlActProcess><Response><TypeCode>AE</TypeCode><Text>该标本已采样确认，不能重复采样确认！</Text></Response></ControlActProcess></AuthHeader>";
 
         Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(param);
-
-        String string = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
-        System.out.println(string);
+        JSONObject obj = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response");
+        String typeCode = obj.getString("TypeCode");
+        String text = obj.getString("Text");
+        resultMap.put("TypeCode",typeCode);
+        resultMap.put("Text",text);
+        System.out.println("typeCode:"+resultMap.get("TypeCode")+",text:"+resultMap.get("Text"));
+        System.out.println(resultMap.get("Text").contains("该标本已采样确认"));
     }
 }

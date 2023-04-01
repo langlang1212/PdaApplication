@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Maps;
 import com.pda.api.domain.entity.OrderExcuteLog;
 import com.pda.api.domain.entity.SpecimenCheck;
 import com.pda.api.domain.service.IOrderExcuteLogService;
@@ -181,9 +182,9 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
             // 反写lis系统 req_master的req_stat字段
             /*String patId = String.format("%s%s",specimenCheckOperDto.getPatientId(),specimenCheckOperDto.getVisitId());
             specimenApplyMapper.sendSpecimen(specimenCheckOperDto.getTestNo(),patId);*/
-            String typeCode = sendSpecimen(specimenCheckOperDto, currentUser);
-            log.info("标本送检结果 typeCode:{}",typeCode);
-            if(StringUtil.isNotEmpty(typeCode) && "AA".equals(typeCode)){
+            Map<String,String> resultMap = sendSpecimen(specimenCheckOperDto, currentUser);
+            if((resultMap.containsKey("TypeCode") && "AA".equals(resultMap.get("TypeCode"))) || (resultMap.containsKey("Text") && resultMap.get("Text").contains("该标本已采样确认"))){
+                log.info("标本送检结果 typeCode:{},text:{}",resultMap.get("TypeCode"),resultMap.get("Text"));
                 // 插入
                 orderExcuteLogMapper.insert(orderExcuteLog);
             }else{
@@ -193,7 +194,8 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
         }
     }
 
-    private String sendSpecimen(SpecimenCheckOperDto specimenCheckOperDto,UserResDto currentUser){
+    private Map<String,String> sendSpecimen(SpecimenCheckOperDto specimenCheckOperDto,UserResDto currentUser){
+        Map<String,String> resultMap = Maps.newHashMap();
         String param = "<root>\n" +
                 "    <AuthHeader>\n" +
                 "        <msgType>TJ643</msgType>\n" +
@@ -214,20 +216,25 @@ public class CheckServiceImpl extends PdaBaseService implements CheckService {
                 "    </ControlActProcess>\n" +
                 "</root>";
         String typeCode = "";
+        String text = "";
         try {
             log.info("标本送检入参:{}",param);
             String result = CxfClient.excute(getWsProperties().getReverseUrl(), getWsProperties().getMethodName(), param);
             log.info("标本送检反写结果:{}",result);
             if(StringUtil.isNotEmpty(result)){
                 Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(result);
-                typeCode = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+                JSONObject obj = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response");
+                typeCode = obj.getString("TypeCode");
+                text = obj.getString("Text");
+                resultMap.put("TypeCode",typeCode);
+                resultMap.put("Text",text);
             }else{
                 throw new BusinessException("标本送检反写结果为空!");
             }
         }catch (Exception e){
             throw new BusinessException("标本送检反写失败!",e);
         }
-        return typeCode;
+        return resultMap;
     }
 
     private void setSpecimenStatus(SpecimenCheckResDto result, List<OrderExcuteLog> logs) {
