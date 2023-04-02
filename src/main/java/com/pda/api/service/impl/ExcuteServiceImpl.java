@@ -131,27 +131,28 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         if(CollectionUtil.isEmpty(oralExcuteReqs)){
             throw new BusinessException("口服给药医嘱不能为空!");
         }
-        // 登陆人
-        UserResDto currentUser = SecurityUtil.getCurrentUser();
-        // 当前时间
-        LocalDateTime now = LocalDateTime.now();
         //
-        excute(oralExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+        excute(oralExcuteReqs,Constant.EXCUTE_TYPE_ORDER);
 
     }
 
-    public void excute(List<ExcuteReq> oralExcuteReqs, UserResDto currentUser, LocalDateTime now,String type) {
+    public void excute(List<ExcuteReq> oralExcuteReqs,String type) {
         // 配液的类型
         Set<String> labels = getLiquidLabels();
         // 皮试医嘱用法类型
         Set<String> skinLabels = getSkinLabels();
 
         oralExcuteReqs.forEach(oralExcuteReq -> {
-            doExcute(currentUser, now, type, labels, skinLabels, oralExcuteReq);
+            doExcute(type, labels, skinLabels, oralExcuteReq);
         });
     }
 
-    private void doExcute(UserResDto currentUser, LocalDateTime now, String type, Set<String> labels, Set<String> skinLabels, ExcuteReq oralExcuteReq) {
+    private void doExcute(String type, Set<String> labels, Set<String> skinLabels, ExcuteReq oralExcuteReq) {
+        // 当前时间
+        LocalDateTime now = LocalDateTime.now();
+        // 当前登录人
+        // 登陆人
+        UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 1、从redis 查询是否有 patientId+visitId+orderNo的key，如果有，通知用户目前订单正在执行，如果没有则继续执行
         String key = String.format("%s%s%s%s","excute-",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
         try{
@@ -289,12 +290,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         if(CollectionUtil.isEmpty(skinExcuteReqs)){
             throw new BusinessException("皮试医嘱不能为空!");
         }
-        // 登陆人
-        UserResDto currentUser = SecurityUtil.getCurrentUser();
-        // 当前时间
-        LocalDateTime now = LocalDateTime.now();
-
-        excute(skinExcuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+        excute(skinExcuteReqs,Constant.EXCUTE_TYPE_ORDER);
     }
 
     /**
@@ -358,12 +354,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         if(CollectionUtil.isEmpty(excuteReqs)){
             throw new BusinessException("执行医嘱不能为空!");
         }
-        // 登陆人
-        UserResDto currentUser = SecurityUtil.getCurrentUser();
-        // 当前时间
-        LocalDateTime now = LocalDateTime.now();
-
-        excute(excuteReqs, currentUser, now,Constant.EXCUTE_TYPE_ORDER);
+        excute(excuteReqs,Constant.EXCUTE_TYPE_ORDER);
     }
 
     @Override
