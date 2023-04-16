@@ -303,7 +303,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             dto.setFinishFlag("2");
         }else if(ObjectUtil.isNull(dto.getFrequencyCount())){
             log.info("频次为空!");
-            dto.setFinishFlag("2");
+            if(1 == count){
+                dto.setFinishFlag("2");
+            }
         }
     }
 
