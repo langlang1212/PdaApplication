@@ -42,4 +42,8 @@ public class ExcuteReq {
      * 阴性/阳性
      */
     private String result;
+    /**
+     * 频次，需要前端传过来次数
+     */
+    private Integer freqCount;
 }

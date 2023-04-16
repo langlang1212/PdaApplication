@@ -163,9 +163,16 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 redisService.setCacheObject(key,1);
             }
 
-            OrderExcuteLog existLog = getCompleteExcuteLog(oralExcuteReq,type);
-            if(ObjectUtil.isNotNull(existLog)){
-                throw new BusinessException("当前订单："+existLog.getOrderNo()+"今日执行已完成!");
+            Integer freqCount = getCompleteExcuteLogCount(oralExcuteReq,type);
+            if(ObjectUtil.isNull(oralExcuteReq.getFreqCount())){
+                // 如果频次是空的话，有一条执行完成日志，就代表这个医嘱已经执行完成了
+                if(freqCount == 1){
+                    throw new BusinessException("当前订单："+oralExcuteReq.getOrderNo()+"今日执行已完成!");
+                }
+            }else {
+                if(oralExcuteReq.getFreqCount().intValue() == freqCount.intValue()){
+                    throw new BusinessException("当前订单："+oralExcuteReq.getOrderNo()+"今日执行已完成!");
+                }
             }
             /*List<OrderExcuteLog> orderCheckedLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_DRUG);
             if(CollectionUtil.isEmpty(orderCheckedLog)){
@@ -259,14 +266,14 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         return typeCode;
     }
 
-    private OrderExcuteLog getCompleteExcuteLog(ExcuteReq excuteReq,String type) {
+    private Integer getCompleteExcuteLogCount(ExcuteReq excuteReq,String type) {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
         logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
                 .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
                 .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate())
                 .eq(OrderExcuteLog::getExcuteStatus, ExcuteStatusEnum.COMPLETED.code());
-        OrderExcuteLog orderExcuteLog = orderExcuteLogMapper.selectOne(logLambdaQueryWrapper);
-        return orderExcuteLog;
+        List<OrderExcuteLog> completedLog = orderExcuteLogMapper.selectList(logLambdaQueryWrapper);
+        return CollectionUtil.isEmpty(completedLog) ? 0 : completedLog.size();
     }
 
     private List<OrderExcuteLog> getOrderCheckLog(ExcuteReq excuteReq,String type) {

@@ -291,17 +291,9 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             checkedLog.add(orderExcuteLog);
             if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
                 dto.setExcuteStatus(orderExcuteLog.getExcuteStatus());
-                if(ModuleTypeEnum.TYPE3.code().equals(dto.getType()) || ModuleTypeEnum.TYPE7.code().equals(dto.getType())){
-                    log.info("==== 该订单类型为医嘱执行，医嘱日志状态:{}",orderExcuteLog.getExcuteStatus());
-                    if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.EXCUTEING.code())){
-                        count = count + 1;
-                        log.info("计算过后的频次:{}",count);
-                    }
-                }else if(ObjectUtil.isEmpty(dto.getType())){
-                    if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.NO_EXCUTE.code())){
-                        count = count + 1;
-                        log.info("计算过后的频次:{}",count);
-                    }
+                if(orderExcuteLog.getExcuteStatus().equals(ExcuteStatusEnum.COMPLETED.code())){
+                    count = count + 1;
+                    log.info("计算过后的频次:{}",count);
                 }
             }
         }
