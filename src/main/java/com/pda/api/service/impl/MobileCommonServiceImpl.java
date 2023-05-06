@@ -111,10 +111,10 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         for(String key : orderGroup.keySet()){
             if(OrderTypeEnum.LONG.code().equals(key)){
                 List<OrdersM> longOrders = orderGroup.get(key);
-                handleOrderService.countOrder(result,longOrders,Constant.CHANG,excuteLogGroup,Constant.EXCUTE_TYPE_ORDER);
+                handleOrderService.countExcuteOrder(result,longOrders,Constant.CHANG,excuteLogGroup,Constant.EXCUTE_TYPE_ORDER);
             }else {
                 List<OrdersM> shortOrders = orderGroup.get(key);
-                handleOrderService.countOrder(result,shortOrders,Constant.LINSHI,excuteLogGroup,Constant.EXCUTE_TYPE_ORDER);
+                handleOrderService.countExcuteOrder(result,shortOrders,Constant.LINSHI,excuteLogGroup,Constant.EXCUTE_TYPE_ORDER);
             }
         }
     }

@@ -67,6 +67,23 @@ public class HandleOrderServiceImpl implements HandleOrderService {
     }
 
     @Override
+    public void countExcuteOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,Map<String, List<OrderExcuteLog>> excuteLogGroup,String type) {
+        if(CollectionUtil.isNotEmpty(orders)){
+            Map<Integer,List<OrdersM>> orderGroup = orders.stream().collect(Collectors.groupingBy(OrdersM::getOrderNo));
+            if(CollectionUtil.isNotEmpty(orderGroup)){
+                for(Integer orderNo : orderGroup.keySet()){
+                    OrdersM order = orderGroup.get(orderNo).get(0);
+                    List<OrderExcuteLog> logs = Lists.newArrayList();
+                    if(CollectionUtil.isNotEmpty(excuteLogGroup) && excuteLogGroup.containsKey(order.getPatientId()+"-"+order.getVisitId()+"-"+order.getOrderNo())){
+                        logs = excuteLogGroup.get(order.getPatientId()+"-"+order.getVisitId()+"-"+order.getOrderNo());
+                    }
+                    setExcuteCount(baseCountDto, repeatRedicator, logs, order,type);
+                }
+            }
+        }
+    }
+
+    @Override
     public List<BaseOrderDto> handleOrder(List<OrdersM> orders, List<OrderExcuteLog> logs,String type,Date queryTime) {
         List<BaseOrderDto> result = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(orders)){
@@ -306,6 +323,47 @@ public class HandleOrderServiceImpl implements HandleOrderService {
             if(1 == count){
                 dto.setFinishFlag("2");
             }
+        }
+    }
+
+    private void setExcuteCount(BaseCountDto result, Integer repeatRedicator, List<OrderExcuteLog> logs, OrdersM order,String type) {
+        if (Constant.CHANG == repeatRedicator) {
+            log.info("=========step 1 ：长期医嘱条数:{}，orderNo：{}，频次:{}========",result.getTotalBottles(),order.getOrderNo(),order.getFreqCounter());
+            result.setTotalBottles(result.getTotalBottles() + (ObjectUtil.isNull(order.getFreqCounter()) ? 1 : order.getFreqCounter()));
+            log.info("=========step 2 ：长期医嘱条数:{}，orderNo：{}，频次:{}========",result.getTotalBottles(),order.getOrderNo(),order.getFreqCounter());
+        } else {
+            result.setTempTotalBottles(result.getTempTotalBottles() + (ObjectUtil.isNull(order.getFreqCounter()) ? 1 : order.getFreqCounter()));
+        }
+        log.info("日志条数:{}",logs.size());
+        if (CollectionUtil.isNotEmpty(logs)) {
+            logs.forEach(orderExcuteLog -> {
+                log.info("进入循环");
+                if (order.getPatientId().equals(orderExcuteLog.getPatientId()) &&
+                        order.getOrderNo().intValue() == orderExcuteLog.getOrderNo().intValue() && order.getVisitId().intValue() == orderExcuteLog.getVisitId().intValue() /*&& ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())*/) {
+                    log.info("进入第二层循环，类型:{}",orderExcuteLog.getType());
+                    if(Constant.EXCUTE_TYPE_ORDER.equals(type)){
+                        if(Constant.EXCUTE_TYPE_ORDER.equals(orderExcuteLog.getType())){
+                            log.info("进入第三层循环,状态:{}",orderExcuteLog.getExcuteStatus());
+                            if(ExcuteStatusEnum.COMPLETED.code().equals(orderExcuteLog.getExcuteStatus())){
+                                log.info("判断长期或者临时,订单号:{},长期或者临时:{}",order.getOrderNo(),repeatRedicator);
+                                if (Constant.CHANG == repeatRedicator) {
+                                    result.setCheckedBottles(result.getCheckedBottles() + 1);
+                                    log.info("====执行完成条数:{}===========",result.getCheckedBottles());
+                                } else {
+                                    result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
+                                }
+                            }
+                        }
+                    }else{
+                        if (Constant.CHANG == repeatRedicator) {
+                            result.setCheckedBottles(result.getCheckedBottles() + 1);
+                            log.info("====执行完成条数:{}===========",result.getCheckedBottles());
+                        } else {
+                            result.setTempCheckedBottles(result.getTempCheckedBottles() + 1);
+                        }
+                    }
+                }
+            });
         }
     }
 

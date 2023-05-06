@@ -45,5 +45,5 @@ public class ExcuteReq {
     /**
      * 频次，需要前端传过来次数
      */
-    private Integer freqCount;
+    private Integer frequencyCount;
 }

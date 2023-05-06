@@ -22,6 +22,8 @@ public interface HandleOrderService {
 
     void countOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,Map<String, List<OrderExcuteLog>> excuteLogGroup,String type);
 
+    void countExcuteOrder(BaseCountDto baseCountDto, List<OrdersM> orders, Integer repeatRedicator,Map<String, List<OrderExcuteLog>> excuteLogGroup,String type);
+
     List<BaseOrderDto> handleOrder(List<OrdersM> orders, List<OrderExcuteLog> logs, String type, Date queryTime);
 
     List<BaseOrderDto> handleOrder(List<OrdersM> orders, Map<String, List<OrderExcuteLog>> excuteLogGroup, String type, Date queryTime);

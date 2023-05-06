@@ -164,13 +164,14 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             }
 
             Integer freqCount = getCompleteExcuteLogCount(oralExcuteReq,type);
-            if(ObjectUtil.isNull(oralExcuteReq.getFreqCount())){
+            log.info("=============执行完成次数:{}，执行频次：{}============",freqCount,oralExcuteReq.getFrequencyCount());
+            if(ObjectUtil.isNull(oralExcuteReq.getFrequencyCount())){
                 // 如果频次是空的话，有一条执行完成日志，就代表这个医嘱已经执行完成了
                 if(freqCount == 1){
                     throw new BusinessException("当前订单："+oralExcuteReq.getOrderNo()+"今日执行已完成!");
                 }
             }else {
-                if(oralExcuteReq.getFreqCount().intValue() == freqCount.intValue()){
+                if(oralExcuteReq.getFrequencyCount().intValue() == freqCount.intValue()){
                     throw new BusinessException("当前订单："+oralExcuteReq.getOrderNo()+"今日执行已完成!");
                 }
             }

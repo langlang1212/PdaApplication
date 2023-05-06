@@ -310,7 +310,7 @@ public class DrugCheckServiceImpl implements DrugCheckService {
         LocalDateTime now = LocalDateTime.now();
         drugCheckReqDtoList.forEach(drugCheckReqDto -> {
             // 查询已有的核查
-            checkedLog(drugCheckReqDto,type);
+//            checkedLog(drugCheckReqDto,type);
             // 继续
             OrderExcuteLog orderExcuteLog = new OrderExcuteLog();
             BeanUtils.copyProperties(drugCheckReqDto,orderExcuteLog);
