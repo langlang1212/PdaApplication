@@ -15,7 +15,7 @@ spring:
     ds2 :
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://192.168.61.55:3306/pda-ydyh?serverTimezone=GMT%2B8&characterEncoding=utf8&useSSL=true
-      username: ydyd
+      username: ydyh
       password: ydyh123456
     ds3 :
       driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
