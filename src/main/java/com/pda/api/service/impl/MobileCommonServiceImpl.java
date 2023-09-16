@@ -101,6 +101,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         }
         // 装入参数
         OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
+        handleStopOrder(orders,groupDto.getQueryTime());
         // 查询所有日志
         LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
         List<OrderExcuteLog> orderExcuteLogs = iOrderExcuteLogService.findOperLog(logQuery);
@@ -160,6 +161,7 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         }
         // 装入参数
         OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
+        handleStopOrder(orders,groupDto.getQueryTime());
         // 查询所有日志
         Long start2Time = System.currentTimeMillis();
         LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
