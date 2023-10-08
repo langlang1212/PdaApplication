@@ -20,6 +20,7 @@ import com.pda.api.service.MobileCommonService;
 import com.pda.common.Constant;
 import com.pda.utils.DateUtil;
 import com.pda.utils.LocalDateUtils;
+import com.pda.utils.PdaTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,9 +100,9 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         if(CollectionUtil.isEmpty(orders)){
             return;
         }
+        orders = handleStopOrder(orders,queryTime);
         // 装入参数
         OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
-        handleStopOrder(orders,groupDto.getQueryTime());
         // 查询所有日志
         LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
         List<OrderExcuteLog> orderExcuteLogs = iOrderExcuteLogService.findOperLog(logQuery);
@@ -159,9 +160,11 @@ public class MobileCommonServiceImpl implements MobileCommonService {
         if(CollectionUtil.isEmpty(orders)){
             return;
         }
+        log.info("========== orders size：{},查询时间:{}===========",orders.size(), PdaTimeUtil.getTodayOrTomorrow());
+        orders = handleStopOrder(orders,PdaTimeUtil.getTodayOrTomorrow());
+        log.info("========== 过滤后 orders size：{}===========",orders.size());
         // 装入参数
         OrderGroupDto groupDto = orderFactory.processGroupDto(baseReqDto,orders,labels,Constant.STATUS_LIST,Constant.EXCUTE_TYPE_ORDER);
-        handleStopOrder(orders,groupDto.getQueryTime());
         // 查询所有日志
         Long start2Time = System.currentTimeMillis();
         LogQuery logQuery = LogQuery.create(baseReqDto,orders,Arrays.asList(Constant.EXCUTE_TYPE_ORDER,Constant.EXCUTE_TYPE_DRUG,Constant.EXCUTE_TYPE_LIQUID),groupDto.getQueryTime());
