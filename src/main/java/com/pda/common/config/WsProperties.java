@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 public class WsProperties {
 
     private String forwardUrl;
-
     private String reverseUrl;
-
     private String methodName;
 }
