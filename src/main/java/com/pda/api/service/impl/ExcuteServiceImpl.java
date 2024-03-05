@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -155,6 +156,9 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
     private void doExcute(String type, Set<String> labels, Set<String> skinLabels, ExcuteReq oralExcuteReq) {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
+        // 这里处理时间是由于mysql 在毫秒部分会进行四舍五入，导致formatter出现秒上的差异
+        String nowStr = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        now = LocalDateTime.parse(nowStr,DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         // 当前登录人
         // 登陆人
         UserResDto currentUser = SecurityUtil.getCurrentUser();
@@ -217,7 +221,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 }
             } else if ("5".equals(oralExcuteReq.getExcuteStatus())||"3".equals(oralExcuteReq.getExcuteStatus())) {
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
-                String typeCode = reverseWriteInstructions(currentUser, oralExcuteReq);
+                String typeCode = reverseWriteInstructions(currentUser, oralExcuteReq,orderExcuteLog);
                 log.info("医嘱执行反写结果 typeCode:{}", typeCode);
                 if (StringUtil.isNotEmpty(typeCode) && "AA".equals(typeCode)) {
                     // 插入
@@ -292,36 +296,76 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
      * @param oralExcuteReq
      * @return
      */
-    private String reverseWriteInstructions(UserResDto currentUser,ExcuteReq oralExcuteReq) {
-
-        String param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<root>\n" +
-                "\t<AuthHeader>\n" +
-                "\t\t<msgType>TJ615</msgType>\n" +
-                "\t\t<msgId>49219b98-c3c6-11ee-b5e7-525400b396fe</msgId>\n" +
-                "\t\t<createTime>" + PdaTimeUtil.getCreateTime(new Date()) + "</createTime>\n" +
-                "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
-                "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
-                "\t\t<sysPassword/>\n" +
-                "\t</AuthHeader>\n" +
-                "\t<ControlActProcess>\n" +
-                "\t\t<ListInfo>\n" +
-                "\t\t\t<List>\n" +
-                "\t\t\t\t<PatientNo>" + String.format("%s%s", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId()) + "</PatientNo>\n" +
-                "\t\t\t\t<InHospNo>" + String.format("%s", oralExcuteReq.getVisitId()) + "</InHospNo>\n" +
-                "\t\t\t\t<GroupNo>" + String.format("%s%s%s%s", "YZ", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo()) + "</GroupNo>\n" +
-                "\t\t\t\t<PerformNo>" + UUID.randomUUID().toString() + "</PerformNo>\n"
-                + (oralExcuteReq.getExcuteStatus().equals("3") ? "\t\t\t\t<ExecTime>" + PdaTimeUtil.getLongTime(new Date()) + "</ExecTime>\n"
-                : "\t\t\t\t<ExecEndTime>" + PdaTimeUtil.getLongTime(new Date()) + "</ExecEndTime>\n")
-                + "\t\t\t\t<ExecUserCode>" + currentUser.getUserName() + "</ExecUserCode>\n" +
-                "\t\t\t\t<ExecUserName>" + currentUser.getName() + "</ExecUserName>\n" +
-                "\t\t\t\t<UpTime>" + PdaTimeUtil.getLongTime(new Date()) + "</UpTime>\n" +
-                "\t\t\t</List>\n" +
-                "\t\t</ListInfo>\n" +
-                "\t</ControlActProcess>\n" +
-                "</root>\n";
+    private String reverseWriteInstructions(UserResDto currentUser,ExcuteReq oralExcuteReq,OrderExcuteLog elog) {
         String typeCode = "";
         try {
+            String param = "";
+            if (oralExcuteReq.getExcuteStatus().equals("3")) {
+                param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<root>\n" +
+                        "\t<AuthHeader>\n" +
+                        "\t\t<msgType>TJ615</msgType>\n" +
+                        "\t\t<msgId>49219b98-c3c6-11ee-b5e7-525400b396fe</msgId>\n" +
+                        "\t\t<createTime>" + PdaTimeUtil.getCreateTime(new Date()) + "</createTime>\n" +
+                        "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                        "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                        "\t\t<sysPassword/>\n" +
+                        "\t</AuthHeader>\n" +
+                        "\t<ControlActProcess>\n" +
+                        "\t\t<ListInfo>\n" +
+                        "\t\t\t<List>\n" +
+                        "\t\t\t\t<PatientNo>" + String.format("%s%s", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId()) + "</PatientNo>\n" +
+                        "\t\t\t\t<InHospNo>" + String.format("%s", oralExcuteReq.getVisitId()) + "</InHospNo>\n" +
+                        "\t\t\t\t<GroupNo>" + String.format("%s%s%s%s", "YZ", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo()) + "</GroupNo>\n" +
+                        "\t\t\t\t<PerformNo>" + UUID.randomUUID().toString() + "</PerformNo>\n" +
+                        "\t\t\t\t<ExecTime>" + elog.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "</ExecTime>\n" +
+                        "\t\t\t\t<ExecEndTime></ExecEndTime>\n" +
+                        "\t\t\t\t<ExecUserCode>" + currentUser.getUserName() + "</ExecUserCode>\n" +
+                        "\t\t\t\t<ExecUserName>" + currentUser.getName() + "</ExecUserName>\n" +
+                        "\t\t\t\t<UpTime>" + PdaTimeUtil.getLongTime(new Date()) + "</UpTime>\n" +
+                        "\t\t\t</List>\n" +
+                        "\t\t</ListInfo>\n" +
+                        "\t</ControlActProcess>\n" +
+                        "</root>\n";
+            } else {
+                ///查询医嘱
+                OrderExcuteLog beginOrder = orderExcuteLogMapper.selectList(new LambdaQueryWrapper<OrderExcuteLog>()
+                        .eq(OrderExcuteLog::getExcuteDate, oralExcuteReq.getExcuteDate())
+                        .eq(OrderExcuteLog::getExcuteStatus, "3")
+                        .eq(OrderExcuteLog::getOrderNo, oralExcuteReq.getOrderNo())
+                        .eq(OrderExcuteLog::getPatientId, oralExcuteReq.getPatientId())
+                        .eq(OrderExcuteLog::getVisitId, oralExcuteReq.getVisitId())
+                        .eq(OrderExcuteLog::getType, oralExcuteReq.getType())
+                        .orderByDesc(OrderExcuteLog::getExcuteTime)).stream().findFirst().orElse(null);
+
+                param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<root>\n" +
+                        "\t<AuthHeader>\n" +
+                        "\t\t<msgType>TJ615</msgType>\n" +
+                        "\t\t<msgId>49219b98-c3c6-11ee-b5e7-525400b396fe</msgId>\n" +
+                        "\t\t<createTime>" + PdaTimeUtil.getCreateTime(new Date()) + "</createTime>\n" +
+                        "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                        "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                        "\t\t<sysPassword/>\n" +
+                        "\t</AuthHeader>\n" +
+                        "\t<ControlActProcess>\n" +
+                        "\t\t<ListInfo>\n" +
+                        "\t\t\t<List>\n" +
+                        "\t\t\t\t<PatientNo>" + String.format("%s%s", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId()) + "</PatientNo>\n" +
+                        "\t\t\t\t<InHospNo>" + String.format("%s", oralExcuteReq.getVisitId()) + "</InHospNo>\n" +
+                        "\t\t\t\t<GroupNo>" + String.format("%s%s%s%s", "YZ", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo()) + "</GroupNo>\n" +
+                        "\t\t\t\t<PerformNo>" + UUID.randomUUID().toString() + "</PerformNo>\n" +
+                        "\t\t\t\t<ExecTime>" +(beginOrder!=null? beginOrder.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")):elog.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) + "</ExecTime>\n" +
+                        "\t\t\t\t<ExecEndTime>" + elog.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "</ExecEndTime>\n" +
+                        "\t\t\t\t<ExecUserCode>" + currentUser.getUserName() + "</ExecUserCode>\n" +
+                        "\t\t\t\t<ExecUserName>" + currentUser.getName() + "</ExecUserName>\n" +
+                        "\t\t\t\t<UpTime>" + PdaTimeUtil.getLongTime(new Date()) + "</UpTime>\n" +
+                        "\t\t\t</List>\n" +
+                        "\t\t</ListInfo>\n" +
+                        "\t</ControlActProcess>\n" +
+                        "</root>\n";
+            }
+
             log.info("医嘱执行反写入参:{}", param);
             String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
             log.info("医嘱执行反写结果:{}", result);
@@ -332,6 +376,7 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 throw new BusinessException("医嘱执行反写结果为空!");
             }
         } catch (Exception e) {
+            log.info("执行医嘱执行反写失败:{}", e.getMessage());
             throw new BusinessException("医嘱执行反写失败!", e);
         }
         return typeCode;
