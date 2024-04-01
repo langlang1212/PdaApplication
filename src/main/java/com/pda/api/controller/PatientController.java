@@ -33,9 +33,9 @@ public class PatientController {
     }
 
     @ApiOperation(value = "病人信息")
-    @GetMapping("/patientInfo/{patientId}/{visitId}")
-    public Result patientInfo(@PathVariable("patientId") String patientId, @PathVariable("visitId") Integer visitId){
-        List<PatientInfoDto> result = patientService.findWardPatientByOne(patientId,visitId);
+    @GetMapping("/patientInfo/{qrCode}")
+    public Result patientInfo(@PathVariable("qrCode") String qrCode){
+        List<PatientInfoDto> result = patientService.findWardPatientByOne(qrCode);
         return Result.success(result);
     }
 

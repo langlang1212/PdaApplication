@@ -25,5 +25,5 @@ public interface PatientService {
 
     void oper(PatrolOperDto patrolOperDto);
 
-    List<PatientInfoDto> findWardPatientByOne(String patientId, Integer visitId);
+    List<PatientInfoDto> findWardPatientByOne(String qrCode);
 }

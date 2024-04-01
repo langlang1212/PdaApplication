@@ -232,10 +232,10 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
     }
 
     @Override
-    public List<PatientInfoDto> findWardPatientByOne(String patientId, Integer visitId) {
-        PatientInfo patientInfo = patientInfoMapper.findPatientInfo(patientId,visitId);
+    public List<PatientInfoDto> findWardPatientByOne(String qrCode) {
+        PatientInfo patientInfo = patientInfoMapper.findPatientInfoByOrder(qrCode);
         if(ObjectUtil.isNull(patientInfo)){
-            throw new BusinessException("patientId:"+patientId+",visitId："+visitId +",在patient_info视图未找到！");
+            throw new BusinessException("医嘱："+qrCode+"对应患者,在patient_info视图未找到！");
         }
         List<PatientInfoDto> myPatient = findMyPatient(null, patientInfo.getWardCode());
         return myPatient;

@@ -24,4 +24,7 @@ public interface PatientInfoMapper extends BaseMapper<PatientInfo> {
 
     @Select("select * from patient_info where patient_id = #{patientId} and visit_id = #{visitId}")
     PatientInfo findPatientInfo(@Param("patientId") String patientId,@Param("visitId") Integer visitId);
+
+    @Select("select * from patient_info where INSTR(#{qrCode}, patient_id || VISIT_ID) > 0")
+    PatientInfo findPatientInfoByOrder(@Param("qrCode") String qrCode);
 }
