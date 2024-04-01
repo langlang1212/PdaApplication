@@ -2,6 +2,7 @@ package com.pda.api.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.base.Joiner;
 import com.pda.api.domain.entity.PatientInfo;
 import com.pda.api.domain.entity.UserInfo;
@@ -228,5 +229,15 @@ public class PatientServiceImpl extends PdaBaseService implements PatientService
             throw new BusinessException("未查询到病人!"+patrolOperDto.getPatientId()+":"+patrolOperDto.getVisitId());
         }
         patrolSyncService.syncPatrol(patientPatrolDto,patientInfo);
+    }
+
+    @Override
+    public List<PatientInfoDto> findWardPatientByOne(String patientId, Integer visitId) {
+        PatientInfo patientInfo = patientInfoMapper.findPatientInfo(patientId,visitId);
+        if(ObjectUtil.isNull(patientInfo)){
+            throw new BusinessException("patientId:"+patientId+",visitId："+visitId +",在patient_info视图未找到！");
+        }
+        List<PatientInfoDto> myPatient = findMyPatient(null, patientInfo.getWardCode());
+        return myPatient;
     }
 }

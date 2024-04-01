@@ -24,4 +24,6 @@ public interface PatientService {
     PatrolDto findPatrol(String patientId, Integer visitId);
 
     void oper(PatrolOperDto patrolOperDto);
+
+    List<PatientInfoDto> findWardPatientByOne(String patientId, Integer visitId);
 }

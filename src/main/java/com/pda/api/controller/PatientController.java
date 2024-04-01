@@ -32,6 +32,13 @@ public class PatientController {
         return Result.success(result);
     }
 
+    @ApiOperation(value = "病人信息")
+    @GetMapping("/patientInfo/{patientId}/{visitId}")
+    public Result patientInfo(@PathVariable("patientId") String patientId, @PathVariable("visitId") Integer visitId){
+        List<PatientInfoDto> result = patientService.findWardPatientByOne(patientId,visitId);
+        return Result.success(result);
+    }
+
     @ApiOperation(value = "患者巡视")
     @GetMapping("/patrol/{patientId}/{visitId}")
     public Result patrol(@PathVariable("patientId") String patientId, @PathVariable("visitId") Integer visitId){
