@@ -28,6 +28,7 @@ import com.pda.api.mapper.primary.OrdersMMapper;
 import com.pda.api.mapper.slave.OrderExcuteLogMapper;
 import com.pda.api.service.ExcuteService;
 import com.pda.api.service.MobileCommonService;
+import com.pda.api.service.PatientService;
 import com.pda.common.Constant;
 import com.pda.common.ExcuteStatusEnum;
 import com.pda.common.PdaBaseService;
@@ -41,9 +42,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,6 +78,9 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
     private ExcuteLogJob excuteLogJob;
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private PatientService patientService;
 
     @Override
     public List<? extends  BaseOrderDto> oralList(String patientId,Integer visitId) {
@@ -150,29 +156,32 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
     private void doExcute(String type, Set<String> labels, Set<String> skinLabels, ExcuteReq oralExcuteReq) {
         // 当前时间
         LocalDateTime now = LocalDateTime.now();
+        // 这里处理时间是由于mysql 在毫秒部分会进行四舍五入，导致formatter出现秒上的差异
+        String nowStr = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        now = LocalDateTime.parse(nowStr,DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         // 当前登录人
         // 登陆人
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 1、从redis 查询是否有 patientId+visitId+orderNo的key，如果有，通知用户目前订单正在执行，如果没有则继续执行
-        String key = String.format("%s%s%s%s","excute-",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
-        try{
-            if(redisService.hasKey(key)){
-                log.info("医嘱单,patientId:{},visitId:{},orderNo:{}正在执行......",oralExcuteReq.getPatientId(),oralExcuteReq.getVisitId(),oralExcuteReq.getOrderNo());
+        String key = String.format("%s%s%s%s", "excute-", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo());
+        try {
+            if (redisService.hasKey(key)) {
+                log.info("医嘱单,patientId:{},visitId:{},orderNo:{}正在执行......", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo());
                 throw new BusinessException("当前医嘱单正在执行,请稍后再执行下一步!");
-            }else{
-                redisService.setCacheObject(key,1);
+            } else {
+                redisService.setCacheObject(key, 1);
             }
 
-            Integer freqCount = getCompleteExcuteLogCount(oralExcuteReq,type);
-            log.info("=============执行完成次数:{}，执行频次：{}============",freqCount,oralExcuteReq.getFrequencyCount());
-            if(ObjectUtil.isNull(oralExcuteReq.getFrequencyCount())){
+            Integer freqCount = getCompleteExcuteLogCount(oralExcuteReq, type);
+            log.info("=============执行完成次数:{}，执行频次：{}============", freqCount, oralExcuteReq.getFrequencyCount());
+            if (ObjectUtil.isNull(oralExcuteReq.getFrequencyCount())) {
                 // 如果频次是空的话，有一条执行完成日志，就代表这个医嘱已经执行完成了
-                if(freqCount == 1){
-                    throw new BusinessException("当前订单："+oralExcuteReq.getOrderNo()+"今日执行已完成!");
+                if (freqCount == 1) {
+                    throw new BusinessException("当前订单：" + oralExcuteReq.getOrderNo() + "今日执行已完成!");
                 }
-            }else {
-                if(oralExcuteReq.getFrequencyCount().intValue() == freqCount.intValue()){
-                    throw new BusinessException("当前订单："+oralExcuteReq.getOrderNo()+"今日执行已完成!");
+            } else {
+                if (oralExcuteReq.getFrequencyCount().intValue() == freqCount.intValue()) {
+                    throw new BusinessException("当前订单：" + oralExcuteReq.getOrderNo() + "今日执行已完成!");
                 }
             }
             /*List<OrderExcuteLog> orderCheckedLog = getOrderCheckLog(oralExcuteReq,Constant.EXCUTE_TYPE_DRUG);
@@ -180,9 +189,9 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
                 throw new BusinessException("当前医嘱没有核查,请先核查医嘱单!");
             }*/
             // 校验配液类的是否核对
-            if(labels.contains(oralExcuteReq.getAdministration())){
+            if (labels.contains(oralExcuteReq.getAdministration())) {
                 List<OrderExcuteLog> orderCheckLog = getOrderCheckLog(oralExcuteReq, Constant.EXCUTE_TYPE_LIQUID);
-                if(CollectionUtil.isEmpty(orderCheckLog)){
+                if (CollectionUtil.isEmpty(orderCheckLog)) {
                     throw new BusinessException("当前医嘱没有配液核对,请先核对医嘱单!");
                 }
             }
@@ -198,25 +207,39 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
             orderExcuteLog.setExcuteTime(now);
             orderExcuteLog.setCheckTime(now);
             orderExcuteLog.setType(type);
-            if("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())){
+
+            if ("5".equals(oralExcuteReq.getExcuteStatus()) && skinLabels.contains(oralExcuteReq.getAdministration())) {
                 orderExcuteLog.setRemark(oralExcuteReq.getResult());
                 String typeCode = reverseWriteSkin(currentUser, oralExcuteReq);
-                log.info("皮试医嘱结果 typeCode:{}",typeCode);
-                if(StringUtil.isNotEmpty(typeCode) && "1".equals(typeCode)){
+                log.info("皮试医嘱结果 typeCode:{}", typeCode);
+                if (StringUtil.isNotEmpty(typeCode) && "1".equals(typeCode)) {
                     // 插入
                     orderExcuteLogMapper.insert(orderExcuteLog);
-                }else{
-                    log.error("患者:{},vistiId:{},皮试医嘱{},反写his失败!",orderExcuteLog.getPatientId(),orderExcuteLog.getVisitId(),orderExcuteLog.getOrderNo());
+                } else {
+                    log.error("患者:{},vistiId:{},皮试医嘱{},反写his失败!", orderExcuteLog.getPatientId(), orderExcuteLog.getVisitId(), orderExcuteLog.getOrderNo());
                     throw new BusinessException("皮试医嘱反写失败!");
                 }
-            }else{
+            } else if ("5".equals(oralExcuteReq.getExcuteStatus())||"3".equals(oralExcuteReq.getExcuteStatus())) {
+                orderExcuteLog.setRemark(oralExcuteReq.getResult());
+                String typeCode = reverseWriteInstructions(currentUser, oralExcuteReq,orderExcuteLog);
+                log.info("医嘱执行反写结果 typeCode:{}", typeCode);
+                if (StringUtil.isNotEmpty(typeCode) && "AA".equals(typeCode)) {
+                    // 插入
+                    orderExcuteLogMapper.insert(orderExcuteLog);
+                } else {
+                    log.error("患者:{},vistiId:{},医嘱执行{},反写his失败!", orderExcuteLog.getPatientId(), orderExcuteLog.getVisitId(), orderExcuteLog.getOrderNo());
+                    throw new BusinessException("医嘱执行反写失败!");
+                }
+            } else {
                 // 插入
                 orderExcuteLogMapper.insert(orderExcuteLog);
             }
-        }catch (Exception e){
-            log.error("医嘱执行失败:{}",e.getMessage());
-            throw new BusinessException("医嘱执行失败:"+e.getMessage());
-        }finally {
+
+
+        } catch (Exception e) {
+            log.error("医嘱执行失败:{}", e.getMessage());
+            throw new BusinessException("医嘱执行失败:" + e.getMessage());
+        } finally {
             // 一定要删除key,不然锁死医嘱单
             redisService.deleteObject(key);
         }
@@ -267,14 +290,113 @@ public class ExcuteServiceImpl extends PdaBaseService implements ExcuteService {
         return typeCode;
     }
 
+    /**
+     * 反写医嘱执行记录
+     * @param currentUser
+     * @param oralExcuteReq
+     * @return
+     */
+    private String reverseWriteInstructions(UserResDto currentUser,ExcuteReq oralExcuteReq,OrderExcuteLog elog) {
+        String typeCode = "";
+        try {
+            String param = "";
+            if (oralExcuteReq.getExcuteStatus().equals("3")) {
+                param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<root>\n" +
+                        "\t<AuthHeader>\n" +
+                        "\t\t<msgType>TJ615</msgType>\n" +
+                        "\t\t<msgId>49219b98-c3c6-11ee-b5e7-525400b396fe</msgId>\n" +
+                        "\t\t<createTime>" + PdaTimeUtil.getCreateTime(new Date()) + "</createTime>\n" +
+                        "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                        "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                        "\t\t<sysPassword/>\n" +
+                        "\t</AuthHeader>\n" +
+                        "\t<ControlActProcess>\n" +
+                        "\t\t<ListInfo>\n" +
+                        "\t\t\t<List>\n" +
+                        "\t\t\t\t<PatientNo>" + String.format("%s%s", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId()) + "</PatientNo>\n" +
+                        "\t\t\t\t<InHospNo>" + String.format("%s", oralExcuteReq.getVisitId()) + "</InHospNo>\n" +
+                        "\t\t\t\t<GroupNo>" + String.format("%s%s%s%s", "YZ", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo()) + "</GroupNo>\n" +
+                        "\t\t\t\t<PerformNo>" + UUID.randomUUID().toString() + "</PerformNo>\n" +
+                        "\t\t\t\t<ExecTime>" + elog.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "</ExecTime>\n" +
+                        "\t\t\t\t<ExecEndTime></ExecEndTime>\n" +
+                        "\t\t\t\t<ExecUserCode>" + currentUser.getUserName() + "</ExecUserCode>\n" +
+                        "\t\t\t\t<ExecUserName>" + currentUser.getName() + "</ExecUserName>\n" +
+                        "\t\t\t\t<UpTime>" + PdaTimeUtil.getLongTime(new Date()) + "</UpTime>\n" +
+                        "\t\t\t</List>\n" +
+                        "\t\t</ListInfo>\n" +
+                        "\t</ControlActProcess>\n" +
+                        "</root>\n";
+            } else {
+                ///查询医嘱
+                OrderExcuteLog beginOrder = orderExcuteLogMapper.selectList(new LambdaQueryWrapper<OrderExcuteLog>()
+                        .eq(OrderExcuteLog::getExcuteDate, oralExcuteReq.getExcuteDate())
+                        .eq(OrderExcuteLog::getExcuteStatus, "3")
+                        .eq(OrderExcuteLog::getOrderNo, oralExcuteReq.getOrderNo())
+                        .eq(OrderExcuteLog::getPatientId, oralExcuteReq.getPatientId())
+                        .eq(OrderExcuteLog::getVisitId, oralExcuteReq.getVisitId())
+                        .eq(OrderExcuteLog::getType, oralExcuteReq.getType())
+                        .orderByDesc(OrderExcuteLog::getExcuteTime)).stream().findFirst().orElse(null);
+
+                param = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<root>\n" +
+                        "\t<AuthHeader>\n" +
+                        "\t\t<msgType>TJ615</msgType>\n" +
+                        "\t\t<msgId>49219b98-c3c6-11ee-b5e7-525400b396fe</msgId>\n" +
+                        "\t\t<createTime>" + PdaTimeUtil.getCreateTime(new Date()) + "</createTime>\n" +
+                        "\t\t<sourceId>1.3.6.1.4.1.1000000.2016.100</sourceId>\n" +
+                        "\t\t<targetId>1.3.6.1.4.1.1000000.2016.xxx</targetId>\n" +
+                        "\t\t<sysPassword/>\n" +
+                        "\t</AuthHeader>\n" +
+                        "\t<ControlActProcess>\n" +
+                        "\t\t<ListInfo>\n" +
+                        "\t\t\t<List>\n" +
+                        "\t\t\t\t<PatientNo>" + String.format("%s%s", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId()) + "</PatientNo>\n" +
+                        "\t\t\t\t<InHospNo>" + String.format("%s", oralExcuteReq.getVisitId()) + "</InHospNo>\n" +
+                        "\t\t\t\t<GroupNo>" + String.format("%s%s%s%s", "YZ", oralExcuteReq.getPatientId(), oralExcuteReq.getVisitId(), oralExcuteReq.getOrderNo()) + "</GroupNo>\n" +
+                        "\t\t\t\t<PerformNo>" + UUID.randomUUID().toString() + "</PerformNo>\n" +
+                        "\t\t\t\t<ExecTime>" +(beginOrder!=null? beginOrder.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")):elog.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) + "</ExecTime>\n" +
+                        "\t\t\t\t<ExecEndTime>" + elog.getExcuteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "</ExecEndTime>\n" +
+                        "\t\t\t\t<ExecUserCode>" + currentUser.getUserName() + "</ExecUserCode>\n" +
+                        "\t\t\t\t<ExecUserName>" + currentUser.getName() + "</ExecUserName>\n" +
+                        "\t\t\t\t<UpTime>" + PdaTimeUtil.getLongTime(new Date()) + "</UpTime>\n" +
+                        "\t\t\t</List>\n" +
+                        "\t\t</ListInfo>\n" +
+                        "\t</ControlActProcess>\n" +
+                        "</root>\n";
+            }
+
+            log.info("医嘱执行反写入参:{}", param);
+            String result = CxfClient.excute(getWsProperties().getForwardUrl(), getWsProperties().getMethodName(), param);
+            log.info("医嘱执行反写结果:{}", result);
+            if (StringUtil.isNotEmpty(result)) {
+                Map<String, Object> stringObjectMap = XmlUtil.xmlToMap(result);
+                typeCode = new JSONObject(stringObjectMap).getJSONObject("ControlActProcess").getJSONObject("Response").getString("TypeCode");
+            } else {
+                throw new BusinessException("医嘱执行反写结果为空!");
+            }
+        } catch (Exception e) {
+            log.info("执行医嘱执行反写失败:{}", e.getMessage());
+            throw new BusinessException("医嘱执行反写失败!", e);
+        }
+        return typeCode;
+    }
+
+    /**
+     * 查询医嘱执行记录
+     * @param excuteReq
+     * @param type
+     * @return
+     */
     private Integer getCompleteExcuteLogCount(ExcuteReq excuteReq,String type) {
         LambdaQueryWrapper<OrderExcuteLog> logLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId()).eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
+        logLambdaQueryWrapper.eq(OrderExcuteLog::getPatientId,excuteReq.getPatientId())
+                .eq(OrderExcuteLog::getVisitId,excuteReq.getVisitId())
                 .eq(OrderExcuteLog::getOrderNo,excuteReq.getOrderNo())
-                .eq(OrderExcuteLog::getType,type).eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate())
+                .eq(OrderExcuteLog::getType,type)
+                .eq(OrderExcuteLog::getExcuteDate,excuteReq.getExcuteDate())
                 .eq(OrderExcuteLog::getExcuteStatus, ExcuteStatusEnum.COMPLETED.code());
-        List<OrderExcuteLog> completedLog = orderExcuteLogMapper.selectList(logLambdaQueryWrapper);
-        return CollectionUtil.isEmpty(completedLog) ? 0 : completedLog.size();
+        return orderExcuteLogMapper.selectCount(logLambdaQueryWrapper);
     }
 
     private List<OrderExcuteLog> getOrderCheckLog(ExcuteReq excuteReq,String type) {

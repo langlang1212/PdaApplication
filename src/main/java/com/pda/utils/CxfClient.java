@@ -1,13 +1,17 @@
 package com.pda.utils;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson2.JSON;
 import com.pda.common.config.JaxWsDynamicClientFactory;
 import com.pda.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * @Classname CxfClientUtil
@@ -47,5 +51,26 @@ public class CxfClient {
             throw new BusinessException("调用webservice失败!");
         }
         return result;
+    }
+    private static final OkHttpClient client = new OkHttpClient();
+    public static String exuteHttp(String url, String method, Map<String,String> parames) {
+        String result = null;
+        try {
+            String jsonBody = JSON.toJSONString(parames);
+            RequestBody body = RequestBody.create(MediaType.parse("application/json"),jsonBody);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .method(method,body)
+                    .build();
+            try (Response response = client.newCall(request).execute()) {
+                result = response.body().string();
+                System.out.println(result);
+            }
+        }catch (Exception e){
+            log.error("调用http失败!",e);
+            throw new BusinessException("调用http失败!");
+        }
+        return result;
+
     }
 }
