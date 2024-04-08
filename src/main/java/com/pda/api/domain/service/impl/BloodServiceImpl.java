@@ -79,6 +79,7 @@ public class BloodServiceImpl implements BloodService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void excute(BloodExcuteReq excuteReq) {
+        excuteReq.setBloodId(excuteReq.getBloodId().substring(0,excuteReq.getBloodId().length() - 2));
         // 1、获取当前用户
         UserResDto currentUser = SecurityUtil.getCurrentUser();
         // 2、执行逻辑
@@ -167,25 +168,10 @@ public class BloodServiceImpl implements BloodService {
     }
 
     public static void main(String[] args) {
-        /*BloodExcuteReq req = new BloodExcuteReq();
-        req.setStatus(0);
-        BloodOperLog e1 = new BloodOperLog();
-        e1.setStatus(0);
-        BloodOperLog e2 = new BloodOperLog();
-        e2.setStatus(1);
-        BloodOperLog e3 = new BloodOperLog();
-        e3.setStatus(2);
-        BloodOperLog e4 = new BloodOperLog();
-        e4.setStatus(3);
-        List<BloodOperLog> logs = new ArrayList<>();
-        logs.add(e1);
-        logs.add(e2);
-        logs.add(e3);
-        logs.add(e4);
-        List<Integer> status = logs.stream().map(BloodOperLog::getStatus).collect(Collectors.toList());
-        if(!checkStatus(status,req.getStatus())){
-            System.out.println("验证不通过");
-        }
-        System.out.println(checkStatus(status,req.getStatus()));*/
+        BloodExcuteReq req = new BloodExcuteReq();
+        req.setBloodId("3245235346534599");
+        req.setBloodId(req.getBloodId().substring(0,req.getBloodId().length() - 2));
+        System.out.println(req.getBloodId());
+
     }
 }
