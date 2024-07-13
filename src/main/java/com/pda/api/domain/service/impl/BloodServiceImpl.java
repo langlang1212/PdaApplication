@@ -179,7 +179,7 @@ public class BloodServiceImpl implements BloodService {
                 excute.setStatus(1);
             }else if(5 == excuteReq.getStatus()){
                 excute.setStatus(3);
-            }else if(6 == excuteReq.getStatus()){
+            }else if(7 == excuteReq.getStatus()){
                 excute.setStatus(2);
             }
             excute.setExcuteUserCode(currentUser.getUserName());
