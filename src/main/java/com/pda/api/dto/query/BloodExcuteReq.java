@@ -22,7 +22,8 @@ public class BloodExcuteReq {
     private Integer preStatus;
 
     /**
-     * 0：取血 1:接血 2:输血前核对 3:复核 4:开始执行 5:执行完毕 6;暂停
+     * -- 0：取血 1:接血 2:输血前核对 3:复核 4:开始执行 5:执行完毕 6;暂停
+     * 0：取血 1:接血 2:输血前核对 3:复核 4:开始执行 6:复核 5:执行完毕
      */
     private Integer status;
 }
