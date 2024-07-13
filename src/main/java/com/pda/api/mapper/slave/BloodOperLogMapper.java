@@ -2,6 +2,9 @@ package com.pda.api.mapper.slave;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pda.api.domain.entity.BloodOperLog;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Classname BloodOperLogMapper
@@ -10,4 +13,5 @@ import com.pda.api.domain.entity.BloodOperLog;
  * @Created by AlanZhang
  */
 public interface BloodOperLogMapper extends BaseMapper<BloodOperLog> {
+    void insertBatch(List<BloodOperLog> operLogs);
 }

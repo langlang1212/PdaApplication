@@ -17,6 +17,10 @@ public class BloodExcuteReq {
 
     private String bloodId;
     /**
+     * 复查工号
+     */
+    private String checkUserCode;
+    /**
      * 当前状态
      */
     private Integer preStatus;

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pda.api.mapper.slave.BloodOperLogMapper">
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into blood_oper_log (
+        PATIENT_ID,VISIT_ID,BLOOD_ID,STATUS,OPER_USER_CODE,OPER_USER_NAME,OPER_TIME,CREATE_USER_CODE,CREATE_USER_NAME,CREATE_TIME
+        ) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.patientId},#{item.visitId},#{item.bloodId},#{item.status},#{item.operUserCode},#{item.operUserName},#{item.operTime},#{item.createUserCode},#{item.createUserName},#{item.createTime})
+        </foreach>
+    </insert>
+</mapper>

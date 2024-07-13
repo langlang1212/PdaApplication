@@ -1,6 +1,7 @@
 package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import com.pda.api.domain.entity.BloodBaseInfo;
 import com.pda.api.domain.entity.BloodExcute;
@@ -13,8 +14,10 @@ import com.pda.api.mapper.primary.MobileCommonMapper;
 import com.pda.api.mapper.slave.BloodExcuteMapper;
 import com.pda.api.mapper.slave.BloodMapper;
 import com.pda.api.mapper.slave.BloodOperLogMapper;
+import com.pda.api.service.PdaService;
 import com.pda.exception.BusinessException;
 import com.pda.utils.SecurityUtil;
+import com.pda.utils.StringUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,8 @@ public class BloodServiceImpl implements BloodService {
     private BloodExcuteMapper bloodExcuteMapper;
     @Autowired
     private BloodOperLogMapper bloodOperLogMapper;
+    @Autowired
+    private PdaService pdaService;
 
     @Override
     public List<BloodInfo> list(String patientId, Integer visitId) {
@@ -135,15 +140,25 @@ public class BloodServiceImpl implements BloodService {
                 bloodOperLog.setCreateTime(now);
                 operLogs.add(bloodOperLog);
             }
+            bloodOperLogMapper.insertBatch(operLogs);
         }else {
+            UserResDto operUser = null;
+            if(StringUtil.isNotBlank(excuteReq.getCheckUserCode())){
+                operUser = pdaService.getUserByCode(excuteReq.getCheckUserCode());
+            }
             // 操作步骤，如果不是取血和接血
             BloodOperLog bloodOperLog  = new BloodOperLog();
             bloodOperLog.setPatientId(excuteReq.getPatientId());
             bloodOperLog.setVisitId(excuteReq.getVisitId());
             bloodOperLog.setBloodId(excuteReq.getBloodId());
             bloodOperLog.setStatus(excuteReq.getStatus());
-            bloodOperLog.setOperUserCode(currentUser.getUserName());
-            bloodOperLog.setOperUserName(currentUser.getName());
+            if(ObjectUtil.isNotNull(operUser)){
+                bloodOperLog.setOperUserCode(operUser.getUserName());
+                bloodOperLog.setOperUserName(operUser.getName());
+            }else {
+                bloodOperLog.setOperUserCode(currentUser.getUserName());
+                bloodOperLog.setOperUserName(currentUser.getName());
+            }
             bloodOperLog.setOperTime(now);
             bloodOperLog.setCreateUserCode(currentUser.getUserName());
             bloodOperLog.setCreateUserName(currentUser.getName());
