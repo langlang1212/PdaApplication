@@ -27,6 +27,12 @@ public class BloodController {
         return Result.success(bloodService.list(patientId,visitId));
     }
 
+    @ApiOperation(value = "输血送血列表")
+    @GetMapping("/blood/baseInfo/{patientId}/{visitId}")
+    public Result bloodInfo(@PathVariable("patientId") String patientId,@PathVariable("visitId") Integer visitId){
+        return Result.success(bloodService.bloodBaseInfo(patientId,visitId));
+    }
+
     @ApiOperation(value = "输血送血执行步骤")
     @PostMapping("/blood/excute")
     public Result excute(@RequestBody BloodExcuteReq excuteReq){

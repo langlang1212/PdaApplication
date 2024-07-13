@@ -22,7 +22,7 @@ public class BloodOperLog {
 
     private String bloodId;
     /**
-     * 0：取血 1:接血 2:输血前核对 3:复核 4:开始执行 5:执行完毕 6
+     * 0：取血 1:接血 2:输血前核对 3:复核 4:开始执行 6:复核 5:执行完毕
      */
     private Integer status;
 

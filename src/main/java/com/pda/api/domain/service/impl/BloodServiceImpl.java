@@ -1,6 +1,8 @@
 package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.google.common.collect.Lists;
+import com.pda.api.domain.entity.BloodBaseInfo;
 import com.pda.api.domain.entity.BloodExcute;
 import com.pda.api.domain.entity.BloodInfo;
 import com.pda.api.domain.entity.BloodOperLog;
@@ -13,6 +15,7 @@ import com.pda.api.mapper.slave.BloodMapper;
 import com.pda.api.mapper.slave.BloodOperLogMapper;
 import com.pda.exception.BusinessException;
 import com.pda.utils.SecurityUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,6 +79,28 @@ public class BloodServiceImpl implements BloodService {
         return bloodInfos;
     }
 
+    @Override
+    public BloodBaseInfo bloodBaseInfo(String patientId, Integer visitId) {
+        // 查出所有输血送血
+        List<BloodInfo> bloodInfos = list(patientId, visitId);
+        if(CollectionUtil.isNotEmpty(bloodInfos)){
+            BloodInfo firstBloodInfo = bloodInfos.get(0);
+            BloodBaseInfo bloodBaseInfo = new BloodBaseInfo();
+            BeanUtils.copyProperties(firstBloodInfo,bloodBaseInfo);
+            if(CollectionUtil.isNotEmpty(firstBloodInfo.getLogs())){
+                List<BloodOperLog> commonLogs = Lists.newArrayList();
+                for(BloodOperLog log : firstBloodInfo.getLogs()){
+                    if(log.getStatus().intValue() == 0 || log.getStatus().intValue() == 1){
+                        commonLogs.add(log);
+                    }
+                }
+            }
+            return bloodBaseInfo;
+        }else {
+            throw new BusinessException("该患者没有血袋！");
+        }
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void excute(BloodExcuteReq excuteReq) {
@@ -85,25 +110,48 @@ public class BloodServiceImpl implements BloodService {
         // 2、执行逻辑
         List<BloodOperLog> logs = bloodMapper.selectLogs(excuteReq.getPatientId(),excuteReq.getVisitId(), Arrays.asList(excuteReq.getBloodId()));
         if(CollectionUtil.isNotEmpty(logs)){
-            BloodOperLog curLog = logs.get(logs.size() - 1);
-            checkNextStep(curLog.getStatus(),excuteReq.getStatus());
+            checkNextStep(excuteReq.getPreStatus(),excuteReq.getStatus());
         }
-        // 4、
+        // 当前时间
         Date now = new Date();
-        // 操作步骤
-        BloodOperLog bloodOperLog  = new BloodOperLog();
-        bloodOperLog.setPatientId(excuteReq.getPatientId());
-        bloodOperLog.setVisitId(excuteReq.getVisitId());
-        bloodOperLog.setBloodId(excuteReq.getBloodId());
-        bloodOperLog.setStatus(excuteReq.getStatus());
-        bloodOperLog.setOperUserCode(currentUser.getUserName());
-        bloodOperLog.setOperUserName(currentUser.getName());
-        bloodOperLog.setOperTime(now);
-        bloodOperLog.setCreateUserCode(currentUser.getUserName());
-        bloodOperLog.setCreateUserName(currentUser.getName());
-        bloodOperLog.setCreateTime(now);
+        // 如果是取血、接血阶段，则所有血袋插入取血接血日志
+        if(0 == excuteReq.getStatus().intValue() || 1 == excuteReq.getStatus().intValue()){
+            List<BloodInfo> bloodInfos = mobileCommonMapper.selectBlood(excuteReq.getPatientId(), excuteReq.getVisitId());
+            if(CollectionUtil.isEmpty(bloodInfos)){
+                throw new BusinessException("当前患者没有血袋!");
+            }
+            List<BloodOperLog> operLogs = Lists.newArrayList();
+            for(BloodInfo info : bloodInfos){
+                BloodOperLog bloodOperLog  = new BloodOperLog();
+                bloodOperLog.setPatientId(excuteReq.getPatientId());
+                bloodOperLog.setVisitId(excuteReq.getVisitId());
+                bloodOperLog.setBloodId(info.getBloodId());
+                bloodOperLog.setStatus(excuteReq.getStatus());
+                bloodOperLog.setOperUserCode(currentUser.getUserName());
+                bloodOperLog.setOperUserName(currentUser.getName());
+                bloodOperLog.setOperTime(now);
+                bloodOperLog.setCreateUserCode(currentUser.getUserName());
+                bloodOperLog.setCreateUserName(currentUser.getName());
+                bloodOperLog.setCreateTime(now);
+                operLogs.add(bloodOperLog);
+            }
+        }else {
+            // 操作步骤，如果不是取血和接血
+            BloodOperLog bloodOperLog  = new BloodOperLog();
+            bloodOperLog.setPatientId(excuteReq.getPatientId());
+            bloodOperLog.setVisitId(excuteReq.getVisitId());
+            bloodOperLog.setBloodId(excuteReq.getBloodId());
+            bloodOperLog.setStatus(excuteReq.getStatus());
+            bloodOperLog.setOperUserCode(currentUser.getUserName());
+            bloodOperLog.setOperUserName(currentUser.getName());
+            bloodOperLog.setOperTime(now);
+            bloodOperLog.setCreateUserCode(currentUser.getUserName());
+            bloodOperLog.setCreateUserName(currentUser.getName());
+            bloodOperLog.setCreateTime(now);
 
-        bloodOperLogMapper.insert(bloodOperLog);
+            bloodOperLogMapper.insert(bloodOperLog);
+        }
+
 
         // 执行状态
         List<BloodExcute> existExcutes = bloodExcuteMapper.selectBloodStatus(excuteReq.getPatientId(),excuteReq.getVisitId());
@@ -153,18 +201,21 @@ public class BloodServiceImpl implements BloodService {
         if(3 == cur.intValue() && 4 != next.intValue()){
             throw new BusinessException("请执行开始执行操作!");
         }
-        if(4 == cur.intValue() && (5 != next.intValue() && 6 != next.intValue())){
+        if(4 == cur.intValue() && 6 != next.intValue()){
+            throw new BusinessException("请执行开始执行第二次复核操作!");
+        }
+        if(6 == cur.intValue() && 5 != next.intValue()){
             throw new BusinessException("请执行下一步操作!");
         }
         if(5 == cur.intValue()){
             throw new BusinessException("已经执行完毕!");
         }
-        if(6 == cur.intValue() && 4 != next.intValue()){
+        /*if(6 == cur.intValue() && 4 != next.intValue()){
             throw new BusinessException("请传入执行中状态!");
         }
         if(6 != cur.intValue() && cur.intValue() >= next.intValue()){
             throw new BusinessException("已经执行过该步骤!");
-        }
+        }*/
     }
 
     public static void main(String[] args) {
