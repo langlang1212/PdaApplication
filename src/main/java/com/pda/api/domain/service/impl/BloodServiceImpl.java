@@ -2,6 +2,7 @@ package com.pda.api.domain.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.pda.api.domain.entity.BloodBaseInfo;
 import com.pda.api.domain.entity.BloodExcute;
@@ -18,6 +19,7 @@ import com.pda.api.service.PdaService;
 import com.pda.exception.BusinessException;
 import com.pda.utils.SecurityUtil;
 import com.pda.utils.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
  * @Created by AlanZhang
  */
 @Service
+@Slf4j
 public class BloodServiceImpl implements BloodService {
 
     @Autowired
@@ -109,6 +112,7 @@ public class BloodServiceImpl implements BloodService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void excute(BloodExcuteReq excuteReq) {
+        log.info("输血备血入参:{}", JSON.toJSONString(excuteReq));
         excuteReq.setBloodId(excuteReq.getBloodId().substring(0,excuteReq.getBloodId().length() - 2));
         // 1、获取当前用户
         UserResDto currentUser = SecurityUtil.getCurrentUser();
