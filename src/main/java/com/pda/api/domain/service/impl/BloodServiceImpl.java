@@ -130,20 +130,18 @@ public class BloodServiceImpl implements BloodService {
                 throw new BusinessException("当前患者没有血袋!");
             }
             List<BloodOperLog> operLogs = Lists.newArrayList();
-            for(BloodInfo info : bloodInfos){
-                BloodOperLog bloodOperLog  = new BloodOperLog();
-                bloodOperLog.setPatientId(excuteReq.getPatientId());
-                bloodOperLog.setVisitId(excuteReq.getVisitId());
-                bloodOperLog.setBloodId(info.getBloodId());
-                bloodOperLog.setStatus(excuteReq.getStatus());
-                bloodOperLog.setOperUserCode(currentUser.getUserName());
-                bloodOperLog.setOperUserName(currentUser.getName());
-                bloodOperLog.setOperTime(now);
-                bloodOperLog.setCreateUserCode(currentUser.getUserName());
-                bloodOperLog.setCreateUserName(currentUser.getName());
-                bloodOperLog.setCreateTime(now);
-                operLogs.add(bloodOperLog);
-            }
+            BloodOperLog bloodOperLog  = new BloodOperLog();
+            bloodOperLog.setPatientId(excuteReq.getPatientId());
+            bloodOperLog.setVisitId(excuteReq.getVisitId());
+            bloodOperLog.setBloodId(excuteReq.getBloodId());
+            bloodOperLog.setStatus(excuteReq.getStatus());
+            bloodOperLog.setOperUserCode(currentUser.getUserName());
+            bloodOperLog.setOperUserName(currentUser.getName());
+            bloodOperLog.setOperTime(now);
+            bloodOperLog.setCreateUserCode(currentUser.getUserName());
+            bloodOperLog.setCreateUserName(currentUser.getName());
+            bloodOperLog.setCreateTime(now);
+            operLogs.add(bloodOperLog);
             bloodOperLogMapper.insertBatch(operLogs);
         }else {
             UserResDto operUser = null;
